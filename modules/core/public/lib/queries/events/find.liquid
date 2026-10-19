@@ -1,0 +1,12 @@
+{% doc %}
+  @param {string} uuid - The UUID identifier
+{% enddoc %}
+{% liquid
+  if uuid == blank
+    return null
+  endif
+
+  function events = 'modules/core/queries/events/search', limit: 1, uuids: uuid, page: null
+
+  return events.results.first.payload
+%}

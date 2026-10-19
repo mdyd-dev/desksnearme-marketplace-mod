@@ -1,0 +1,14 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {string} id - The record ID
+  @param {string} password - The password
+{% enddoc %}
+{% assign object =
+  {
+    "id": id,
+    "email": email,
+    "password": password
+  }
+%}
+
+{% return object %}

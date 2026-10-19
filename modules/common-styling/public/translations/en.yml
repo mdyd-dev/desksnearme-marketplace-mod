@@ -1,0 +1,19 @@
+en:
+  toast:
+    close: Dismiss notification
+  password:
+    weak: Weak password
+    medium: Fair password
+    strong: Strong password
+    toggle_visibility: Toggle password visibility
+  form:
+    select: Select
+    type_to_filter: Type to filter the list
+    no_filter_results: Nothing matches your search
+    clear_selection: Clear selection
+    deselect: Deselect
+    at_least_one_option: At least one option must be choosen
+    minimum_length_validation: Please enter at least %{count} characters
+    maximum_length_validation: Please enter no more than %{count} characters
+    markdown:
+      instructions: You can use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" nofollow>Markdown</a> to format your text. Press <kbd>Esc</kbd> to navigate out of the editor.

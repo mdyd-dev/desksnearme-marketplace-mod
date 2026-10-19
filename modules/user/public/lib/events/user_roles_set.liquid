@@ -1,0 +1,17 @@
+---
+metadata:
+  event:
+    profile_id
+    roles
+---
+{% doc %}
+  @param {object} event - The event object
+{% enddoc %}
+{% liquid
+  assign c = { "errors": {}, "valid": true }
+
+  function c = 'modules/core/validations/presence', c: c, object: event, field_name: 'profile_id'
+  function c = 'modules/core/validations/length', c: c, object: event, field_name: 'roles', minimum: 0, allow_blank: false, is: null, maximum: null, message_is: null, message_maximum: null, message_minimum: null, value: null
+
+  return c
+%}

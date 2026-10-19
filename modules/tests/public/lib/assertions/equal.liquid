@@ -1,0 +1,15 @@
+{% doc %}
+  @param {object} contract - test contract object tracking results
+  @param given - actual value to compare; any type, compared with the expected value as-is
+  @param expected - expected value to compare against; any type
+  @param {string} field_name - name of the field being tested
+{% enddoc %}
+{% liquid
+  assign contract.total = contract['total'] | plus: 1
+
+  if given != expected
+    assign msg = 'modules/tests/should.equal' | t: given: given, expected: expected
+    function contract = 'modules/tests/helpers/register_error', contract: contract, field_name: field_name, message: msg
+  endif
+  return contract
+%}

@@ -1,0 +1,58 @@
+<article id="boxes">
+  <h2 class="pos-heading-2">Boxes</h2>
+
+  <div class="styleguide-columns">
+    <div>
+      <div class="styleguide-example">
+        <div class="pos-card">The quick brown fox jumps over the lazy dog</div>
+      </div>
+{% capture code %}{% raw %}
+<div class="pos-card"></div>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+      <dl class="styleguide-details">
+        <dt>class</dt><dd><code>pos-card</code></dd>
+        <dt>props</dt><dd><code>--pos-padding-card</code>, <code>--pos-radius-card</code>, <code>--pos-color-content-background</code></dd>
+      </dl>
+    </div>
+    <div>
+      <div class="styleguide-example">
+        <div class="pos-card pos-card-highlighted">The quick brown fox jumps over the lazy dog</div>
+      </div>
+{% capture code %}{% raw %}
+<div class="pos-card pos-card-highlighted"></div>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+      <dl class="styleguide-details">
+        <dt>class</dt><dd><code>pos-card pos-card-highlighted</code></dd>
+        <dt>props</dt><dd><code>--pos-padding-card</code>, <code>--pos-radius-card</code>, <code>--pos-color-highlight-background</code></dd>
+      </dl>
+    </div>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Content card</h3>
+  <div class="styleguide-columns">
+    <div>
+      {% render 'modules/common-styling/content/card', url: '/', image: 'https://picsum.photos/1000/400', title: 'Lorem ipsum dolor sit amet', content: 'Quisque vel velit mi. Proin malesuada iaculis viverra. Vestibulum tristique sollicitudin rhoncus. Vivamus sollicitudin nisi in lorem gravida aliquam.', footer: '<ul><li>Item</li><li>Item</li></ul> Aside item', highlighted: null %}
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/content/card', url: '/', image: 'https://picsum.photos/1000/400', title: 'Title', content: 'Content', footer: '<ul><li>Item</li><li>Item</li></ul> Aside item' %}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+    <div>
+      {% render 'modules/common-styling/content/card', url: '/', image: 'https://picsum.photos/1000/400?random=2', title: 'Lorem ipsum dolor sit amet', content: 'Quisque vel velit mi. Proin malesuada iaculis viverra. Vestibulum tristique sollicitudin rhoncus. Vivamus sollicitudin nisi in lorem gravida aliquam.', footer: 'Cras lacinia lorem', highlighted: true %}
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/content/card', url: '/', image: 'https://picsum.photos/1000/400', title: 'Title', content: 'Content', footer: 'Footer', highlighted: true %}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+</article>

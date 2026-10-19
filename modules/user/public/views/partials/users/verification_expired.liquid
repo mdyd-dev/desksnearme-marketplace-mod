@@ -1,0 +1,42 @@
+---
+metadata:
+  name: Verification link expired
+  params:
+    context: {}
+    email: ''
+---
+{% doc %}
+  Shown for an expired, already used, tampered or unknown token. All four look
+  identical on purpose, so this page cannot be used to work out which addresses
+  have accounts.
+
+  @param {string} email - The address from the link, used to prefill the resend
+  @param {object} context - The request context
+{% enddoc %}
+
+<section class="pos-user-content pos-user-check-email">
+
+  <h1 class="pos-heading-2">{{ 'modules/user/email_verification.expired.title' | t }}</h1>
+
+  <p>{{ 'modules/user/email_verification.expired.description' | t }}</p>
+
+  <form action="/users/verification/resend" method="post" class="pos-form pos-form-simple">
+    <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+
+    <fieldset>
+      <label for="pos-user-verification-email">{{ 'modules/user/passwords.email' | t }}</label>
+      <input type="email" name="email" id="pos-user-verification-email" value="{{ email }}" required>
+    </fieldset>
+
+    {% render 'modules/common-styling/forms/hcaptcha' %}
+
+    <button type="submit" class="pos-button pos-button-primary">
+      {{ 'modules/user/email_verification.expired.resend' | t }}
+    </button>
+  </form>
+
+  <p class="pos-supplementary">
+    <a href="/sessions/new">{{ 'modules/user/email_verification.check_email.back_to_login' | t }}</a>
+  </p>
+
+</section>

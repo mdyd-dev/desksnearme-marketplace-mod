@@ -1,0 +1,12 @@
+<article id="icons">
+  <h2 class="pos-heading-2">Icons</h2>
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/icon', icon: 'dashDown', class: null %}
+{% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+  <ul>
+    {% render 'modules/common-styling/icon', icon: 'all', class: null %}
+  </ul>
+</article>

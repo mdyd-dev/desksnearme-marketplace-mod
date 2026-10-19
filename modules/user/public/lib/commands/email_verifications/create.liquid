@@ -1,0 +1,45 @@
+{% doc %}
+  Sends a verification link to an address, if that address has an account that
+  still needs verifying and is not being throttled.
+
+  The return value describes the *request*, not the outcome. As long as the
+  input was well formed the caller gets a valid object back, whether or not an
+  email was actually sent - an unknown address, an already verified one and a
+  throttled one are indistinguishable from the outside. Anything else turns
+  registration and resend into a way to enumerate accounts.
+
+  @param {string} email - The email address
+  @param {string} host - The host the link should point at
+  @param {object} hcaptcha_params - The hCaptcha parameters
+  @param {boolean} verify_hcaptcha - Whether the calling endpoint presented an hCaptcha widget whose answer should be checked
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/email_verifications/create/build', email: email, host: host
+  function object = 'modules/user/commands/email_verifications/create/check', object: object, hcaptcha_params: hcaptcha_params, verify_hcaptcha: verify_hcaptcha
+
+  unless object.valid
+    return object
+  endunless
+
+  assign profile = object.profile
+
+  if profile.id == blank or profile.email_verified_at != blank or object.token == blank
+    return object
+  endif
+
+  function throttled = 'modules/user/helpers/email_verification_throttled', profile: profile
+
+  if throttled
+    log object.email, type: 'INFO: email verification resend throttled'
+    return object
+  endif
+
+  function object = 'modules/user/commands/email_verifications/create/execute', object: object
+  function _ = 'modules/user/commands/emails/verify-email', object: object
+  function _ = 'modules/user/commands/profiles/mark_verification_sent', object: profile
+
+  assign event_payload = { "user_id": object.id }
+  function _ = 'modules/core/commands/events/publish', type: 'email_verification_sent', object: event_payload, delay: null, max_attempts: null
+
+  return object
+%}

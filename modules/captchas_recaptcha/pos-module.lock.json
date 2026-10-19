@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "captchas": "1.1.2"
+  },
+  "devDependencies": {
+    "tests": "1.3.6"
+  },
+  "registries": {
+    "tests": "https://partners.platformos.com",
+    "captchas": "https://partners.platformos.com"
+  }
+}

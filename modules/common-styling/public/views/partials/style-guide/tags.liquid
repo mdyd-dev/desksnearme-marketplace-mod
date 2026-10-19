@@ -1,0 +1,58 @@
+<article id="tags">
+
+  <h2 class="pos-heading-2">Tags and badges</h2>
+
+  <div class="styleguide-columns">
+    
+    <dl class="styleguide-details">
+      <dt>Class</dt><dd><code>pos-tag</code></dd>
+      <dt>Modifiers</dt><dd><code>pos-tag-confirmation</code>, <code>pos-tag-warning</code>, <code>pos-tag-important</code>, <code>pos-tag-interactive</code></dd>
+      <dt>Properties</dt><dd><code>--pos-radius-tag</code></dd>
+    </dl>
+
+    <div>
+      <div class="styleguide-example">
+        <ul class="pos-tags-list">
+          <li class="pos-tag">Default</li>
+          <li class="pos-tag pos-tag-confirmation">Confirmation</li>
+          <li class="pos-tag pos-tag-warning">Warning</li>
+          <li class="pos-tag pos-tag-important">Important</li>
+          <li><a class="pos-tag pos-tag-interactive">Interactive</a></li>
+        </ul>
+      </div>
+      {% capture code %}{% raw %}
+  <span class="pos-tag pos-tag-confirmation">Confirmation</span>
+      {% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <h3 class="pos-heading-4">Tags list</h3>
+
+  <div class="styleguide-columns">
+  
+    <dl class="styleguide-details">
+      <dt>Class</dt><dd><code>pos-tags-list</code></dd>
+      <dt>Properties</dt><dd><code>--pos-gap-tag-tag</code></dd>
+    </dl>
+
+    <div class="styleguide-example">
+      <div class="pos-tags-list">
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+        <div class="styleguide-forms-placeholder-tag"></div>
+      </div>
+    </div>
+  
+  </div>
+
+</article>

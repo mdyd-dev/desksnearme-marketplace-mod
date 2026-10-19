@@ -1,0 +1,9 @@
+{% doc %}
+  @param {string} [email] - The email address
+  @param {object} object - The object containing password and otp_code
+{% enddoc %}
+{% liquid
+  assign email = email | default: object.email
+  assign object = { "email": email, "password": object.password, "otp_code": object.otp_code }
+  return object
+%}

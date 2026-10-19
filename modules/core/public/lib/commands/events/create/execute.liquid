@@ -1,0 +1,11 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  graphql r = 'modules/core/events/create', payload: object
+
+  assign object = r.activity_create.payload
+  assign object.valid = true
+
+  return object
+%}

@@ -1,0 +1,29 @@
+{% doc %}
+  @param {string} [access_callback] - Custom authorization callback path
+  @param {string} [anonymous_return_to] - URL to redirect anonymous users to
+  @param {string} do - The permission to check
+  @param {object} [entity] - The entity to check access against
+  @param {string} [forbidden_partial] - Custom partial to render for forbidden access
+  @param {boolean} [redirect_anonymous_to_login] - Whether to redirect anonymous users to login
+  @param {object} requester - The user profile requesting access
+{% enddoc %}
+{% liquid
+  function can = 'modules/user/helpers/can_do', requester: requester, entity: entity, do: do, access_callback: access_callback
+  unless can
+    if requester.roles contains 'anonymous' and redirect_anonymous_to_login
+      session return_to = anonymous_return_to | default: context.location.href
+      assign info = 'modules/user/authorization.redirect_anonymous_info' | t
+      # platformos-check-disable DeprecatedTag
+      include 'modules/core/helpers/redirect_to', url: '/sessions/new', info: info, default: null, error: null, format: null, notice: null, object: null
+      # platformos-check-enable DeprecatedTag
+    else
+      response_status 403
+      if forbidden_partial
+        # platformos-check-disable DeprecatedTag
+        include forbidden_partial
+        # platformos-check-enable DeprecatedTag
+      endif
+      break
+    endif
+  endunless
+%}

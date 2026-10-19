@@ -1,0 +1,38 @@
+{% doc %}
+  @param {boolean} [autohide] - whether the toast auto-hides
+  @param {number} [delay] - delay in milliseconds before auto-hide
+  @param {string} [message] - toast message content
+  @param {string} [severity] - toast severity level
+{% enddoc %}
+{% liquid
+  assign delay = delay | default: 1000
+%}
+
+<aside
+  class="pos-toasts"
+  id="pos-toasts"
+>
+
+  <template id="pos-toast-template">
+    <div class="pos-toast-container {% if severity %} pos-toast-{{ severity }} {% endif %}">
+      <div class="pos-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="pos-toast-content"></div>
+
+        <button class="pos-toast-close" title="{{ 'modules/common-styling/toast.close' | t }}">
+          <span class="label">{{ 'modules/common-styling/toast.close' | t }}</span>
+          ×
+        </button>
+      </div>
+    </div>
+  </template>
+
+  {% if message %}
+    <script>
+      document.addEventListener('pos-modules-toast-ready', () => {
+        new window.pos.modules.toast('{{ severity }}', {% print message | markdown | json %}, { delay: {{ delay | json }} {% if severity == 'success' and autohide != null %}, autohide: {{ autohide }} {% endif %} });
+      });
+    </script>
+  {% endif %}
+</aside>
+
+<script src="{{ 'modules/common-styling/js/pos-toast.js' | asset_url }}" defer></script>

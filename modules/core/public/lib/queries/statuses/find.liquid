@@ -1,0 +1,12 @@
+{% doc %}
+  @param {string} id - The record ID
+{% enddoc %}
+{% liquid
+  if id == blank
+    return null
+  endif
+
+  graphql r  = 'modules/core/statuses/search', id: id, limit: 1, page: 1
+
+  return r.statuses.results.first
+%}

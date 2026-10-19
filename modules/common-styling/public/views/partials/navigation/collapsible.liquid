@@ -1,0 +1,61 @@
+{% doc %}
+  @param {boolean} [inert] - whether to render without collapsible class
+  @param {boolean} [active] - active URL to highlight
+  @param {object} items - array of navigation items with url, label, children
+{% enddoc %}
+{% liquid
+  assign inert = inert | default: false
+  assign active = active | default: false
+%}
+
+
+{% capture output %}
+
+  <ul{% if inert == false %} class="pos-collapsible"{% endif %}>
+
+    {% for item in items %}
+
+      <li{% if active == item.url %} class="pos-collapsible-active"{% endif %}>
+        {% if item.url %}<a href="{{ item.url }}">{% endif %}
+          {{ item.label }}
+        {% if item.url %}</a>{% endif %}
+
+        {% if item.children.size > 0 %}
+          <button type="button" class="pos-collapsible-toggle" aria-expanded="false" aria-controls="pos-collapsible-{{ item.label | slugify }}">
+            {% render 'modules/common-styling/icon', icon: 'dashRight', class: null %}
+            <span class="pos-label">Expand "{{ item.label }}"</span>
+          </button>
+        {% endif %}
+
+        {% if item.children.size > 0 %}
+          {% liquid
+            assign active_child = item.children | array_detect: url: active
+
+            unless active_child
+              for child in item.children
+                assign active_child = child.children | array_detect: url: active
+                if active_child
+                  break
+                endif
+              endfor
+            endunless
+          %}
+          
+          <div id="pos-collapsible-{{ item.label | slugify }}" class="pos-collapsible-children"{% unless active_child or active == item.url %} inert{% endunless %}>
+            {% liquid
+              function render_submenu = 'modules/common-styling/navigation/collapsible', items: item.children, inert: true, active: active
+              print render_submenu
+            %}
+          </div>
+        {% endif %}
+      </li>
+
+    {% endfor %}
+
+  </ul>
+
+{% endcapture %}
+
+
+{{ output | html_safe }}
+{% return output %}

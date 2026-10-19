@@ -1,0 +1,13 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign data = { "id": object.id }
+  if object.otp_configured == null
+    assign data.otp_configured = true
+  else
+    assign data.otp_configured = object.otp_configured
+  endif
+
+  return data
+ %}

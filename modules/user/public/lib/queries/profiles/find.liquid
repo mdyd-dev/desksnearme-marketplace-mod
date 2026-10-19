@@ -1,0 +1,25 @@
+{% doc %}
+  At least one of id, user_id, or uuid must be given.
+
+  @param {string} [first_name] - The first name
+  @param {string} [id] - The record ID
+  @param {string} [last_name] - The last name
+  @param {string} [user_id] - The user ID
+  @param {string} [uuid] - The UUID identifier
+{% enddoc %}
+{% liquid
+  if user_id == blank and id == blank and uuid == blank
+    log 'ERROR: missing ID argument in modules/user/queries/profile/find'
+    return nil
+  endif
+
+  graphql result = 'modules/user/profiles/search', user_id: user_id, id: id, first_name: first_name, last_name: last_name, uuid: uuid, limit: 1, page: 1
+  assign profile = result.records.results.first
+
+  if profile
+    function slug = 'modules/user/helpers/profiles/slugs/build', current_profile: profile, profile: null
+    assign profile.slug = slug
+  endif
+
+  return profile
+%}

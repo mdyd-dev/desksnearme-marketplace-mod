@@ -1,0 +1,15 @@
+{% doc %}
+  Records that a verification email went out, so resends can be throttled.
+
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/profiles/mark_verification_sent/build', object: object
+  function object = 'modules/user/commands/profiles/mark_verification_sent/check', object: object
+
+  if object.valid
+    function object = 'modules/core/commands/execute', mutation_name: 'modules/user/profiles/mark_verification_sent', object: object, selection: null
+  endif
+
+  return object
+%}

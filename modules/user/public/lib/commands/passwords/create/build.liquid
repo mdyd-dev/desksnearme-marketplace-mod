@@ -1,0 +1,16 @@
+---
+metadata:
+  parameters:
+    - name: password
+    - name: password_confirmation
+    - name: user_id
+---
+{% assign object =
+  {
+    "id": object.user_id,
+    "password": object.password,
+    "password_confirmation": object.password_confirmation
+  }
+%}
+
+{% return object %}

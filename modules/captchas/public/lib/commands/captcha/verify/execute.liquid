@@ -1,0 +1,37 @@
+{% doc %}
+  @description Execute phase for captcha verify: dispatch to the active provider's verify command
+    (one siteverify HTTP call), then apply the optional hostname allow-list check to the provider
+    response. Only runs on an object that passed the check phase.
+  @param {object} object - validated object: { provider, secret, token, remote_ip, expected_sitekey,
+    expected_hostname, min_score, expected_action, errors }.
+  @returns {object} object with success (boolean), response (hash), valid, and errors
+    (translated messages; plus score/action for score-based providers).
+{% enddoc %}
+{% liquid
+  # Re-check availability even though the check phase already did (defense in depth: this
+  # command is callable directly, and dispatching to a missing module raises a hard error).
+  # Fail closed: if no provider verify runs, the token was never verified against any
+  # siteverify endpoint — never leave object.valid true here.
+  function provider_is_available = 'modules/captchas/helpers/provider_available', provider: object.provider
+  unless provider_is_available
+    function c = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'provider', key: 'modules/captchas/errors.unsupported_provider'
+    assign object.errors = c
+    assign object.success = false
+    assign object.valid = false
+    return object
+  endunless
+
+  assign captcha_verify_path = 'modules/captchas_' | append: object.provider | append: '/commands/verify'
+  function object = captcha_verify_path, object: object
+
+  if object.valid
+    function hostname_allowed = 'modules/captchas/helpers/hostname_allowed', hostname: object.response.hostname, expected_hostname: object.expected_hostname
+    unless hostname_allowed
+      function c = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'captcha', key: 'modules/captchas/errors.hostname_mismatch'
+      assign object.errors = c
+      assign object.valid = false
+    endunless
+  endif
+
+  return object
+%}

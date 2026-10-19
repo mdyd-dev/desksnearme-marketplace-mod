@@ -1,0 +1,19 @@
+{% doc %}
+  Whether registration requires the user to confirm their email address.
+
+  Off unless the instance opts in by setting USER_EMAIL_VERIFICATION_ENABLED,
+  so upgrading the module never changes an existing application's registration
+  or login behaviour.
+
+  Every branch that changes behaviour goes through this helper, so the feature
+  can be audited - and switched off again - in one place.
+{% enddoc %}
+{% liquid
+  assign enabled = context.constants.USER_EMAIL_VERIFICATION_ENABLED
+
+  if enabled == 'true' or enabled == true
+    return true
+  endif
+
+  return false
+%}

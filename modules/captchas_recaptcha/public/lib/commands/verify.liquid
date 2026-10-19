@@ -1,0 +1,59 @@
+{% doc %}
+  @description Verify command for Google reCAPTCHA v2: POST the token to siteverify via
+    api_call_send and normalize the result. Part of the captchas provider contract —
+    dispatched by modules/captchas/commands/captcha/verify/execute.
+  @param {object} object - validated object: { secret, token, remote_ip, errors }.
+  @returns {object} object with success (boolean), response (hash), valid, and errors
+    (translated messages, via modules/captchas/helpers/add_error).
+{% enddoc %}
+{% liquid
+  assign payload = { "secret": object.secret, "token": object.token, "remote_ip": object.remote_ip }
+
+  graphql result = 'modules/captchas_recaptcha/api_call/send', data: payload, name: 'modules/captchas_recaptcha/siteverify'
+
+  assign call = result.api_call_send
+
+  if call.errors != blank
+    function updated_errors = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'captcha', key: 'modules/captchas/errors.request_failed'
+    assign object.errors = updated_errors
+    assign object.success = false
+    assign object.valid = false
+    return object
+  endif
+
+  assign status = call.response.status
+  if status != 200
+    function updated_errors = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'captcha', key: 'modules/captchas/errors.request_failed'
+    assign object.errors = updated_errors
+    assign object.success = false
+    assign object.valid = false
+    return object
+  endif
+
+  # A 200 with a non-JSON body (provider outage, proxy error page) must fail closed as
+  # request_failed rather than blow up in parse_json or turn into a misleading
+  # verification_failed on a nil body.
+  assign raw_body = call.response.body | strip
+  assign first_char = raw_body | slice: 0, 1
+  if first_char != '{'
+    function updated_errors = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'captcha', key: 'modules/captchas/errors.request_failed'
+    assign object.errors = updated_errors
+    assign object.success = false
+    assign object.valid = false
+    return object
+  endif
+  assign body = raw_body | parse_json
+
+  assign object.response = body
+  assign object.success = body.success
+
+  if body.success
+    assign object.valid = true
+  else
+    function updated_errors = 'modules/captchas/helpers/add_error', errors: object.errors, field_name: 'captcha', key: 'modules/captchas/errors.verification_failed'
+    assign object.errors = updated_errors
+    assign object.valid = false
+  endif
+
+  return object
+%}

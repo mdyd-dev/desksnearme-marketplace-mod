@@ -1,0 +1,28 @@
+{% doc %}
+  Validates the name fields shared by the user and profile records.
+
+  Both `user/create/check` and `profiles/create/check` call this so the two can
+  never disagree about what a valid name is. They used to: `user/create/check`
+  only checked presence, so an over-long name passed it, the user row was
+  written, and `profiles/create/check` then rejected the profile - leaving an
+  orphaned user and an email address that could never register again.
+
+  `name` is the concatenation built by `profiles/create/build`. It is derived
+  here when absent so this runs identically before the profile is built.
+
+  @param {object} c - The contract object for collecting validation errors
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign name = object.name
+
+  if name == blank
+    assign name = object.first_name | append: ' ' | append: object.last_name
+  endif
+
+  function c = 'modules/core/validations/length', c: c, object: object, field_name: 'first_name', maximum: 40, allow_blank: null, is: null, message_is: null, message_maximum: null, message_minimum: null, minimum: null, value: null
+  function c = 'modules/core/validations/length', c: c, object: object, field_name: 'last_name', maximum: 40, allow_blank: null, is: null, message_is: null, message_maximum: null, message_minimum: null, minimum: null, value: null
+  function c = 'modules/core/validations/length', c: c, object: object, field_name: 'name', maximum: 80, value: name, allow_blank: null, is: null, message_is: null, message_maximum: null, message_minimum: null, minimum: null
+
+  return c
+%}

@@ -1,0 +1,55 @@
+{% doc %}
+  @param {string} url - where the card should link to
+  @param {string} image - image object with versions or URL string
+  @param {string} title - card title
+  @param {string} content - card description
+  @param {string} footer - secondary related content
+  @param {boolean} highlighted - whether to distinguish the card
+{% enddoc %}
+{% comment %}
+
+  content card with an image, title and a description
+
+  url - (string) where the card should link to
+  image - (object or URL) platformOS generated object with image versions or just an URL to specific image
+  title - (string) card title that will be linked
+  content - (string) card description
+  footer - (string) secondary related content
+
+  highlighted - (bool) should the card be distinguished among other cards
+
+{% endcomment %}
+
+
+
+<article class="pos-card {% if highlighted %} pos-card-highlighted {% endif %} pos-card-content">
+
+  {% if url != blank %}
+    <a href="{{ url }}" class="pos-card-content-permalink">
+  {% endif %}
+    {% if image.versions %}
+      <picture class="pos-card-content-image-container">
+        <source srcset="{{ image.versions.m_avif }} 1x, {{ image.versions.lg_avif }} 2x" type="image/avif">
+        <img src="{{ image.versions.m }}" srcset="{{ image.versions.m }} 1x, {{ image.versions.lg }} 2x" alt="" width="368" height="192" loading="lazy" class="pos-card-content-image">
+      </picture>
+    {% elsif image %}
+      <picture class="pos-card-content-image-container">
+        <img src="{{ image }}" alt="" width="368" height="192" loading="lazy" class="pos-card-content-image">
+      </picture>
+    {% endif %}
+    {% if title %}
+      <h3 class="pos-heading-4 pos-card-content-title">{{ title }}</h3>
+    {% endif %}
+    {% if url != blank %}
+    </a>
+  {% endif %}
+
+  {{ content | html_safe }}
+
+  {% if footer %}
+    <footer class="pos-card-content-footer">
+      {{ footer | html_safe }}
+    </footer>
+  {% endif %}
+
+</article>

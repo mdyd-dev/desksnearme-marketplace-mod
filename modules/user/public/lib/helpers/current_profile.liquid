@@ -1,0 +1,17 @@
+{% liquid
+  function user = 'modules/user/queries/user/current'
+  if user.id == null
+    assign current_profile = { "user": null, "roles": ["anonymous"] }
+  else
+    function current_profile = 'modules/user/queries/profiles/find', user_id: user.id, id: null, uuid: null, first_name: null, last_name: null
+    assign current_profile.user = user
+    if current_profile.roles != null
+      assign current_profile.roles << 'authenticated'
+    else
+      assign current_profile.roles = ["authenticated"]
+    endif
+  endif
+
+  export current_profile
+  return current_profile
+ %}

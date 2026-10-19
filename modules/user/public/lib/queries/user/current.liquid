@@ -1,0 +1,11 @@
+{% comment %}
+  Loads the current user.
+{% endcomment %}
+{% liquid
+  if context.current_user
+    function user = 'modules/user/queries/user/load', id: context.current_user.id
+  else
+    assign user = null
+  endif
+  return user
+%}

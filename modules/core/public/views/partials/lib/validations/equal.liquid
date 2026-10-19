@@ -1,0 +1,24 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {string} expected - The expected value to compare against
+  @param {string} field_name - The name of the field to validate
+  @param {string} given - The given value to compare
+  @param {string} key - The translation key for the error message
+  @param {string} message - Custom error message override
+  @param {boolean} not_verbose - If true, suppress detailed error output
+{% enddoc %}
+{% liquid
+  log 'Use modules/core/validations/equal instead of modules/core/lib/validations/equal ', type: 'DEPRECATION'
+  if given != expected
+
+    if message == blank and key == blank
+      if not_verbose
+        assign message = 'modules/core/validation.equal_not_verbose' | t
+      else
+        assign message = 'modules/core/validation.equal' | t: given: given, expected: expected
+      endif
+    endif
+    function c = 'modules/core/lib/helpers/register_error', contract: c, field_name: field_name, message: message, key: key
+  endif
+  return c
+%}

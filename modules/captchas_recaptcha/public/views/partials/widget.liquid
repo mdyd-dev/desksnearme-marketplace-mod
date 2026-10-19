@@ -1,0 +1,24 @@
+{% doc %}
+  @description Renders the Google reCAPTCHA v2 widget (loader script + widget div) into a form.
+    Targets reCAPTCHA v2 (checkbox or invisible), which yields a binary pass/fail like the other
+    providers. reCAPTCHA v3 (score-based, invisible) is the separate captchas_recaptcha3 module.
+    Do NOT render v2 and v3 widgets on the same page: both use Google's api.js loader, which
+    cannot be loaded twice with different parameters.
+    Part of the captchas provider contract: dispatched via include by modules/captchas/widget.
+    NOTE on size 'invisible': this partial only renders the widget element — it does NOT
+    auto-execute it. Invisible v2 requires your own JS wiring (call grecaptcha.execute() on submit,
+    or bind the widget to your submit button) plus a callback to receive the token; without it the
+    form submits token-less and verification fails with token_missing. For an invisible flow
+    without custom JS, prefer the recaptcha3 or turnstile provider.
+  @param {string} site_key - reCAPTCHA v2 public site key.
+  @param {object} [options] - Widget options: theme (light|dark), size (normal|compact|invisible),
+    tabindex, callback (JS fn name), expired_callback, error_callback, badge (bottomright|bottomleft|inline,
+    for invisible), language (hl script param, applied on first load), class_name (extra CSS classes),
+    html_id (id attribute).
+{% enddoc %}
+{%- unless context.exports.captcha.recaptcha_script_loaded -%}
+<script src="https://www.google.com/recaptcha/api.js{% if options['language'] != blank %}?hl={{ options['language'] | url_encode }}{% endif %}" async defer></script>
+{%- assign recaptcha_script_loaded = true -%}
+{%- export recaptcha_script_loaded, namespace: 'captcha' -%}
+{%- endunless -%}
+<div class="g-recaptcha{% if options['class_name'] != blank %} {{ options['class_name'] | escape }}{% endif %}"{% if options['html_id'] != blank %} id="{{ options['html_id'] | escape }}"{% endif %} data-sitekey="{{ site_key | escape }}"{% if options['theme'] != blank %} data-theme="{{ options['theme'] | escape }}"{% endif %}{% if options['size'] != blank %} data-size="{{ options['size'] | escape }}"{% endif %}{% if options['tabindex'] != blank %} data-tabindex="{{ options['tabindex'] | escape }}"{% endif %}{% if options['callback'] != blank %} data-callback="{{ options['callback'] | escape }}"{% endif %}{% if options['expired_callback'] != blank %} data-expired-callback="{{ options['expired_callback'] | escape }}"{% endif %}{% if options['error_callback'] != blank %} data-error-callback="{{ options['error_callback'] | escape }}"{% endif %}{% if options['badge'] != blank %} data-badge="{{ options['badge'] | escape }}"{% endif %}></div>

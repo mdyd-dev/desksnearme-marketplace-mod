@@ -1,0 +1,150 @@
+/*
+  dialog window
+
+  layout
+  looks
+  content
+  backdrop
+*/
+
+
+
+@layer common-styling {
+
+  /*  layout
+  ============================================================================ */
+  .pos-dialog {
+    width: fit-content;
+    min-width: 400px;
+    height: fit-content;
+    margin: auto;
+    position: fixed;
+    inset: 0;
+    overflow: auto;
+  }
+
+    @media (max-width: 500px) {
+      .pos-dialog {
+        width: calc(100vw - 2 * var(--pos-padding-page));
+        min-width: 0;
+      }
+    }
+
+
+  /*  looks
+  ============================================================================ */
+  .pos-dialog[open] {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .pos-dialog {
+    max-width: 600px;
+    max-height: calc(100vh - 6 * var(--pos-padding-page));
+    padding: var(--pos-padding-card);
+
+    opacity: 0;
+    border-radius: var(--pos-radius-card);
+    background-color: var(--pos-color-content-background);
+    box-shadow: var(--pos-shadow-popover);
+
+    scale: 0;
+
+    transition:
+        opacity .3s var(--pos-transition-ui-detail),
+        scale .3s var(--pos-transition-ui-detail),
+        overlay 7s ease-out allow-discrete,
+        display 7s ease-out allow-discrete;
+  }
+
+  @starting-style {
+    .pos-dialog[open] {
+        opacity: 0;
+        scale: 0;
+    }
+  }
+
+
+  /*  content
+  ============================================================================ */
+  .pos-dialog-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    margin-block-end: var(--pos-gap-section-elements);
+  }
+
+    .pos-dialog-header-simple {
+      margin-block-end: -1rem;
+      justify-content: flex-end;
+    }
+
+    .pos-dialog-header .pos-heading-2 {
+      margin-block-start: -.3em;
+    }
+
+    .pos-dialog-header .pos-dialog-close {
+        width: 1.5rem;
+        height: 1.5rem;
+        padding-block-start: .2em;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+
+        cursor: pointer;
+        border-radius: var(--pos-radius-button);
+
+        transition: scale .2s var(--pos-transition-ui-detail);
+    }
+
+    .pos-dialog-header .pos-dialog-close:hover {
+        color: var(--pos-color-interactive-hover);
+    }
+
+    .pos-dialog-header .pos-dialog-close:active {
+        scale: .9;
+    }
+
+    .pos-dialog-header .pos-dialog-close:focus-visible {
+        outline: 2px solid var(--pos-color-focused);
+        outline-offset: 2px;
+    }
+
+  .pos-dialog-header .pos-label {
+    position: absolute;
+    left: -200vw;
+  }
+
+  .pos-dialog-actions {
+    margin-block-start: var(--pos-gap-section-elements);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pos-gap-button-button);
+    justify-content: center;
+  }
+
+
+  /*  backdrop
+  ============================================================================ */
+  .pos-dialog::backdrop {
+    background-color: transparent;
+    transition:
+        display .7s allow-discrete,
+        overlay .7s allow-discrete,
+        background-color .3s,
+        backdrop-filter .3s var(--pos-transition-ui-detail);
+  }
+
+  .pos-dialog:open::backdrop {
+    background-color: color-mix(in srgb, var(--pos-color-page-background) 70%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  @starting-style {
+    .pos-dialog:open::backdrop {
+        background-color: transparent;
+    }
+  }
+
+
+}

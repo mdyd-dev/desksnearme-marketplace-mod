@@ -1,0 +1,9 @@
+{% doc %}
+  @param {string} key - The session key to write
+  @param value - The value to store; any type, serialized with the json filter
+{% enddoc %}
+{% liquid
+  assign value = value | json
+  graphql _ = 'modules/core/session/set', name: key, value: value
+  return true
+%}

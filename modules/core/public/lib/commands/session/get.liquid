@@ -1,0 +1,15 @@
+{% doc %}
+  @param {boolean} clear - If true, clear the session value after reading
+  @param {string} key - The translation key for the error message
+{% enddoc %}
+{% liquid
+  if context.session[key] != blank
+    assign value = context.session[key] | parse_json
+    if clear
+      graphql _ = 'modules/core/session/delete', name: key
+    endif
+
+    return value
+  endif
+  return null
+%}

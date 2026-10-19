@@ -1,0 +1,36 @@
+---
+slug: passwords
+method: post
+---
+{% liquid
+  assign input = context.params.password
+  assign redirect_url = context.params.redirect_to | default: '/'
+  assign input.user_id = context.session.reset_password_session_user_id
+
+  function object = 'modules/user/commands/passwords/create', object: input
+  if object.valid
+    assign user_id = context.session.reset_password_session_user_id
+    session reset_password_session_user_id = null
+
+    function res = 'modules/user/commands/session/create', validate_password: false, email: null, password: null, hook_params: null, skip_otp: null, user_id: user_id
+
+    if res.email_verification_required
+      comment
+        Reaching this line means the reset link in this person's inbox was
+        followed and a new password set, which is the same proof of control over
+        the address that the verification link asks for. Without confirming it
+        here the sign_in above is skipped and they land back on the site
+        without a session, and with nothing explaining why.
+      endcomment
+      function user = 'modules/user/queries/user/load', id: user_id
+      function profile = 'modules/user/queries/profiles/find', user_id: user_id, id: null, uuid: null, first_name: null, last_name: null
+      function _ = 'modules/user/commands/email_verifications/confirm', user: user, profile: profile
+
+      function res = 'modules/user/commands/session/create', validate_password: false, email: null, password: null, hook_params: null, skip_otp: null, user_id: user_id
+    endif
+
+    redirect_to redirect_url
+  else
+    render 'modules/user/passwords/new', context: context, errors: object.errors
+  endif
+%}

@@ -1,0 +1,41 @@
+{% doc %}
+  Target of the link in the verification email.
+
+  A valid link signs the user in, so possession of the mailbox is enough to
+  obtain a session. That is the same trust model as the password reset link
+  this module already ships.
+{% enddoc %}
+{% liquid
+  function enabled = 'modules/user/helpers/email_verification_enabled'
+
+  unless enabled
+    redirect_to '/'
+    break
+  endunless
+
+  function object = 'modules/user/commands/email_verifications/verify', token: context.params.token, email: context.params.email
+
+  unless object.valid
+    render 'modules/user/users/verification_expired', context: context, email: context.params.email
+    break
+  endunless
+
+  if object.already_verified
+    function _ = 'modules/user/helpers/flash', info: 'modules/user/email_verification.already_confirmed', error: null, notice: null, force_clear: null
+  else
+    function _ = 'modules/user/helpers/flash', notice: 'modules/user/email_verification.confirmed', error: null, info: null, force_clear: null
+  endif
+
+  function res = 'modules/user/commands/session/create', user_id: object.user.id, validate_password: false, email: null, password: null, hook_params: null, skip_otp: null
+
+  comment
+    A user who verifies while 2FA is configured still has to pass the second
+    factor, so send them to the login form rather than signing them in.
+  endcomment
+  if res.otp_required
+    redirect_to '/sessions/new'
+    break
+  endif
+
+  redirect_to '/'
+%}

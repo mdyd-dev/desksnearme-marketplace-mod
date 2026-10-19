@@ -1,0 +1,100 @@
+/*
+  restyling uppy
+
+  dashboard
+*/
+
+
+/* dashboard
+============================================================================ */
+.uppy-Dashboard-inner {
+  border-color: var(--pos-color-frame);
+  border-radius: var(--pos-radius-panel);
+  background-color: var(--pos-color-highlight-background);
+}
+
+[data-uppy-drag-drop-supported=true] .uppy-Dashboard-AddFiles {
+  border-color: var(--pos-color-frame);
+  border-radius: var(--pos-radius-panel);
+}
+
+.uppy-Dashboard-dropFilesHereHint {
+  border-color: var(--pos-color-interactive-active);
+  border-radius: var(--pos-radius-panel);
+
+  color: inherit;
+}
+
+.uppy-Dashboard-AddFilesPanel {
+  box-shadow: none;
+  background-color: color-mix(in srgb, var(--pos-color-content-background) 50%, transparent 50%);
+  background-image: none;
+  backdrop-filter: blur(7px);
+}
+
+.uppy-Dashboard-AddFiles-title {
+  font-weight: 400;
+  color: var(--pos-color-highlight-text);
+}
+
+  .uppy-Dashboard-AddFiles-title button {
+    font-weight: 400;
+  }
+
+.uppy-Dashboard-browse,
+.uppy-DashboardContent-back,
+.uppy-DashboardContent-save,
+.uppy-DashboardContent-addMore {
+  color: var(--pos-color-interactive);
+}
+
+  .uppy-Dashboard-browse:hover,
+  .uppy-DashboardContent-back:hover,
+  .uppy-DashboardContent-save:hover,
+  .uppy-DashboardContent-addMore:hover {
+    color: var(--pos-color-interactive-hover);
+  }
+
+  .uppy-Dashboard-browse:focus,
+  .uppy-DashboardContent-back:focus,
+  .uppy-DashboardContent-save:focus,
+  .uppy-DashboardContent-addMore:focus {
+    background-color: var(--pos-color-highlight-background);
+  }
+
+.uppy-DashboardContent-bar {
+  background-color: var(--pos-color-content-background);
+
+  color: var(--pos-color-content-text);
+}
+
+.uppy-size--md .uppy-Dashboard-Item-previewInnerWrap {
+  box-shadow: none;
+}
+
+.uppy-Dashboard-Item {
+  border-color: var(--pos-color-frame);
+}
+
+.uppy-Dashboard-Item-status {
+  color: var(--pos-color-content-text-supplementary);
+}
+
+.uppy-Dashboard-Item-action--remove {
+  width: 18px;
+  height: 18px;
+}
+
+.uppy-Dashboard-Item-action--remove path:first-child {
+  fill: var(--pos-color-important);
+
+  transition: fill .1s linear;
+}
+
+  .uppy-Dashboard-Item-action--remove:hover path:first-child {
+    fill: var(--pos-color-important-hover);
+  }
+
+.uppy-Dashboard-Item-progressIcon--circle circle {
+  r: 18px;
+}

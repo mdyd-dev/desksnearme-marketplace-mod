@@ -1,0 +1,46 @@
+{% doc %}
+  @description Availability gate for a captcha provider key. Returns true only when the key is
+    safe to build dispatch paths from, permitted by the optional CAPTCHA_ENABLED_PROVIDERS
+    allow-list (CSV of provider keys; when unset, any installed provider is allowed), and the
+    provider module modules/captchas_<key> is actually installed — probed via the
+    provider.name translation every provider module must ship. Guards every dynamic dispatch:
+    calling a partial in a module that is not installed raises a hard error, so no
+    modules/captchas_<key>/... path may be built for a key this helper rejected.
+  @param {string} provider - provider key to test (normalized here: trimmed, lowercased)
+  @param {string} [enabled_providers] - allow-list override for unit tests only; the public
+    verify command never forwards it, so external callers cannot inject it.
+  @returns {boolean} true when the provider may be dispatched to
+{% enddoc %}
+{% liquid
+  assign key = provider | strip | downcase
+
+  # Path-safety guard: the key is spliced into partial paths (modules/captchas_<key>/...),
+  # and callers demonstrably wire the provider param to user input. Also rejects blank.
+  assign key_is_safe = key | matches: '^[a-z0-9_]+$'
+  unless key_is_safe
+    return false
+  endunless
+
+  # Optional allow-list: exact match after split — `contains` on the raw string would
+  # substring-match, e.g. 'foo' would wrongly pass a list containing only 'foobar'.
+  assign csv = enabled_providers | default: context.constants.CAPTCHA_ENABLED_PROVIDERS
+  if csv != blank
+    assign enabled_list = csv | downcase | replace: ' ', '' | split: ','
+    unless enabled_list contains key
+      return false
+    endunless
+  endif
+
+  # Installation probe: every provider module ships the modules/captchas_<key>/provider.name
+  # translation (part of the provider contract). For a missing module the t filter returns
+  # the '' default instead.
+  assign probe_key = 'modules/captchas_' | append: key | append: '/provider.name'
+  assign probe = probe_key | t: default: ''
+  if probe == blank
+    assign warning = 'modules/captchas: provider ' | append: key | append: ' requested but module captchas_' | append: key | append: ' is not installed (or ships no provider.name translation)'
+    log warning, type: 'error'
+    return false
+  endif
+
+  return true
+%}

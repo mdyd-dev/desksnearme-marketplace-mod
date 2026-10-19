@@ -1,0 +1,10 @@
+pl:
+  errors:
+    token_missing: Zadanie captcha nie zostało ukończone. Spróbuj ponownie.
+    secret_missing: Captcha nie jest poprawnie skonfigurowana (brak klucza tajnego).
+    unsupported_provider: Wybrany dostawca captcha nie jest obsługiwany.
+    verification_failed: Weryfikacja captcha nie powiodła się. Spróbuj ponownie.
+    request_failed: Nie można połączyć się z usługą weryfikacji captcha. Spróbuj ponownie.
+    low_score: Weryfikacja captcha nie powiodła się (podejrzany wynik aktywności). Spróbuj ponownie.
+    action_mismatch: Weryfikacja captcha nie powiodła się (nieoczekiwana akcja). Spróbuj ponownie.
+    hostname_mismatch: Weryfikacja captcha nie powiodła się (nieoczekiwana domena). Spróbuj ponownie.

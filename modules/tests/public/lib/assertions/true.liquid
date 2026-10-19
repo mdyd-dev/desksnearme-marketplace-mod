@@ -1,0 +1,16 @@
+{% doc %}
+  @param {object} contract - test contract object tracking results
+  @param {object} object - object containing the field to check
+  @param {string} field_name - name of the field being tested
+  @param [value] - value to check for truthiness; any type
+{% enddoc %}
+{% liquid
+  assign contract.total = contract['total'] | plus: 1
+
+  assign value = value | default: object[field_name]
+  unless value
+    function contract = 'modules/tests/helpers/register_error', contract: contract, field_name: field_name, key: 'modules/tests/should.be_true', message: null
+  endunless
+
+  return contract
+%}

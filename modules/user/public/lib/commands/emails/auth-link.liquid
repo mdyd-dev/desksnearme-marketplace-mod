@@ -1,0 +1,26 @@
+---
+metadata:
+  parameters:
+    object:
+    - url
+    - email
+    - id
+---
+{% liquid
+  assign from = 'modules/user/emails.from_email' | t: default: 'noreply@platformos.com'
+  assign subject = 'modules/user/emails.passwords.reset.subject' | t
+  assign object = {
+    "to": object.email,
+    "from": from,
+    "subject": subject,
+    "partial": "modules/user/emails/passwords/reset",
+    "layout": null,
+    "data": {
+      "url": object.url,
+      "user": { "id": object.id }
+    }
+  }
+
+  function object = 'modules/core/commands/email/send', object: object
+  return object
+%}

@@ -1,0 +1,10 @@
+{% doc %}
+  @description Provider config for Google reCAPTCHA v2. Part of the captchas provider
+    contract: returns a hash with at least response_field — the form field the widget
+    writes the token into (reCAPTCHA's default hidden input).
+  @returns {object} config hash: { response_field }
+{% enddoc %}
+{% liquid
+  assign config = {"response_field": "g-recaptcha-response"}
+  return config
+%}

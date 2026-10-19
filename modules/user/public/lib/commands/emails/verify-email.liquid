@@ -1,0 +1,28 @@
+---
+metadata:
+  parameters:
+    object:
+    - url
+    - email
+    - id
+    - ttl_hours
+---
+{% liquid
+  assign from = 'modules/user/emails.from_email' | t: default: 'noreply@platformos.com'
+  assign subject = 'modules/user/emails.users.verify.subject' | t
+  assign object = {
+    "to": object.email,
+    "from": from,
+    "subject": subject,
+    "partial": "modules/user/emails/users/verify",
+    "layout": null,
+    "data": {
+      "url": object.url,
+      "ttl_hours": object.ttl_hours,
+      "user": { "id": object.id }
+    }
+  }
+
+  function object = 'modules/core/commands/email/send', object: object
+  return object
+%}

@@ -1,0 +1,10 @@
+{% doc %}
+  @param {string} id - The record ID
+{% enddoc %}
+{% liquid
+
+  graphql g = 'modules/user/user/load', id: id
+  assign user = g.users.results.first
+
+  return user
+%}

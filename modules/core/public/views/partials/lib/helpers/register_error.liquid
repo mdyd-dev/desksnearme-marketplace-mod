@@ -1,0 +1,26 @@
+{% doc %}
+  @param {object} contract - The contract object for collecting errors
+  @param {string} field_name - The name of the field to validate
+  @param {string} [key] - The translation key for the error message
+  @param {string} [message] - Custom error message override
+{% enddoc %}
+{% liquid
+  assign key = key | default: null
+  assign message = message | default: null
+  if key
+    assign msg = key | t
+  else
+    assign msg = message
+  endif
+
+  assign errors = contract.errors
+
+  assign default = []
+  assign field_errors = errors[field_name] | default: default
+  assign field_errors << msg
+
+  assign errors[field_name] = field_errors
+  assign contract.valid = false
+
+  return contract
+%}

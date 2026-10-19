@@ -1,0 +1,86 @@
+/*
+  tag / chip component
+
+  tag list
+  basic
+  confirmation
+  warning
+  important
+  interactive
+*/
+
+
+@layer common-styling {
+
+    /* tag list
+    ============================================================================ */
+    .pos-tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--pos-gap-tag-tag);
+    }
+
+    /* basic
+    ============================================================================ */
+    .pos-tag {
+      min-height: 1.5rem;
+      padding: .33em 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+  
+      border-radius: var(--pos-radius-tag);
+      background-color: var(--pos-color-page-background);
+
+      text-transform: uppercase;
+      line-height: 0;
+      font-size: .75rem;
+    }
+
+    .pos-tag svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+
+    /* confirmation
+    ============================================================================ */
+    .pos-tag.pos-tag-confirmation {
+      background-color: var(--pos-color-confirmation-disabled);
+    }
+
+
+    /* warning
+    ============================================================================ */
+    .pos-tag.pos-tag-warning {
+      background-color: var(--pos-color-warning-disabled);
+    }
+
+
+    /* error
+    ============================================================================ */
+    .pos-tag.pos-tag-important {
+      background-color: var(--pos-color-important-disabled);
+    }
+
+    /* interactive
+    ============================================================================ */
+    .pos-tag.pos-tag-interactive {
+      background-color: var(--pos-color-interactive);
+      cursor: pointer;
+
+      color: var(--pos-color-content-inverted-text);
+    }
+
+    a.pos-tag-interactive:hover,
+    button.pos-tag-interactive:hover {
+      background-color: var(--pos-color-interactive-hover);
+    }
+
+    a.pos-tag-interactive:focus-visible,
+    button.pos-tag-interactive:focus-visible {
+      outline: 2px solid var(--pos-color-focused);
+      outline-offset: 2px;
+    }
+  
+  }

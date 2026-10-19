@@ -1,0 +1,31 @@
+{% doc %}
+  Confirms a verification link and marks the address as verified.
+
+  Returns an object carrying `user` on success. `already_verified` is set when
+  the link was valid but the profile was confirmed earlier, so the caller can
+  say so instead of showing an error - following the same link twice is a
+  normal thing for a mail client to do.
+
+  @param {string} email - The email address the token was issued for
+  @param {string} token - The token from the verification link
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/email_verifications/verify/build', email: email, token: token
+  function object = 'modules/user/commands/email_verifications/verify/check', object: object
+
+  unless object.valid
+    return object
+  endunless
+
+  assign profile = object.profile
+
+  if profile.email_verified_at != blank
+    assign object.already_verified = true
+    return object
+  endif
+
+  function confirmation = 'modules/user/commands/email_verifications/confirm', user: object.user, profile: profile
+  assign object.hook_results = confirmation.hook_results
+
+  return object
+%}

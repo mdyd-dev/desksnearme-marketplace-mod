@@ -1,0 +1,15 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {string} id - The record ID
+  @param {number} [limit] - Maximum number of results
+  @param {string} not_ids - List of record IDs to exclude
+  @param {number} page - Page number for pagination
+  @param {string} sort - Sort order
+{% enddoc %}
+{% liquid
+  assign limit = limit | default: 20
+  assign page = page | to_positive_integer: 1
+
+  graphql r = 'modules/user/user/search', id: id, not_ids: not_ids, email: email, page: page, limit: limit, sort: sort
+  return r.users
+%}

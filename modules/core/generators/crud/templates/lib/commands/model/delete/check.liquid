@@ -1,0 +1,10 @@
+{% liquid
+  assign c = { "valid": true, "errors": {} }
+
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'id'
+
+  assign object.valid = c.valid
+  assign object.errors = c.errors
+
+  return object
+%}

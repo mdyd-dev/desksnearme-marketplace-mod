@@ -1,0 +1,9 @@
+{% doc %}
+  @param {number} offset
+{% enddoc %}
+{% liquid
+  function timezones = 'modules/core/helpers/timezone/get_all'
+  assign timezone = timezones | array_detect: formatted_offset: offset
+
+  return timezone
+%}

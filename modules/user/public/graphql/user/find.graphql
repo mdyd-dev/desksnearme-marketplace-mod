@@ -1,0 +1,26 @@
+query (
+  $id: ID
+  $email: String
+  $with_token: Boolean = false
+  $expires_in: Float = 48
+  $limit: Int = 1
+) {
+  users(
+    per_page: $limit,
+    filter: {
+      id: { value: $id }
+      email: { value: $email }
+    }
+  ) {
+    results {
+      created_at
+      email
+      id
+      # temporary_token takes its lifetime in HOURS. The deprecated `valid_for`
+      # argument is deliberately not used: the platform resolves the lifetime as
+      # `valid_for || expires_in || 48`, so declaring `valid_for` with a default
+      # here silently overrode every expires_in a caller passed.
+      token: temporary_token(expires_in: $expires_in) @include(if: $with_token)
+    }
+  }
+}

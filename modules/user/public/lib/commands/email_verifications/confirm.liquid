@@ -1,0 +1,40 @@
+{% doc %}
+  Records that control of an address has been established, and tells the
+  application about it.
+
+  Every path that proves someone holds a mailbox funnels through here - the
+  verification link, a completed password reset, an OAuth sign-up - so
+  hook_user_email_verified and the user_email_verified event fire exactly once
+  per address regardless of which proof arrived. An application that moved work
+  off user_created onto that event would otherwise silently skip the users who
+  arrived by any route but the link.
+
+  Does nothing for an already confirmed profile, so it is safe to call on a path
+  that may run more than once.
+
+  @param {object} user - The user whose address was confirmed
+  @param {object} profile - The user's profile
+{% enddoc %}
+{% liquid
+  assign result = { "confirmed": false, "hook_results": null }
+
+  if profile.id == blank or user.id == blank
+    return result
+  endif
+
+  if profile.email_verified_at != blank
+    return result
+  endif
+
+  function _ = 'modules/user/commands/profiles/mark_email_verified', object: profile
+
+  assign params = { "user": user, "profile": profile }
+  function results = 'modules/core/commands/hook/fire', hook: 'user_email_verified', params: params, merge_to_object: null
+
+  assign event_payload = { "user_id": user.id }
+  function _ = 'modules/core/commands/events/publish', type: 'user_email_verified', object: event_payload, delay: null, max_attempts: null
+
+  assign result = { "confirmed": true, "hook_results": results }
+
+  return result
+%}

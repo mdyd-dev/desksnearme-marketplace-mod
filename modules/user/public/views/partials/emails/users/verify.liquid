@@ -1,0 +1,25 @@
+<h1 class="title">{{ 'modules/user/emails.users.verify.title' | t }}</h1>
+
+<p>{{ 'modules/user/emails.users.verify.content' | t }}</p>
+
+<table class="card cta">
+  <tr>
+    <td>
+
+      <h2 class="subtitle">{{ 'modules/user/emails.users.verify.cta' | t }}</h2>
+
+      <a href="{{ data.url }}" class="button">
+        {{ 'modules/user/emails.users.verify.cta_button' | t }}
+      </a>
+
+    </td>
+  </tr>
+</table>
+
+<p>{{ 'modules/user/emails.users.verify.expires' | t: hours: data.ttl_hours }}</p>
+
+<p>{{ 'modules/user/emails.users.verify.fallback' | t }}<br>
+  <a href="{{ data.url }}">{{ data.url }}</a>
+</p>
+
+<p>{{ 'modules/user/emails.users.verify.ignore' | t }}</p>

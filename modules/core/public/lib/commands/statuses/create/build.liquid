@@ -1,0 +1,21 @@
+{% doc %}
+  @param {string} name - The name identifier
+  @param {object} payload - The payload data
+  @param {string} reference_id - The reference record ID
+  @param {string} requester_id - The ID of the requester
+  @param {string} reference_schema - The reference schema name
+  @param {string} [timestamp] - The timestamp
+{% enddoc %}
+{% liquid
+  assign timestamp = timestamp | default: 'now' | to_time
+  assign object = {
+    "name": name,
+    "timestamp": timestamp,
+    "reference_id": reference_id,
+    "reference_schema": reference_schema,
+    "payload": payload,
+    "requester_id": requester_id
+  }
+
+  return object
+%}

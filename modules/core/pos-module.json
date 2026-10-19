@@ -1,0 +1,6 @@
+{
+  "machine_name": "core",
+  "version": "2.1.11",
+  "name": "Pos Module Core",
+  "dependencies": {}
+}

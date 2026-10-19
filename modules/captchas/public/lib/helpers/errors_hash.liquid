@@ -1,0 +1,15 @@
+{% doc %}
+  @description Return a hash that is safe to pass to the hash_merge filter. platformOS's `empty`
+    literal (and nil) are NOT hashes, so the idiom `object.errors | default: empty` followed by
+    `hash_merge` raises "first argument must be a hash". This normalizes any nil / empty / EmptyDrop
+    errors value to a real, mergeable empty hash, while preserving an already-populated hash.
+  @param {object} [errors] - existing errors container; may be nil, empty, or a populated hash.
+  @returns {object} a real hash, safe for the hash_merge filter.
+{% enddoc %}
+{% liquid
+  assign result = errors
+  if result == blank
+    assign result = {}
+  endif
+  return result
+%}

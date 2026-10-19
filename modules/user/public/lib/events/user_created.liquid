@@ -1,0 +1,15 @@
+---
+metadata:
+  event:
+    user_id
+---
+{% doc %}
+  @param {object} event - The event object
+{% enddoc %}
+{% liquid
+  assign c = { "errors": {}, "valid": true }
+
+  function c = 'modules/core/validations/presence', c: c, object: event, field_name: 'user_id'
+
+  return c
+%}

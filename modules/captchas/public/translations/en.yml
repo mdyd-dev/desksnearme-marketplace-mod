@@ -1,0 +1,10 @@
+en:
+  errors:
+    token_missing: The captcha challenge was not completed. Please try again.
+    secret_missing: Captcha is not configured correctly (missing secret key).
+    unsupported_provider: The selected captcha provider is not supported.
+    verification_failed: Captcha verification failed. Please try again.
+    request_failed: Could not reach the captcha verification service. Please try again.
+    low_score: Captcha verification failed (suspicious activity score). Please try again.
+    action_mismatch: Captcha verification failed (unexpected action). Please try again.
+    hostname_mismatch: Captcha verification failed (unexpected domain). Please try again.

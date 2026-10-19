@@ -1,0 +1,17 @@
+{% doc %}
+  @param {string} id - The record ID
+{% enddoc %}
+{% liquid
+  graphql user = 'modules/user/user/delete', id: id
+
+  unless user.errors
+    assign params = { "user": user.user }
+    function results = 'modules/core/commands/hook/fire', hook: 'user_delete', params: params, merge_to_object: null
+    assign user.hook_results = results
+
+    assign event_payload = {"user_id": id}
+    function _ = 'modules/core/commands/events/publish', type: 'user_deleted', object: event_payload, delay: null, max_attempts: null
+  endunless
+
+  return user
+%}

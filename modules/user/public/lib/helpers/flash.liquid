@@ -1,0 +1,28 @@
+{% doc %}
+  @param {string} error - The error flash message
+  @param {boolean} [force_clear] - If true, clear flash messages immediately
+  @param {string} info - The info flash message
+  @param {string} notice - The notice flash message
+{% enddoc %}
+{% liquid
+  assign error = error
+  assign notice = notice
+  assign info = info
+  assign force_clear = force_clear | default: false
+
+  if error
+    assign message = error | t
+    assign severity = 'error'
+  elsif notice
+    assign message = notice | t
+    assign severity = 'success'
+  elsif info
+    assign message = info | t
+    assign severity = 'info'
+  endif
+  assign flash = {"message": message, "severity": severity, "from": context.location.pathname, "force_clear": force_clear}
+
+  function _ = 'modules/core/commands/session/set', key: 'sflash', value: flash
+
+  return null
+%}

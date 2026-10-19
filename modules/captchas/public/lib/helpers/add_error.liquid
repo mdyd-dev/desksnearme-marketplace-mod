@@ -1,0 +1,24 @@
+{% doc %}
+  @description Append a translated error message for a field to an errors hash. Mirrors
+    modules/core/helpers/register_error: the message is translated at set time, so object.errors
+    holds ready-to-display strings — callers can pass them straight to
+    modules/common-styling/forms/error_list, which renders each entry raw. Appends rather than
+    replaces, so several errors can accumulate on the same field.
+  @param {object} [errors] - existing errors container; may be nil, empty, or a populated hash.
+  @param {string} field_name - the field the error belongs to (token, secret, provider, captcha).
+  @param {string} key - translation key, e.g. 'modules/captchas/errors.token_missing'. Module
+    translation keys are auto-prefixed, so the modules/captchas/ prefix is required — including
+    from provider modules, which store this module's error messages.
+  @returns {object} the errors hash with the translated message appended under field_name.
+{% enddoc %}
+{% liquid
+  function result = 'modules/captchas/helpers/errors_hash', errors: errors
+  assign message = key | t
+
+  assign empty_list = []
+  assign field_errors = result[field_name] | default: empty_list
+  assign field_errors << message
+  assign result[field_name] = field_errors
+
+  return result
+%}

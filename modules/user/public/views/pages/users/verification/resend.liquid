@@ -1,0 +1,33 @@
+---
+method: post
+slug: users/verification/resend
+---
+{% doc %}
+  Sends another verification email.
+
+  The response is the same whether or not anything was sent - see
+  commands/email_verifications/create.
+{% enddoc %}
+{% liquid
+  function enabled = 'modules/user/helpers/email_verification_enabled'
+
+  unless enabled
+    redirect_to '/'
+    break
+  endunless
+
+  assign email = context.params.email
+
+  comment
+    Unlike registration this endpoint renders its own widget (see
+    partials/users/check_email), so it is the one caller that asks for the
+    captcha answer to be checked.
+  endcomment
+  function _ = 'modules/user/commands/email_verifications/create', email: email, host: context.location.host, hcaptcha_params: context.params, verify_hcaptcha: true
+
+  function _ = 'modules/user/helpers/flash', notice: 'modules/user/email_verification.check_email.resent', error: null, info: null, force_clear: null
+
+  assign encoded_email = email | url_encode
+  assign target = '/users/check-email?email=' | append: encoded_email
+  redirect_to target
+%}

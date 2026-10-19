@@ -1,0 +1,14 @@
+{% doc %}
+  @param {string} name - The name identifier
+  @param {string} type - The type identifier
+{% enddoc %}
+{% liquid
+  function modules = 'modules/core/queries/registry/search', type: type
+  assign module = modules | array_detect: machine_name: name
+
+  if module
+    return true
+  endif
+
+  return false
+%}

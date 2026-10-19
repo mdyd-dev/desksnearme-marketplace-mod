@@ -1,0 +1,14 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {string} field_name - The name of the field to validate
+  @param {object} object - The object to process
+  @param {string} [key] - The translation key for the error message
+{% enddoc %}
+{% liquid
+  log 'Use modules/core/validations/presence instead of modules/core/lib/validations/presence ', type: 'DEPRECATION'
+  if object[field_name] == blank
+    assign key = key | default: "modules/core/validation.blank"
+    function c = 'modules/core/lib/helpers/register_error', contract: c, field_name: field_name, key: key, message: null
+  endif
+  return c
+%}

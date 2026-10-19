@@ -1,0 +1,32 @@
+<article id="initialization">
+  <h2 class="pos-heading-2">Initialization</h2>
+  <div class="styleguide-columns">
+    <div>
+      <p>All of the following CSS (except CSS custom properties) are scoped to container that uses <code>pos-app</code> class. You can apply this class to the root <code>html</code> tag to style your entire app, or add it to a specific container to limit the scope.</p>
+{% capture code %}{% raw %}
+<html class="pos-app">
+…
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+
+      <h3 class="pos-heading-4 styleguide-heading-4">Dark mode</h3>
+      <p>To enable dark mode, add the <code>pos-theme-darkEnabled</code> class to the same container. This will switch the theme automatically based on the user’s system settings. If you want to force dark mode manually, use the <code>pos-theme-dark</code> class instead.</p>
+{% capture code %}{% raw %}
+<html class="pos-app pos-theme-darkEnabled">
+…
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+    <div>
+      <dl class="styleguide-details styleguide-details-highlighted">
+        <dt>Initialize common styling class</dt><dd><code>pos-app</code></dd>
+        <dt>Enable automatic dark mode class</dt><dd><code>pos-theme-darkEnabled</code></dd>
+        <dt>Manually turn on dark theme class</dt><dd><code>pos-theme-dark</code></dd>
+      </dl>
+    </div>
+  </div>
+</article>

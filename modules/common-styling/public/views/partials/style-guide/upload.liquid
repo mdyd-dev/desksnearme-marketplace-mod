@@ -1,0 +1,99 @@
+<article id="upload">
+  <h2 class="pos-heading-2">File upload</h2>
+
+  <div class="styleguide-columns">
+    <div>
+      <div class="styleguide-example">
+        {% render 'modules/common-styling/forms/upload',
+          id: 'styleguide-upload-1',
+          presigned_upload: context.presigned_upload,
+          name: 'styleguide-upload-1',
+          image_editor_enabled: null,
+          allowed_file_types: null,
+          max_number_of_files: null,
+          aspect_ratio: null,
+          files: null
+        %}
+      </div>
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/forms/upload',
+  id: 'styleguide-upload-1',
+  presigned_upload: presigned_upload,
+  name: 'styleguide-upload-1'
+%}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+
+    <div>
+      <div class="styleguide-example">
+        {% assign files =
+          [
+            {
+              "id": "1",
+              "file": {
+                "url": "https://cdn.staging.oregon.platform-os.com/instances/12434/property_uploads/uploads/upload/ba62e7f2-1217-4d5c-b599-531632062cd7/nowy.png"
+              }
+            },
+            {
+              "id": "2",
+              "file": {
+                "url": "https://cdn.staging.oregon.platform-os.com/instances/12434/property_uploads/uploads/upload/1dcf38fb-ae99-48a7-a587-5487e9494b41/test.txt"
+              }
+            }
+          ]
+        %}
+        {% render 'modules/common-styling/forms/upload',
+          id: 'styleguide-upload-2',
+          presigned_upload: context.presigned_upload,
+          name: 'styleguide-upload-2',
+          files: files,
+          image_editor_enabled: null,
+          allowed_file_types: null,
+          max_number_of_files: null,
+          aspect_ratio: null
+        %}
+      </div>
+{% capture code %}{% raw %}
+{% assign files =
+  [
+    {
+      "id": "1",
+      "file": {
+        "url": "https://cdn.staging.oregon.platform-os.com/instances/12434/property_uploads/uploads/upload/ba62e7f2-1217-4d5c-b599-531632062cd7/nowy.png"
+      }
+    },
+    {
+      "id": "2",
+      "file": {
+        "url": "https://cdn.staging.oregon.platform-os.com/instances/12434/property_uploads/uploads/upload/1dcf38fb-ae99-48a7-a587-5487e9494b41/test.txt"
+      }
+    }
+  ]
+%}
+
+{% render 'modules/common-styling/forms/upload',
+  id: 'styleguide-upload-2',
+  presigned_upload: presigned_upload,
+  name: 'styleguide-upload-2',
+  files: files
+%}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <dl class="styleguide-details">
+    <dt>name</dt><dd><i>string, required</i> name for the <code>&lt;input&gt;</code> with the URLs of uploaded images</dd>
+    <dt>presigned_upload</dt><dd><i>object, required</i> presigned upload data (upload url and payload) returned from a <code>property_upload_presigned_url</code> query</dd>
+    <dt>files</dt><dd><i>array of objects</i> files that were uploaded before and you want them to be shown as already uploaded, should be a result of querying <code>property_upload</code></dd>
+    <dt>image_editor_enabled</dt><dd><i>bool</i> if you want to allow editing of images inside the upload dashboard</dd>
+    <dt>allowed_file_types</dt><dd><i>array of strings</i> allowed file types, e.g. <code>['image/*', '.jpg', '.jpeg', '.png', '.gif']</code></dd>
+    <dt>max_number_of_files</dt><dd><i>int</i> total number of files that can be selected</dd>
+    <dt>aspect_ratio</dt><dd><i>float</i> aspect ratio for the image editor cropping tool, e.g. 1 for square, 1.78 for widescreen</dd>
+  </dl>
+</article>

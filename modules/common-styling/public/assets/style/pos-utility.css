@@ -1,0 +1,50 @@
+/*
+  utility classes for spacings and layout
+
+  headings
+*/
+
+
+@layer common-styling {
+
+  /* headings
+  ============================================================================ */
+  .pos-heading-with-action {
+    margin-block-end: var(--pos-gap-title-content);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--pos-gap-button-button);
+  }
+
+    .pos-heading-with-action small {
+      margin-inline-start: .2ch;
+      display: block;
+
+      line-height: 1.5em;
+      font-size: .8rem;
+      color: var(--pos-color-content-text-supplementary)
+    }
+
+
+
+  /* gaps
+  ============================================================================ */
+  .pos-gap-section-section {
+    gap: var(--pos-gap-section-section);
+  }
+
+  .pos-mt-section-section {
+    margin-block-start: var(--pos-gap-section-section);
+  }
+
+  .pos-gap-text-text {
+    gap: var(--pos-gap-text-text);
+  }
+
+  .pos-mt-text-text {
+    margin-block-start: var(--pos-gap-text-text);
+  }
+
+}

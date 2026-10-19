@@ -1,0 +1,9 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign verified_at = object.email_verified_at | default: 'now' | to_time | date: '%Y-%m-%dT%H:%M:%S%z'
+  assign data = { "id": object.id, "email_verified_at": verified_at }
+
+  return data
+%}

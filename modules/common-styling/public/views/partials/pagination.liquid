@@ -1,0 +1,64 @@
+{% doc %}
+  @param {number} total_pages - how many total pages available
+{% enddoc %}
+{% comment %}
+
+  numbered pagination with arrows if the number of pages is large
+
+  total pages - (int) how many total pages available
+
+{% endcomment %}
+
+
+{% liquid
+  assign current = context.location.search.page | to_positive_integer: 1
+
+  assign url = '?'
+  if context.location.search
+    assign query_string = context.location.search
+    assign _ = query_string | hash_delete_key: 'page'
+
+    if query_string.size > 0
+      assign query_string = query_string | querify
+      assign url = url | append: query_string | append: '&page='
+    else
+      assign url = url | append: 'page='
+    endif
+  endif
+%}
+
+{% if total_pages > 1 %}
+
+  <nav role="navigation" aria-label="Pagination Navigation" class="pos-pagination">
+
+    {% if current != 1 %}
+      <a href="{{ url }}{{ current | minus: 1 }}" title="Go to page {{ current | minus: 1 }}" class="pos-pagination-previous">
+        <span class="pos-label">Go to page {{ current | minus: 1 }}</span>
+        {% render 'modules/common-styling/icon', icon: 'dashLeft', class: null %}
+      </a>
+    {% endif %}
+
+    <ul>
+
+      {% for i in (1..total_pages) %}
+        <li>
+          {% if current == i %}
+            <a href="{{ url }}{{ i }}" aria-label="Current Page, Page {{ i }}" aria-current="true">{{ i }}</a>
+          {% else %}
+            <a href="{{ url }}{{ i }}" aria-label="Go to page {{ i }}">{{ i }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+
+    </ul>
+
+    {% if current != total_pages %}
+      <a href="{{ url }}{{ current | plus: 1 }}" title="Go to page {{ current | plus: 1 }}" class="pos-pagination-next">
+        <span class="pos-label">Go to page {{ current | plus: 1 }}</span>
+        {% render 'modules/common-styling/icon', icon: 'dashRight', class: null %}
+      </a>
+    {% endif %}
+
+  </nav>
+
+{% endif %}

@@ -1,0 +1,29 @@
+{
+  "name": "user",
+  "version": "1.0.4",
+  "description": "This module handles the user operations, assign users to roles and add permissions to roles.",
+  "scripts": {
+    "version": "(cd ../.. && pos-cli modules version --no-git && git add pos-module.json) && auto-changelog -p && git add CHANGELOG.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Platform-OS/pos-module-user.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Platform-OS/pos-module-user/issues"
+  },
+  "homepage": "https://github.com/Platform-OS/pos-module-user#readme",
+  "peerDependencies": {
+    "yeoman-generator": "^7.0.0"
+  },
+  "devDependencies": {
+    "auto-changelog": "^2.4.0"
+  },
+  "auto-changelog": {
+    "template": "changelog-template.hbs",
+    "unreleased": true,
+    "commitLimit": false
+  }
+}

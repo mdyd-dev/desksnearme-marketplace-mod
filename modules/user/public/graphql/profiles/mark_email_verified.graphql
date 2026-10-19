@@ -1,0 +1,17 @@
+mutation mark_email_verified(
+  $id: ID!
+  $email_verified_at: String!
+) {
+  record: record_update(
+    id: $id
+    record: {
+      table: "modules/user/profile"
+      properties: [
+        { name: "email_verified_at", value: $email_verified_at }
+      ]
+    }
+  ) {
+    id
+    email_verified_at: property(name: "email_verified_at")
+  }
+}

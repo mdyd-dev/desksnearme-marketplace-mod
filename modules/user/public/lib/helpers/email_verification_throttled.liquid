@@ -1,0 +1,53 @@
+{% doc %}
+  Whether a verification email to this profile should be suppressed.
+
+  Two limits, both configurable: a minimum gap between sends, and a cap per
+  rolling 24 hours. The count itself is restarted by
+  commands/profiles/mark_verification_sent once the previous send falls outside
+  that window, so the cap is a daily budget rather than a lifetime one; the
+  window check below also short-circuits a count left over from before.
+
+  Callers must respond identically whether or not this returns true - see
+  commands/email_verifications/create - otherwise the throttle itself becomes
+  an oracle for which addresses are registered.
+
+  @param {object} profile - The profile object
+{% enddoc %}
+{% liquid
+  if profile.id == blank
+    return false
+  endif
+
+  assign sent_at = profile.email_verification_sent_at
+
+  if sent_at == blank
+    return false
+  endif
+
+  assign interval = context.constants.USER_EMAIL_VERIFICATION_RESEND_INTERVAL | default: 60 | plus: 0
+  assign daily_max = context.constants.USER_EMAIL_VERIFICATION_RESEND_DAILY_MAX | default: 5 | plus: 0
+
+  assign now_epoch = 'now' | to_time | date: '%s' | plus: 0
+  assign sent_epoch = sent_at | to_time | date: '%s' | plus: 0
+  assign elapsed = now_epoch | minus: sent_epoch
+
+  if elapsed < interval
+    return true
+  endif
+
+  comment
+    Outside the 24h window the budget starts again, so a user who hit the cap
+    yesterday is not locked out today.
+  endcomment
+  if elapsed >= 86400
+    return false
+  endif
+
+  assign sent_count = profile.email_verification_sent_count | default: 0 | plus: 0
+
+  if sent_count >= daily_max
+    return true
+  endif
+
+  return false
+%}

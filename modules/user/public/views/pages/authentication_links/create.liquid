@@ -1,0 +1,33 @@
+---
+method: post
+slug: authentication_links
+---
+{% liquid
+  function object = 'modules/user/commands/authentication_links/create', email: context.params.authentication_link.email, host: context.location.host, hcaptcha_params: context.params, valid_for: null
+  if object.valid
+    function email = 'modules/user/commands/emails/auth-link', object: object
+    if email.valid
+      if object.email == 'change-password@example.com' and context.environment == 'staging'
+        echo object.url
+        break
+      endif
+
+      function _ = 'modules/user/helpers/flash', notice: 'modules/user/authentication_links.created', error: null, force_clear: null, info: null
+      redirect_to '/'
+    else
+      log email.errors, type: 'ERROR: authentication_links/create email'
+
+      function _ = 'modules/user/helpers/flash', notice: 'modules/user/authentication_links.something_went_wrong', error: null, force_clear: null, info: null
+      redirect_to '/'
+    endif
+  elsif object.token == blank
+    if context.environment == 'staging'
+      log object, type: 'DEBUG: reset-password-user-not-found'
+    endif
+
+    function _ = 'modules/user/helpers/flash', notice: 'modules/user/authentication_links.created', error: null, force_clear: null, info: null
+    redirect_to '/'
+  else
+    render 'modules/user/passwords/reset', context: context, errors: object.errors, values: null
+  endif
+%}

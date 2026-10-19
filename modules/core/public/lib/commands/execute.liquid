@@ -1,0 +1,17 @@
+{% doc %}
+  @param {string} mutation_name - The GraphQL mutation name
+  @param {object} object - The object to process
+  @param {string} [selection] - The GraphQL result selection key
+{% enddoc %}
+{% liquid
+  assign selection = selection | default: 'record'
+
+  graphql r = mutation_name, args: object
+  if r.errors
+    log r, type: "ERROR: modules/core/commands/execute"
+  endif
+
+  assign object = r[selection]
+  assign object.valid = true
+  return object
+%}

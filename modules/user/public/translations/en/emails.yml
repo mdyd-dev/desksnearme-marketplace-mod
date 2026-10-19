@@ -1,0 +1,27 @@
+en:
+  emails:
+    from_email: noreply@platformos.com
+    passwords:
+      reset:
+        subject: Reset password
+        title: Password reset request
+        cta: Reset password
+        cta_button: Go to reset password form
+        content: It seems that you requested a password reset. To proceed use the
+          following button.
+        ignore: If it wasn’t you who requested this just ignore this message.
+    users:
+      verify:
+        subject: Confirm your email address
+        title: You’re almost there
+        cta: Confirm your email
+        cta_button: Confirm my email address
+        content: Confirm this is your email address and your account is ready to
+          go.
+        expires: This link expires in %{hours} hours. If it does, you can request
+          a new one from the sign-in page.
+        fallback: 'Button not working? Paste this link into your browser:'
+        ignore: If you didn’t create an account, you can safely ignore this email
+          — nothing will happen.
+
+

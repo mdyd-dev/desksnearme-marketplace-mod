@@ -1,0 +1,10 @@
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+   if current_profile.user == null
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', default: null, error: null, format: null, info: null, notice: null, object: null, url: null
+    # platformos-check-enable DeprecatedTag
+  endif
+
+  render 'modules/user/users/email/edit', context: context, otp_enabled: current_profile.otp_configured, errors: null
+%}

@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "core": "2.1.11",
+    "common-styling": "1.38.11"
+  },
+  "devDependencies": {
+    "oauth_github": "0.0.14",
+    "tests": "1.3.6"
+  },
+  "registries": {
+    "oauth_github": "https://partners.platformos.com",
+    "tests": "https://partners.platformos.com",
+    "core": "https://partners.platformos.com",
+    "common-styling": "https://partners.platformos.com"
+  }
+}

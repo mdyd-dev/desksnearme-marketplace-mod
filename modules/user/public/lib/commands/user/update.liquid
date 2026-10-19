@@ -1,0 +1,32 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {object} hook_params - Additional parameters to pass to hooks
+  @param {string} id - The record ID
+  @param {string} password - The password
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/user/update/build', id: id, email: email, password: password
+  function object = 'modules/user/commands/user/update/check', object: object
+
+  if object.valid
+    graphql user = 'modules/user/user/update', args: object
+    assign object.update_result = user
+    unless user.errors
+      assign params = { "updated_user": user.user, "hook_params": hook_params }
+      function results = 'modules/core/commands/hook/fire', hook: 'user_update', params: params, merge_to_object: true
+      for result in results
+        if result[1].valid == false or result[1].errors != blank
+          assign object.valid = false
+          assign object.errors = result[1].errors
+          break
+        endif
+      endfor
+      assign object.hook_results = results
+    endunless
+
+    assign event_payload = {"user_id": object.id}
+    function _ = 'modules/core/commands/events/publish', type: 'user_updated', object: event_payload, delay: null, max_attempts: null
+  endif
+
+  return object
+%}

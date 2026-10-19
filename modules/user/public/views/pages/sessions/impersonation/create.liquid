@@ -1,0 +1,45 @@
+---
+slug: sessions/impersonations(/:user_id)
+method: post
+---
+{% comment %}
+  The id segment is optional - note the parentheses - so both
+  POST /sessions/impersonations/123 and a POST to /sessions/impersonations that
+  submits user_id as a field reach this page. Either way it arrives as
+  context.params.user_id.
+
+  Written as sessions/impersonations/:user_id the segment is required, and the
+  form the module's own example app uses - a select, which cannot put the id in
+  the path - got a 404 on any instance with slug_exact_match enabled, the default
+  for new instances.
+{% endcomment %}
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  function user_to_impersonate = 'modules/user/queries/user/load', id: context.params.user_id
+
+  if user_to_impersonate
+    if user_to_impersonate.roles contains 'superadmin'
+      assign permission = 'users.impersonate_superadmin'
+    else
+      assign permission = 'users.impersonate'
+    endif
+
+    # platformos-check-disable UnreachableCode
+    # platformos-check-disable DeprecatedTag
+    include 'modules/user/helpers/can_do_or_unauthorized', do: permission, requester: current_profile, access_callback: null, anonymous_return_to: null, entity: null, forbidden_partial: null, redirect_anonymous_to_login: null
+    # platformos-check-enable DeprecatedTag
+    # platformos-check-enable UnreachableCode
+
+    function impersonate_user = 'modules/user/commands/session/impersonation/create', current_user_id: context.current_user.id, user: user_to_impersonate
+
+    if impersonate_user.valid
+      # platformos-check-disable DeprecatedTag
+      include 'modules/core/helpers/redirect_to', default: null, error: null, format: null, info: null, notice: null, object: null, url: null
+      # platformos-check-enable DeprecatedTag
+    else
+      print "Something went wrong."
+    endif
+  else
+    print "Something went wrong."
+  endif
+%}

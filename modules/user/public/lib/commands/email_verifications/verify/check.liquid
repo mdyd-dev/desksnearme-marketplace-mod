@@ -1,0 +1,16 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign c = { "errors": {}, "valid": true }
+
+  if object.user.id == blank or object.profile.id == blank
+    assign message = 'modules/user/email_verification.expired_link' | t
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: 'token', message: message
+  endif
+
+  assign object.valid = c.valid
+  assign object.errors = c.errors
+
+  return object
+%}

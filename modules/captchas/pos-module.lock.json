@@ -1,0 +1,9 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "tests": "1.3.6"
+  },
+  "registries": {
+    "tests": "https://partners.platformos.com"
+  }
+}

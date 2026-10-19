@@ -1,0 +1,19 @@
+---
+metadata:
+  event:
+    actor_id
+    target_id
+    
+---
+{% doc %}
+  @param {object} event - The event object
+{% enddoc %}
+{% liquid
+  assign c = { "errors": {}, "valid": true }
+
+  function c = 'modules/core/validations/presence', c: c, object: event, field_name: 'actor_id'
+  function c = 'modules/core/validations/presence', c: c, object: event, field_name: 'target_id'
+
+
+  return c
+%}

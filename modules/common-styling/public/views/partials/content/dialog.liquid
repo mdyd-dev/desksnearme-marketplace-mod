@@ -1,0 +1,29 @@
+{% doc %}
+  @param {string} title - dialog title
+  @param {string} content - html content for the dialog
+  @param {string} id - unique ID for the dialog
+{% enddoc %}
+{% comment %}
+
+  modal dialog that is hidden by default and can be shown with a button
+
+  id - (string) unique ID for the dialog
+  title - (string) dialog title
+  content - (string) html content for the dialog
+
+{% endcomment %}
+
+
+
+<dialog class="pos-dialog" id="{{ id }}">
+  <header class="pos-dialog-header{% if title == blank %} pos-dialog-header-simple{% endif %}">
+    {% if title %}
+      <h2 class="pos-heading-2">{{ title }}</h2>
+    {% endif %}
+    <button title="Close" class="pos-dialog-close">
+      <span class="pos-label">Close</span>
+      {% render 'modules/common-styling/icon', icon: 'x', class: null %}
+    </button>
+  </header>
+  {% print content %}
+</dialog>

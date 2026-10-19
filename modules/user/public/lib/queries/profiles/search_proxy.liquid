@@ -1,0 +1,22 @@
+{% doc %}
+  @param {string} emails - List of email addresses
+  @param {object} filters - The filter parameters
+  @param {string} first_name - The first name
+  @param {string} id - The record ID
+  @param {string} ids - List of record IDs to include
+  @param {string} last_name - The last name
+  @param {number} limit - Maximum number of results
+  @param {string} not_ids - List of record IDs to exclude
+  @param {number} page - Page number for pagination
+  @param {string} query - Search query string
+  @param {string} sort - Sort order
+  @param {string} user_id - The user ID
+  @param {string} uuid - The UUID identifier
+{% enddoc %}
+{% liquid
+  function profile_module = 'modules/core/queries/variable/get', name: 'PROFILE_MODULE', default: 'modules/user', type: null
+  assign function_name = profile_module | append: '/queries/profiles/search'
+ function profile = function_name, limit: limit, uuid: uuid, id: id, ids: ids, first_name: first_name, last_name: last_name, user_id: user_id, not_ids: not_ids, query: query, emails: emails, sort: sort, page: page, filters: filters
+
+  return profile
+%}

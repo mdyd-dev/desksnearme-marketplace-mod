@@ -1,0 +1,38 @@
+{% doc %}
+  @description Verify a captcha token server-side and return a normalized pass/fail.
+  @param {string} [provider] - provider key; defaults to the CAPTCHA_DEFAULT_PROVIDER constant.
+    Dispatches to the modules/captchas_<provider> module — see helpers/provider_available.
+  @param {string} [secret] - provider secret key (server-side); defaults to the
+    CAPTCHA_DEFAULT_SECRET constant. Typically left to the default rather than read from a
+    per-provider constant by the caller.
+  @param {string} [token] - the widget token; defaults to the provider's field in context.params.
+  @param {string} [response_field_name] - name of the form field the widget writes the token to;
+    overrides the provider default (only needed when you set the widget's response_field_name option).
+  @param {string} [remote_ip] - optional visitor IP forwarded to the provider.
+  @param {string} [expected_sitekey] - for providers whose secrets are account-wide rather than
+    per-widget: the sitekey the token must have been issued for, forwarded to the provider's
+    verify call. Without it a token solved against another widget of the same account also
+    verifies; see the provider module's README for whether it applies.
+  @param {string} [expected_hostname] - optional hostname allow-list (single host or comma-separated,
+    e.g. 'example.com,www.example.com'). When set, the provider response hostname must match one of
+    them (exact, case-insensitive) or verification fails. Defends against tokens solved on another domain.
+  @param {number} [min_score] - score-based providers only: minimum score required to pass;
+    see the provider module's README for the default.
+  @param {string} [expected_action] - score-based providers only: action name to require
+    against the provider response.
+  @returns {object} { valid, success, provider, response, errors } (plus score/action for score-based providers).
+{% enddoc %}
+{% liquid
+  assign object = { "provider": provider, "secret": secret, "token": token, "response_field_name": response_field_name, "remote_ip": remote_ip, "expected_sitekey": expected_sitekey, "expected_hostname": expected_hostname, "min_score": min_score, "expected_action": expected_action }
+
+  function object = 'modules/captchas/commands/captcha/verify/build', object: object
+  function object = 'modules/captchas/commands/captcha/verify/check', object: object
+
+  if object.valid == false
+    return object
+  endif
+
+  function object = 'modules/captchas/commands/captcha/verify/execute', object: object
+
+  return object
+%}

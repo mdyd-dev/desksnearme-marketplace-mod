@@ -1,0 +1,8 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign object.url = 'https://{host}/users/verify?token={token}&email={email}' | expand_url_template: object
+
+  return object
+%}

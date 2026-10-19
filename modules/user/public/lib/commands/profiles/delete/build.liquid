@@ -1,0 +1,8 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign data = {"id": object.id}
+
+  return data
+%}

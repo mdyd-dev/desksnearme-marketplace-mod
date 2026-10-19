@@ -1,0 +1,30 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign sent_at = 'now' | to_time | date: '%Y-%m-%dT%H:%M:%S%z'
+
+  comment
+    The count is a rolling 24h budget, so it restarts rather than accumulating
+    once the previous send falls outside the window - matching the window used by
+    helpers/email_verification_throttled. Incrementing unconditionally made the
+    cap permanent: after the first day a user reached it, every later day allowed
+    exactly one send, because the stored count stayed at or above the maximum.
+  endcomment
+  assign previous_sent_at = object.email_verification_sent_at
+  assign sent_count = 1
+
+  if previous_sent_at != blank
+    assign now_epoch = 'now' | to_time | date: '%s' | plus: 0
+    assign previous_epoch = previous_sent_at | to_time | date: '%s' | plus: 0
+    assign elapsed = now_epoch | minus: previous_epoch
+
+    if elapsed < 86400
+      assign sent_count = object.email_verification_sent_count | default: 0 | plus: 1
+    endif
+  endif
+
+  assign data = { "id": object.id, "email_verification_sent_at": sent_at, "email_verification_sent_count": sent_count }
+
+  return data
+%}

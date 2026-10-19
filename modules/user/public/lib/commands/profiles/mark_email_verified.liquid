@@ -1,0 +1,17 @@
+{% doc %}
+  Marks a profile's email address as confirmed. Idempotent: an already verified
+  profile keeps its original timestamp, so clicking a link twice does not move
+  the date.
+
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/profiles/mark_email_verified/build', object: object
+  function object = 'modules/user/commands/profiles/mark_email_verified/check', object: object
+
+  if object.valid
+    function object = 'modules/core/commands/execute', mutation_name: 'modules/user/profiles/mark_email_verified', object: object, selection: null
+  endif
+
+  return object
+%}

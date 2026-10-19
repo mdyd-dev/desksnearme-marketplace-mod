@@ -1,0 +1,28 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {string} host - The host URL
+  @param {number} [valid_for] - Token validity duration in HOURS
+{% enddoc %}
+{% liquid
+  comment
+    The lifetime is one hour, which is what this flow has always issued: the
+    argument below was never passed on to the query, so the token lifetime came
+    from the default declared in user/find.graphql instead. That default is now
+    gone and the value is stated here, deliberately unchanged.
+
+    Note the three numbers that used to disagree: this file defaulted to 5 and
+    documented minutes, the graphql declared 48 hours, and what shipped was one
+    hour. Pick the intended lifetime here if one hour is not it.
+  endcomment
+  assign valid_for = valid_for | default: 1
+  function user = 'modules/user/queries/user/find', email: email, with_token: true, id: null, expires_in: valid_for
+
+  assign object = {
+    "email": email,
+    "id": user.id,
+    "token": user.token,
+    "host": host
+  }
+
+  return object
+%}

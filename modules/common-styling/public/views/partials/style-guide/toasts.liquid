@@ -1,0 +1,66 @@
+<article id="toasts">
+  <h2 class="pos-heading-2">Toasts</h2>
+
+  <div class="styleguide-columns">
+    <div>
+      <p>A standard platformOS way of showing toast notifications would be to store and get the messages in the session.</p>
+      <p>Adding the following code to your application `layout` file will initialize the module:</p>
+
+      {% capture code %}{% raw %}
+{% liquid
+  function flash = 'modules/core/commands/session/get', key: 'sflash'
+  if context.location.pathname != flash.from or flash.force_clear
+    function _ = 'modules/core/commands/session/clear', key: 'sflash'
+  endif
+  render 'modules/common-styling/toasts', message: flash.message, severity: flash.severity, autohide: flash.autohide, delay: flash.delay
+%}
+      {% endraw %}{% endcapture %}
+
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+
+      <p>Then, you can use the following JavaScript to show a message on page:</p>
+      {% capture code %}{% raw %}
+        new pos.modules.toast('[severity]', '[message]');
+      {% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+
+      <dl class="styleguide-details">
+        <dt>severity</dt><dd>how important the message is - <code>error</code>, <code>success</code>, <code>info</code> <i>string</i></dd>
+        <dt>message</dt><dd>user-readable message for the toast notification <i>string</i></dd>
+      </dl>
+    </div>
+    <div class="styleguide-example" style="display: flex; flex-direction: column; gap: var(--pos-gap-text-text);">
+      <div class="pos-toast-container pos-toast-error">
+        <div class="pos-toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="pos-toast-content">Error notification</div>
+          <button class="pos-toast-close" title="Dismiss notification">
+            <span class="label">Dismiss notification</span>
+            ×
+          </button>
+        </div>
+      </div>
+      <div class="pos-toast-container pos-toast-info">
+        <div class="pos-toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="pos-toast-content">Info notification</div>
+          <button class="pos-toast-close" title="Dismiss notification">
+            <span class="label">Dismiss notification</span>
+            ×
+          </button>
+        </div>
+      </div>
+      <div class="pos-toast-container pos-toast-success">
+        <div class="pos-toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="pos-toast-content">Success notification</div>
+          <button class="pos-toast-close" title="Dismiss notification">
+            <span class="label">Dismiss notification</span>
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

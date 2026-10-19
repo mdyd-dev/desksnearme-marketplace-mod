@@ -1,0 +1,19 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {number} [expires_in] - Lifetime of the temporary token in HOURS; defaults to the 48h declared by the graphql
+  @param {string} id - The record ID
+  @param {boolean} [with_token] - Include temporary token in results
+{% enddoc %}
+{% liquid
+  assign id = id
+  assign email = email
+  assign with_token = with_token | default: false
+
+  if id == blank and email == blank
+    return null
+  endif
+
+  graphql r  = 'modules/user/user/find', id: id, email: email, limit: 1, with_token: with_token, expires_in: expires_in
+
+  return r.users.results.first
+%}

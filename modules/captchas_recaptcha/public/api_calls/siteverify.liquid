@@ -1,0 +1,12 @@
+---
+to: 'https://www.google.com/recaptcha/api/siteverify'
+request_type: POST
+format: http
+enabled: true
+trigger_condition: true
+request_headers: >
+  {
+    "Content-Type": "application/x-www-form-urlencoded"
+  }
+---
+secret={{ data.secret | url_encode }}&response={{ data.token | url_encode }}{% if data.remote_ip != blank %}&remoteip={{ data.remote_ip | url_encode }}{% endif %}

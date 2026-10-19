@@ -1,0 +1,14 @@
+{% doc %}
+  @param {object} contracts - collection of test contracts
+  @param {number} total_errors - total number of errors
+  @param {number} total_duration - total test duration in ms
+  @param {string} test_name - name of the test run
+{% enddoc %}
+{% capture result %}
+  {% render 'modules/tests/tests/show_js', contracts: contracts, total_errors: total_errors, total_duration: total_duration %}
+{% endcapture %}
+{% assign result = result | html_safe %}
+{% liquid
+  assign log_type = test_name | append: ' SUMMARY'
+  log result, type: log_type
+%}

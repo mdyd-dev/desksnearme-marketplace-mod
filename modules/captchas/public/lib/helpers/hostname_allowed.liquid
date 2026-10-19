@@ -1,0 +1,26 @@
+{% doc %}
+  @description Check a provider-reported hostname against an allow-list. Pure logic (no network),
+    kept out of the verify dispatcher so the matching rules are unit-testable. Matching is exact
+    and case-insensitive — subdomains are NOT implied ('www.example.com' does not match 'example.com').
+  @param {string} [hostname] - hostname from the provider's siteverify response; may be nil.
+  @param {string} [expected_hostname] - allow-list: a single host or comma-separated hosts
+    (e.g. 'example.com,www.example.com'); spaces are ignored. Blank means no restriction.
+  @returns {boolean} true when no allow-list is configured or the hostname matches one of the
+    allowed hosts; false otherwise — including a blank hostname (fail closed).
+{% enddoc %}
+{% liquid
+  if expected_hostname == blank
+    return true
+  endif
+
+  assign actual_host = hostname | strip | downcase
+  if actual_host == blank
+    return false
+  endif
+
+  assign allowed_hosts = expected_hostname | downcase | replace: ' ', '' | split: ','
+  if allowed_hosts contains actual_host
+    return true
+  endif
+  return false
+%}

@@ -1,0 +1,12 @@
+{% doc %}
+  @param {object} contract - test contract object tracking results
+  @param {string} field_name - name of the field being tested
+  @param {object} object - object to check for blank field
+{% enddoc %}
+{% liquid
+  assign contract.total = contract['total'] | plus: 1
+  unless object[field_name] == blank
+    function contract = 'modules/tests/helpers/register_error', contract: contract, field_name: field_name, key: 'modules/tests/should.be_blank', message: null
+  endunless
+  return contract
+%}

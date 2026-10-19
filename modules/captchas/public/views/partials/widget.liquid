@@ -1,0 +1,47 @@
+{% doc %}
+  @description Renders a captcha widget for the active provider into a form. Dispatches by
+    naming convention to the provider module's modules/captchas_<provider>/widget partial —
+    the abstraction knows no providers. Render this partial (do not include it): provider
+    widgets are pulled in via include and would otherwise leak their internals into your scope.
+  @param {string} [site_key] - The provider's public site key; defaults to the
+    CAPTCHA_DEFAULT_SITE_KEY constant. A blank result (neither passed nor set) logs an error
+    and emits an HTML comment; the widget is still rendered and fails visibly in the
+    provider's client-side script.
+  @param {string} [provider] - Provider key; defaults to the CAPTCHA_DEFAULT_PROVIDER constant.
+  @param {object} [options] - Provider widget options, passed through to the provider partial.
+{% enddoc %}
+{%- liquid
+  function active_provider = 'modules/captchas/helpers/default_provider', provider: provider
+  function site_key = 'modules/captchas/helpers/default_site_key', site_key: site_key
+
+  if site_key == blank
+    # The most common misconfiguration: an unset site-key constant. Surface it like the
+    # unavailable-provider case below — otherwise the only symptom is the provider script
+    # failing client-side with an opaque error inside the widget.
+    assign warning = 'modules/captchas/widget: blank site_key for provider ' | append: active_provider | append: ' - is the site-key constant set?'
+    log warning, type: 'error'
+    # escape the variable part, then mark the assembled comment html_safe — otherwise
+    # escape_output_instead_of_sanitize escapes the <!-- --> itself into visible text
+    assign warning_escaped = warning | escape
+    assign warning_comment = '<!-- ' | append: warning_escaped | append: ' -->'
+    echo warning_comment | html_safe
+  endif
+
+  function provider_is_available = 'modules/captchas/helpers/provider_available', provider: active_provider
+  if provider_is_available
+    assign captcha_widget_path = 'modules/captchas_' | append: active_provider | append: '/widget'
+    # platformos-check-disable ConvertIncludeToRender, DeprecatedTag
+    include captcha_widget_path, site_key: site_key, options: options
+    # platformos-check-enable ConvertIncludeToRender, DeprecatedTag
+  else
+    # Unavailable provider (typo in the provider argument or CAPTCHA_DEFAULT_PROVIDER, key not
+    # in CAPTCHA_ENABLED_PROVIDERS, or provider module not installed): surface it instead of
+    # silently rendering no widget — otherwise the first symptom is a confusing token_missing
+    # failure at submit time. Verification still fails closed either way.
+    assign warning = 'modules/captchas/widget: provider ' | append: active_provider | append: ' is not available (not installed or not enabled) - no widget rendered'
+    log warning, type: 'error'
+    assign warning_escaped = warning | escape
+    assign warning_comment = '<!-- ' | append: warning_escaped | append: ' -->'
+    echo warning_comment | html_safe
+  endif
+-%}

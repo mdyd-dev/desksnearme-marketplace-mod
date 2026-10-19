@@ -1,0 +1,10 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {object} object - The object to process
+{% enddoc %}
+{%  liquid
+  function object = 'modules/user/commands/user/verify_otp/build', email: email, object: object
+  function object = 'modules/user/commands/user/verify_otp/check', object: object
+
+  return object
+%}

@@ -1,0 +1,35 @@
+{% doc %}
+  Looks up the user and mints a temporary token scoped to the verification TTL.
+
+  temporary_token takes its lifetime in HOURS, so USER_EMAIL_VERIFICATION_TTL_HOURS
+  is passed straight through as expires_in. (An earlier version converted it to
+  minutes and passed it as valid_for as well; because the platform resolves the
+  lifetime as `valid_for || expires_in`, that produced a token good for 1440
+  HOURS - 60 days - rather than the documented 24.)
+
+  The token is not single use - replay is handled in verify.liquid, which
+  reports an already confirmed address rather than an error, because mail
+  clients and link scanners do follow these URLs more than once.
+
+  @param {string} email - The address to send the link to
+  @param {string} host - The host the link should point at
+{% enddoc %}
+{% liquid
+  assign ttl_hours = context.constants.USER_EMAIL_VERIFICATION_TTL_HOURS | default: 24 | plus: 0
+
+  function user = 'modules/user/queries/user/find', email: email, id: null, with_token: true, expires_in: ttl_hours
+
+  comment
+    Only look for a profile once there is a user to look it up by: queries/profiles/find
+    logs an ERROR when every identifier is blank, and an unknown address is a
+    normal, unauthenticated request here - not something worth an error line.
+  endcomment
+  assign profile = null
+  if user.id
+    function profile = 'modules/user/queries/profiles/find', user_id: user.id, id: null, uuid: null, first_name: null, last_name: null
+  endif
+
+  assign object = { "email": email, "host": host, "id": user.id, "token": user.token, "profile": profile, "ttl_hours": ttl_hours }
+
+  return object
+%}

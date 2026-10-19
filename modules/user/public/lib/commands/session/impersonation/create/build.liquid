@@ -1,0 +1,12 @@
+{% doc %}
+  @param {string} current_user_id - The current user ID
+  @param {object} user - The user object
+{% enddoc %}
+{% assign object =
+  {
+    "id": user.id,
+    "current_user_id": current_user_id
+  }
+%}
+
+{% return object %}

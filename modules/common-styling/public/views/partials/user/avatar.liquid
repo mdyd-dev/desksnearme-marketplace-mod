@@ -1,0 +1,42 @@
+{% doc %}
+  @param {string} [size] - avatar size (xs, sm, md, lg, xl, 2xl, 3xl)
+  @param {string} [class] - additional CSS classes
+  @param {string} name - user display name
+  @param {string} image_src - URL of the avatar image
+{% enddoc %}
+{% liquid
+  assign size = size | default: 'md'
+
+  assign names = name | split: " "
+
+  case size
+    when 'xs'
+      assign dimensions = 20
+    when 'sm'
+      assign dimensions = 24
+    when 'md'
+      assign dimensions = 32
+    when 'lg'
+      assign dimensions = 48
+    when 'xl'
+      assign dimensions = 94
+    when '2xl'
+      assign dimensions = 160
+    when '3xl'
+      assign dimensions = 192
+  endcase
+%}
+
+{% if image_src == blank %}
+
+  <div class="pos-avatar pos-avatar-{{ size }} {{ class }}">
+      {{ names[0] | slice: 0 }}{{ names[1] | slice: 0 }}
+  </div>
+
+{% else %}
+
+  <div class="pos-avatar pos-avatar-{{ size }} {{ class }}">
+    <img src="{{ image_src }}" width="{{ dimensions }}" height="{{ dimensions }}" loading="lazy" alt="">
+  </div>
+
+{% endif %}

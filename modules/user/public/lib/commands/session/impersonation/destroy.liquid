@@ -1,0 +1,18 @@
+{% doc %}
+  @param {string} current_user_id - The current user ID
+  @param {object} user - The user object
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/session/impersonation/create/build', user: user, current_user_id: current_user_id
+  function object = 'modules/user/commands/session/impersonation/destroy/check', object: object
+
+  if object.valid
+      sign_in user_id: object.id
+      session original_user_id = null
+
+      assign event_object = {"actor_id": object.id, "impersonated_user_id": object.current_user_id}
+      function _ = 'modules/core/commands/events/publish', type: 'impersonation_ended', object: event_object, delay: null, max_attempts: null
+  endif
+
+  return object
+%}

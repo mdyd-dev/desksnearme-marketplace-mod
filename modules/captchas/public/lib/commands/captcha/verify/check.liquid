@@ -1,0 +1,31 @@
+{% doc %}
+  @description Check phase for captcha verify: require a token + secret and an available
+    provider (installed provider module, permitted by the optional allow-list).
+  @param {object} object - normalized object from the build phase.
+  @returns {object} object with errors populated (translated messages, via helpers/add_error)
+    and valid set.
+{% enddoc %}
+{% liquid
+  function c = 'modules/captchas/helpers/errors_hash', errors: object.errors
+  function provider_supported = 'modules/captchas/helpers/provider_available', provider: object.provider
+
+  if object.token == blank
+    function c = 'modules/captchas/helpers/add_error', errors: c, field_name: 'token', key: 'modules/captchas/errors.token_missing'
+  endif
+
+  if object.secret == blank
+    function c = 'modules/captchas/helpers/add_error', errors: c, field_name: 'secret', key: 'modules/captchas/errors.secret_missing'
+  endif
+
+  unless provider_supported
+    function c = 'modules/captchas/helpers/add_error', errors: c, field_name: 'provider', key: 'modules/captchas/errors.unsupported_provider'
+  endunless
+
+  assign object.errors = c
+  if c == empty
+    assign object.valid = true
+  else
+    assign object.valid = false
+  endif
+  return object
+%}

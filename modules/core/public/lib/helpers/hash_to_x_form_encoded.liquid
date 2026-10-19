@@ -1,0 +1,18 @@
+{% doc %}
+  @param {object} payload - The payload data
+{% enddoc %}
+{% liquid
+  assign parameters = '' | split: ','
+  for pair in payload
+    assign component = pair[0] | append: '={' | append: pair[0] | append: '}'
+    assign parameters << component
+  endfor
+  if parameters.size > 0
+    assign x_form_encoded = parameters | join: '&' | expand_url_template: payload
+  else
+    assign x_form_encoded = ''
+  endif
+
+  return x_form_encoded
+%}
+

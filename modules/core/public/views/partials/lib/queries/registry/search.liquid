@@ -1,0 +1,26 @@
+{% doc %}
+  @param {string} type - The type identifier
+{% enddoc %}
+{% liquid
+  function registry = 'modules/core/lib/commands/hook/fire', hook: 'module_info', merge_to_object: false, params: null
+
+  case type
+    when 'module'
+      assign modules = []
+      for module in registry
+        if module.type == 'module'
+          assign modules << module
+        endif
+      endfor
+      return modules
+    when 'theme'
+      assign themes = []
+      for module in registry
+        if module.type == 'theme'
+          assign themes << module
+        endif
+      endfor
+      return themes
+  endcase
+  return registry
+%}

@@ -1,0 +1,15 @@
+{% doc %}
+  @description Resolve the active captcha provider key. Values are normalized — trimmed and
+    lowercased — so an explicit ' SomeProvider ' or a CAPTCHA_DEFAULT_PROVIDER constant saved
+    with stray whitespace/capitals still resolves. The abstraction ships no provider of its own:
+    when neither an explicit value nor the constant is present this returns blank, and the
+    availability gate (helpers/provider_available) fails gracefully downstream.
+  @param {string} [provider] Explicit provider key; used when present.
+  @returns {string} provider key — explicit value, else the CAPTCHA_DEFAULT_PROVIDER constant, else '' (normalized).
+{% enddoc %}
+{% liquid
+  assign resolved = provider | strip | downcase
+  assign resolved = resolved | default: context.constants.CAPTCHA_DEFAULT_PROVIDER | strip | downcase
+  assign resolved = resolved | default: ''
+  return resolved
+%}

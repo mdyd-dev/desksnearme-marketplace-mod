@@ -1,0 +1,10 @@
+{% doc %}
+  @param {string} default - The default value
+  @param {string} name - The name identifier
+  @param {string} type - The type identifier
+{% enddoc %}
+{% liquid
+  # TODO: remove after rewriting dependent modules
+  function res = 'modules/core/lib/queries/variable/find', name: name, default: default, type: type
+  return res
+%}

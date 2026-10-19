@@ -1,0 +1,51 @@
+/*
+  numbered pagination
+*/
+
+
+
+@layer common-styling {
+
+  .pos-pagination {
+    margin-block-start: var(--pos-gap-card-card);
+    display: flex;
+    align-items: center;
+    justify-content: end;
+  }
+
+  .pos-pagination svg {
+    height: 100%;
+  }
+
+  .pos-pagination .pos-label {
+    position: absolute;
+    left: -200vw;
+  }
+
+  .pos-pagination .pos-pagination-previous,
+  .pos-pagination .pos-pagination-next {
+    height: 1.25em !important;
+    padding-inline: .75em;
+  }
+
+  .pos-pagination ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--pos-gap-text-text) / 2);
+  }
+
+  .pos-pagination a {
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--pos-radius-button);
+  }
+
+  .pos-pagination a[aria-current="true"] {
+    border: 1px solid var(--pos-color-interactive);
+  }
+
+}

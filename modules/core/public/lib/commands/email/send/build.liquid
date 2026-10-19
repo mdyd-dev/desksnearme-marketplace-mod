@@ -1,0 +1,14 @@
+{% liquid
+  assign layout = object.layout | default: 'modules/core/mailer'
+  assign object = {
+    "layout": layout,
+    "from": object.from,
+    "to": object.to,
+    "subject": object.subject,
+    "cc": object.cc,
+    "bcc": object.bcc,
+    "partial": object.partial,
+    "data": object.data
+  }
+  return object
+%}

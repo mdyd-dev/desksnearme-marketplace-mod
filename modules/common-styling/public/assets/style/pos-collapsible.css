@@ -1,0 +1,162 @@
+/*
+  collapsible navigation
+
+  layout
+  toggle button
+  links styling
+*/
+
+
+@layer common-styling {
+
+  /* layout
+  ============================================================================ */
+  .pos-collapsible {
+    line-height: 1.4em;
+  }
+
+  .pos-collapsible div {
+    width: 100%;
+    display: grid;
+    overflow: hidden;
+    grid-template-rows: 1fr;
+    
+    transition: grid-template-rows .3s var(--pos-transition-ui-detail);
+  }
+
+  .pos-collapsible div[inert] {
+    padding-block: 0;
+    grid-template-rows: 0fr;
+  }
+
+  .pos-collapsible ul {
+    min-height: 0;
+    padding-inline-start: 1.5em;
+
+    position: relative;
+
+    transition-property: translate, opacity, filter;
+    transition-duration: .25s, .25s, .15s;
+    transition-timing-function: var(--pos-transition-ui-detail);
+
+    translate: 0 0;
+    filter: blur(0px);
+    opacity: 1;
+  }
+
+  .pos-collapsible [inert] ul {
+    opacity: .4;
+    translate: 0 -.5rem;
+    filter: blur(5px);
+  }
+
+  .pos-collapsible ul:before {
+    position: absolute;
+    inset-inline-start: .25em;
+    inset-block: .5em;
+
+    border-inline-start: 1px solid var(--pos-color-frame);
+
+    content: '';
+  }
+
+  .pos-collapsible li {
+    margin-inline-start: -4px;
+    padding-block: .25em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+    .pos-collapsible li:not(:has(> a)){
+      padding-inline: 4px;
+    }
+
+
+  /* toggle button
+  ============================================================================ */
+  .pos-collapsible-toggle {
+    width: 32px;
+    height: 32px;
+    margin-inline-end: .3em;
+    padding: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--pos-radius-button);
+
+    cursor: pointer;
+
+    transition-property: background-color, color;
+    transition-duration: .1s;
+    transition-timing-function: linear;
+  }
+
+  .pos-collapsible-toggle:hover {
+    background-color: var(--pos-color-highlight-background);
+
+    color: var(--pos-color-highlight-text);
+  }
+
+  .pos-collapsible-toggle:focus-visible {
+    outline: 2px solid var(--pos-color-focused);
+    outline-offset: 0;
+  }
+
+  .pos-collapsible li:not(:has(> [inert])) > .pos-collapsible-toggle svg {
+    rotate: 90deg;
+  }
+
+  .pos-collapsible-toggle > * {
+    pointer-events: none;
+  }
+
+  .pos-collapsible-toggle .pos-label {
+    position: absolute;
+    inset-inline-start: -200vw;
+  }
+
+  .pos-collapsible-toggle svg {
+    width: 100%;
+
+    transition: rotate .2s var(--pos-transition-ui-detail);
+  }
+
+
+  /* active state
+  ============================================================================ */
+  .pos-collapsible-active > a {
+    display: block;
+    position: relative;
+
+    color: var(--pos-color-interactive-active);
+  }
+
+  .pos-collapsible-active > a:before {
+    position: absolute;
+    inset-inline-start: -1em;
+    inset-block: 0;
+
+    border-inline-start: 2px solid var(--pos-color-interactive-active);
+
+    content: '';
+  }
+
+    .pos-collapsible > li.pos-collapsible-active > a:before {
+      display: none;
+    }
+
+
+  /* links styling
+  ============================================================================ */
+  .pos-collapsible a {
+    padding-inline: 4px;
+  }
+
+  .pos-collapsible a:focus-visible {
+    outline-offset: -2px;
+  }
+
+}

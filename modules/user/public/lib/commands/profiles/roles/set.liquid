@@ -1,0 +1,14 @@
+{% doc %}
+  @param {string} id - The record ID
+  @param {array} roles - The roles to assign; the graphql takes [String!]
+{% enddoc %}
+{% liquid
+  assign object = { "valid": true, "id": id, "roles": roles }
+  function object = 'modules/core/commands/execute', object: object, mutation_name: 'modules/user/profiles/roles/set', selection: null
+
+  if object.errors == blank
+    assign event_payload = {"profile_id": id, "roles": roles}
+    function _ = 'modules/core/commands/events/publish', type: 'user_roles_set', object: event_payload, delay: null, max_attempts: null
+  endif
+  return object
+%}

@@ -1,0 +1,16 @@
+---
+slug: users/check-email
+---
+{% doc %}
+  Landing page after registration: tells the user to go and click the link.
+{% enddoc %}
+{% liquid
+  function enabled = 'modules/user/helpers/email_verification_enabled'
+
+  unless enabled
+    redirect_to '/'
+    break
+  endunless
+
+  render 'modules/user/users/check_email', context: context, email: context.params.email
+%}

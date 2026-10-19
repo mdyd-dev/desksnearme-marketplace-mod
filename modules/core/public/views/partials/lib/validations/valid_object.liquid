@@ -1,0 +1,21 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {string} check_function - The validation function to call
+  @param {string} field_name - The name of the field to validate
+  @param {object} object - The object to process
+  @param {string} [value] - The value
+{% enddoc %}
+{% liquid
+  log 'Use modules/core/validations/valid_object instead of modules/core/lib/validations/valid_object ', type: 'DEPRECATION'
+  assign value = value | default: object[field_name]
+  if value
+    function check_object = check_function, object: value
+    if check_object.valid != true
+      function c = 'modules/core/lib/helpers/register_error', contract: c, field_name: field_name, key: 'modules/core/validation.invalid', message: null
+      assign errors_key = field_name | append: '_errors'
+      assign c.errors[errors_key] = check_object.errors
+    endif
+  endif
+
+  return c
+%}

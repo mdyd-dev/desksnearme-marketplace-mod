@@ -1,0 +1,151 @@
+/*
+  button component
+
+  basic
+    icon
+    label for screen readers
+  primary
+  small
+*/
+
+
+
+@layer common-styling {
+
+  /* basic
+  ============================================================================ */
+  button {
+    cursor: pointer;
+  }
+  
+  .pos-button {
+    all: unset;
+    display: revert;
+
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .pos-button,
+  .pos-button * {
+    box-sizing: border-box;
+  }
+
+  .pos-button {
+    padding-inline: var(--pos-padding-button);
+    height: var(--pos-height-button);
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: .5em;
+    vertical-align: middle;
+    cursor: pointer;
+
+    background-color: var(--pos-color-button-secondary-background);
+    border-width: var(--pos-border-button);
+    border-style: solid;
+    border-color: var(--pos-color-button-secondary-frame);
+    border-radius: var(--pos-radius-button);
+    outline: none;
+
+    line-height: 1.2em;
+    font-size: .95rem;
+    font-weight: 500;
+    color: var(--pos-color-button-secondary-text);
+
+    transition: all .1s linear;
+  }
+
+  .pos-button:hover,
+  .pos-debug-button-hover {
+    background-color: var(--pos-color-button-secondary-hover-background);
+    border-color: var(--pos-color-button-secondary-hover-frame);
+
+    color: var(--pos-color-button-secondary-hover-text);
+  }
+
+  .pos-button:active,
+  .pos-debug-button-active {
+    transform: scale(98%);
+  }
+
+  .pos-button:focus-visible,
+  .pos-debug-button-focus-visible {
+    border-color: var(--pos-color-focused);
+    outline: 2px solid var(--pos-color-focused);
+    outline-offset: 2px;
+  }
+
+  .pos-button:disabled {
+    background-color: var(--pos-color-button-secondary-disabled-background);
+    border-color: var(--pos-color-button-secondary-disabled-frame);
+
+    color: var(--pos-color-button-secondary-disabled-text);
+  }
+
+  /* icon */
+  .pos-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+
+    fill: currentColor;
+
+    transition: fill .2s ease-in-out;
+  }
+
+  /* label for screen readers */
+  .pos-button .pos-label,
+  .pos-button-label {
+      position: absolute;
+      left: -200vw;
+      top: -100vh;
+  }
+
+
+
+  /* primary
+  ============================================================================ */
+  .pos-button-primary {
+    background-color: var(--pos-color-button-primary-background);
+    border-color: var(--pos-color-button-primary-frame);
+
+    color: var(--pos-color-button-primary-text);
+  }
+
+  .pos-button-primary:hover,
+  .pos-button-primary.pos-debug-button-hover {
+    background-color: var(--pos-color-button-primary-hover-background);
+    border-color: var(--pos-color-button-primary-hover-frame);
+
+    color: var(--pos-color-button-primary-hover-text);
+  }
+
+  .pos-button-primary:active,
+  .pos-button-primary.pos-debug-button-active {
+    transform: scale(98%);
+  }
+
+  .pos-button-primary:disabled {
+    background-color: var(--pos-color-button-primary-disabled-background);
+    border-color: var(--pos-color-button-primary-disabled-frame);
+
+    color: var(--pos-color-button-primary-disabled-text);
+  }
+
+
+  /* small
+  ============================================================================ */
+  .pos-button-small {
+    padding-inline: var(--pos-padding-button);
+    height: calc(var(--pos-height-button) * 0.682 );
+  }
+
+    .pos-button-small svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+}

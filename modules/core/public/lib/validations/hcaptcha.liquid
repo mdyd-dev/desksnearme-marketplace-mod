@@ -1,0 +1,13 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {object} hcaptcha_params - The hCaptcha verification parameters
+  @param {string} [key] - The translation key for the error message
+{% enddoc %}
+{% liquid
+  assign hcaptcha_solved =  hcaptcha_params | hcaptcha
+  unless hcaptcha_solved
+    assign key = key | default: "modules/core/validation.hcaptcha"
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: 'hcaptcha', key: key, message: null
+  endunless
+  return c
+%}

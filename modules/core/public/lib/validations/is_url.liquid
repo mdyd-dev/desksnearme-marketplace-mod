@@ -1,0 +1,16 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {string} field_name - The name of the field to validate
+  @param {string} url - The URL to redirect to
+  @param {string} [key] - The translation key for the error message
+{% enddoc %}
+{% liquid
+  assign key = key | default: 'modules/core/validation.not_url'
+  assign is_url = url | matches: '^https?:\/\/[\S]+'
+
+  if is_url != true
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, key: key, message: null
+  endif
+  
+  return c
+%}  

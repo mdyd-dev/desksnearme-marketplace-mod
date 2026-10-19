@@ -1,0 +1,27 @@
+name: profile
+properties:
+  - name: uuid
+  - name: user_id
+  - name: name
+  - name: first_name
+  - name: last_name
+  - name: email # duplication from user
+  - name: roles
+    type: array
+
+  # tokenized downcased names for searching
+  - name: c__names
+
+  # 2fa
+  - name: otp_configured
+    type: boolean
+
+  # email verification (opt-in, see USER_EMAIL_VERIFICATION_ENABLED)
+  # email_verified_at is the single source of truth: blank means unverified.
+  # Existing profiles are backfilled by the module migration, so instances that
+  # never enable the feature - and users who registered before it was enabled -
+  # are unaffected.
+  - name: email_verified_at
+  - name: email_verification_sent_at
+  - name: email_verification_sent_count
+    type: integer

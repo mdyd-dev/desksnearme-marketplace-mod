@@ -1,0 +1,122 @@
+/*
+  styling for the user forms
+
+  layout
+  texts
+  form
+*/
+
+
+
+/* layout
+============================================================================ */
+.pos-user-content {
+  width: 100%;
+  max-width: 350px;
+}
+
+
+
+/* texts
+============================================================================ */
+.pos-user-content .pos-heading-2 {
+  margin-block-end: calc(var(--pos-gap-text-text) / 3);
+}
+
+
+
+/* form
+============================================================================ */
+.pos-user-content .pos-form {
+  margin-block-start: var(--pos-gap-title-content);
+  margin-block-end: var(--pos-gap-content-footer);
+}
+
+.pos-user-content fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: .2em;
+}
+
+.pos-user-label-password {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pos-user-label-password a:not(:hover):not(:active) {
+  color: var(--pos-color-content-foreground-supplementary);
+}
+
+.pos-form-simple fieldset:has(.pos-user-label-password) {
+  display: flex;
+  flex-direction: column;
+      gap: .2em;
+}
+
+.pos-user-social-login-separator {
+  margin: 20px 0px;
+  text-align: center;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.pos-user-social-login-separator::before,
+.pos-user-social-login-separator::after {
+  content: "";
+  display: inline-block;
+  border-top: 1px solid var(--pos-color-content-foreground-supplementary);
+  flex-grow: 1;
+}
+
+.pos-user-content .pos-user-social-login-providers form {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.pos-user-content .pos-user-social-login-providers .pos-button {
+  width: 100%;
+}
+
+.pos-button-social {
+  display: flex;
+  place-items: center;
+}
+
+.pos-button-social {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pos-button-social-icon {
+  width: 30%;
+  display: flex;
+  place-content: center;
+  place-items: center;
+}
+
+.pos-button-social-text {
+  width: 70%;
+}
+
+.pos-social-listing {
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 350px;
+  gap: 10px;
+}
+
+.pos-2fa-input {
+  width: 50px;
+}
+
+.pos-2fa-spacing {
+  padding-top: var(--pos-gap-title-content);
+}
+
+.pos-user-2fa .submit-2fa {
+  margin-top: 5px;
+}

@@ -1,0 +1,219 @@
+<article id="navigation">
+  <h2 class="pos-heading-2">Navigation</h2>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Pagination</h3>
+  <div class="styleguide-example">
+    {% liquid
+      render 'modules/common-styling/pagination', total_pages: 20
+    %}
+  </div>
+  {% capture code %}{% raw %}
+render 'modules/common-styling/pagination', total_pages: 20
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Collapsible list</h3>
+  <div class="styleguide-example styleguide-example-narrow">
+    {% assign navigation =
+      [
+        {
+          "label": "PlatformOS",
+          "url": "https://www.platformos.com"
+        },
+        {
+          "label": "Solutions",
+          "url": "https://www.platformos.com/enterprise-solutions",
+          "children": [
+            {
+              "label": "Circularity",
+              "url": "https://www.platformos.com/circularity-solutions"
+            },
+            {
+              "label": "MVP",
+              "url": "https://www.platformos.com/build-an-enterprise-mvp"
+            },
+            {
+              "label": "DocsKit",
+              "url": "https://www.platformos.com/documentation-solution"
+            },
+            {
+              "label": "Government",
+              "url": "https://www.platformos.com/government-solution"
+            },
+            {
+              "label": "Community",
+              "url": "https://www.platformos.com/community-solution"
+            }
+          ]
+        },
+        {
+          "label": "Developers",
+          "children": [
+            {
+              "label": "Documentation",
+              "url": "https://documentation.platformos.com/",
+              "children": [
+                {
+                  "label": "Get Started Guide",
+                  "url": "https://documentation.platformos.com/get-started"
+                }
+              ]
+            },
+            {
+              "label": "FAQ",
+              "url": "https://www.platformos.com/faq"
+            },
+            {
+              "label": "Support",
+              "url": "https://documentation.platformos.com/developer-guide/support-ticketing#email"
+            }
+          ]
+        }
+      ]
+    %}
+
+    {% liquid
+      render 'modules/common-styling/navigation/collapsible', items: navigation, active: 'https://documentation.platformos.com/get-started', inert: null
+    %}
+  </div>
+  {% capture code %}{% raw %}
+{% assign navigation =
+  [
+    {
+      "label": "PlatformOS",
+      "url": "https://www.platformos.com"
+    },
+    {
+      "label": "Solutions",
+      "url": "https://www.platformos.com/enterprise-solutions",
+      "children": [
+        {
+          "label": "Circularity",
+          "url": "https://www.platformos.com/circularity-solutions"
+        },
+        {
+          "label": "MVP",
+          "url": "https://www.platformos.com/build-an-enterprise-mvp"
+        }
+      ]
+    },
+    {
+      "label": "Developers",
+      "children": [
+        {
+          "label": "Documentation",
+          "url": "https://documentation.platformos.com/",
+          "children": [
+            {
+              "label": "Get Started Guide",
+              "url": "https://documentation.platformos.com/get-started"
+            }
+          ]
+        },
+        {
+          "label": "FAQ",
+          "url": "https://www.platformos.com/faq"
+        }
+      ]
+    }
+  ]
+%}
+
+{% liquid
+  render 'modules/common-styling/navigation/collapsible', items: navigation, active: 'https://documentation.platformos.com/get-started'
+%}
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Popover</h3>
+  <div class="styleguide-example" style="text-align: center;">
+    <div class="pos-popover">
+      <button popovertarget="styleguide-popover" class="pos-button">
+        Popover example
+      </button>
+      <div popover id="styleguide-popover">
+        The quick brown fox jumps over the lazy dog
+      </div>
+    </div>
+  </div>
+  {% capture code %}{% raw %}
+<button popovertarget="styleguide-popover" class="pos-button">Popover example</button>
+<div popover id="styleguide-popover">The quick brown fox jumps over the lazy dog</div>
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Popover menu</h3>
+  <div class="styleguide-example" style="text-align: center;">
+    <div class="pos-popover">
+      <button popovertarget="styleguide-popover-menu" class="pos-button">
+        Popover menu
+      </button>
+      <menu popover id="styleguide-popover-menu">
+        <li><a href="">Option</a></li>
+        <li><button type="button">Option</button></li>
+      </menu>
+    </div>
+  </div>
+  {% capture code %}{% raw %}
+<div class="pos-popover">
+  <button popovertarget="styleguide-popover-menu" class="pos-button">Popover menu</button>
+  <menu popover id="styleguide-popover-menu">
+    <li><a href="">Option</a></li>
+    <li><button type="button">Option</button></li>
+  </menu>
+</div>
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Dialog</h3>
+  <dialog class="pos-dialog" id="styleguide-dialog-example-1">
+    <header class="pos-dialog-header">
+      <h2 class="pos-heading-2">Title</h2>
+      <button title="close" class="pos-dialog-close">
+        <span class="pos-label">Close</span>
+        {% render 'modules/common-styling/icon', icon: 'x', class: null %}
+      </button>
+    </header>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi quis lorem rutrum, lacinia velit non, accumsan quam. Sed tincidunt purus eget euismod congue. Aliquam ultrices lectus eu quam pulvinar cursus. Mauris aliquet leo ante. Integer at urna felis.</p><br>
+    <button class="pos-button pos-dialog-close">Cancel</button>
+  </dialog>
+  <div class="styleguide-example" style="text-align: center;">
+    <button class="pos-button" data-dialogtarget="styleguide-dialog-example-1">Open dialog</button>
+  </div>
+  {% capture code %}{% raw %}
+<button data-dialogtarget="styleguide-dialog-example-1">Open dialog</button>
+
+<dialog class="pos-dialog" id="styleguide-dialog-example-1">
+  <header class="pos-dialog-header">
+    <h2 class="pos-heading-2">Title</h2>
+    <button title="close" class="pos-dialog-close">
+      <span class="pos-label">Close</span>
+      {% render 'modules/common-styling/icon', icon: 'x', class: null %}
+    </button>
+  </header>
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi quis lorem rutrum, lacinia velit non, accumsan quam. Sed tincidunt purus eget euismod congue. Aliquam ultrices lectus eu quam pulvinar cursus. Mauris aliquet leo ante. Integer at urna felis.</p><br>
+  <button class="pos-button pos-dialog-close">Cancel</button>
+</dialog>
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+  {% capture code %}{% raw %}
+<button data-dialogtarget="styleguide-dialog-example-2">Open dialog</button>
+
+{% render 'modules/common-styling/content/dialog', id: 'styleguide-dialog-example-2' title: 'Title', content: '<p>Lorem ipsum…</p>'%}
+  {% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+</article>

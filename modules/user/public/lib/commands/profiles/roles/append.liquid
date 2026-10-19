@@ -1,0 +1,15 @@
+{% doc %}
+  @param {string} id - The record ID
+  @param {string} role - The role name
+{% enddoc %}
+{% liquid
+  assign object = { "valid": true, "id": id, "role": role }
+  function object = 'modules/core/commands/execute', object: object, mutation_name: 'modules/user/profiles/roles/append', selection: null
+
+  if object.errors == blank
+    assign event_payload = {"profile_id": id, "role": role}
+    function _ = 'modules/core/commands/events/publish', type: 'user_role_appended', object: event_payload, delay: null, max_attempts: null
+  endif
+
+  return object
+%}

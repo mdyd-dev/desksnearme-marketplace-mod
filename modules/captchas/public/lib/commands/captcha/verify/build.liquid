@@ -1,0 +1,36 @@
+{% doc %}
+  @description Build phase for captcha verify: resolve provider, secret, locate the token
+    field, and normalize inputs.
+  @param {object} object - raw input: { provider, secret, token, remote_ip, response_field_name }.
+  @returns {object} normalized object with provider, secret (explicit value, else the
+    CAPTCHA_DEFAULT_SECRET constant), token, token_field (the form field the token was read
+    from — explicit response_field_name, else the provider config's response_field, else blank
+    when the provider is unavailable), remote_ip, valid, errors.
+{% enddoc %}
+{% liquid
+  function provider = 'modules/captchas/helpers/default_provider', provider: object.provider
+  function secret = 'modules/captchas/helpers/default_secret', secret: object.secret
+
+  # The default token field name is provider knowledge: ask the provider module's config
+  # helper for it. Only dispatch when the provider is available — building a
+  # modules/captchas_<key>/... path for a missing module would raise a hard error. When the
+  # provider is unavailable the token stays whatever was passed explicitly and the check
+  # phase reports unsupported_provider.
+  function provider_is_available = 'modules/captchas/helpers/provider_available', provider: provider
+  if provider_is_available
+    assign captcha_config_path = 'modules/captchas_' | append: provider | append: '/helpers/config'
+    function provider_config = captcha_config_path
+    assign default_field = provider_config.response_field
+  endif
+
+  assign token_field = object.response_field_name | default: default_field
+  if token_field != blank
+    assign token = object.token | default: context.params[token_field]
+  else
+    assign token = object.token
+  endif
+
+  assign empty_errors = {}
+  assign object = object | hash_merge: provider: provider, secret: secret, token: token, token_field: token_field, valid: true, errors: empty_errors
+  return object
+%}

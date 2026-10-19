@@ -1,0 +1,158 @@
+<article id="buttons">
+
+  <h2 class="pos-heading-2">Buttons</h2>
+
+  <div class="styleguide-columns">
+    <div>
+      <div class="styleguide-example">
+        <h3 class="pos-heading-4 styleguide-heading-4">Default</h3>
+        <picture>
+          <button class="pos-button">Button</button>
+        </picture>
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-button</code></dd>
+        </dl>
+      </div>
+{% capture code %}{% raw %}
+<button class="pos-button">Button</button>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+      <div class="styleguide-example">
+        <h3 class="pos-heading-4 styleguide-heading-4">Primary</h3>
+        <picture>
+          <button class="pos-button pos-button-primary">Button</button>
+        </picture>
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-button pos-button-primary</code></dd>
+        </dl>
+      </div>
+{% capture code %}{% raw %}
+<button class="pos-button pos-button-primary">Button</button>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+
+    <div>
+      <div class="styleguide-example">
+        <h3 class="pos-heading-4 styleguide-heading-4">Default small</h3>
+        <picture>
+          <button class="pos-button pos-button-small">Button</button>
+        </picture>
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-button pos-button-small</code></dd>
+        </dl>
+      </div>
+{% capture code %}{% raw %}
+<button class="pos-button pos-button-small">Button</button>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+      <div class="styleguide-example">
+        <h3 class="pos-heading-4 styleguide-heading-4">Primary small</h3>
+        <picture>
+          <button class="pos-button pos-button-small pos-button-primary">Button</button>
+        </picture>
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-button pos-button-small pos-button-small</code></dd>
+        </dl>
+      </div>
+{% capture code %}{% raw %}
+<button class="pos-button pos-button-small pos-button-primary">Button</button>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  {% render 'modules/common-styling/tip', content: 'When overwriting the <code>&lt;button&gt;</code> classes, please remember to also overwrite the debug classes used in the style guide: <code>pos-debug-button-hover</code>, <code>pos-debug-button-active</code>, <code>pos-debug-button-focus-visible</code>.' %}
+
+  <table class="styleguide-examples-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Default</th>
+        <th>Primary</th>
+        <th>Default small</th>
+        <th>Primary small</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Enabled</th>
+        <td><button class="pos-button">Button</button></td>
+        <td><button class="pos-button pos-button-primary">Button</button></td>
+        <td><button class="pos-button pos-button-small">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-button-primary">Button</button></td>
+      </tr>
+      <tr>
+        <th class="styleguide-table-heading">Hover</th>
+        <td><button class="pos-button pos-debug-button-hover">Button</button></td>
+        <td><button class="pos-button pos-button-primary pos-debug-button-hover">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-debug-button-hover">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-button-primary pos-debug-button-hover">Button</button></td>
+      </tr>
+      <tr>
+        <th scope="row">Active</th>
+        <td><button class="pos-button pos-debug-button-active">Button</button></td>
+        <td><button class="pos-button pos-button-primary pos-debug-button-active">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-debug-button-active">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-button-primary pos-debug-button-active">Button</button></td>
+      </tr>
+      <tr>
+        <th scope="row">Focused</th>
+        <td><button class="pos-button pos-debug-button-focus-visible">Button</button></td>
+        <td><button class="pos-button pos-button-primary pos-debug-button-focus-visible">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-debug-button-focus-visible">Button</button></td>
+        <td><button class="pos-button pos-button-small pos-button-primary pos-debug-button-focus-visible">Button</button></td>
+      </tr>
+      <tr>
+        <th scope="row">Disabled</th>
+        <td><button disabled class="pos-button">Button</button></td>
+        <td><button disabled class="pos-button pos-button-primary">Button</button></td>
+        <td><button disabled class="pos-button pos-button-small">Button</button></td>
+        <td><button disabled class="pos-button pos-button-small pos-button-primary">Button</button></td>
+      </tr>
+      <tr>
+        <th scope="row">Icon</th>
+        <td>
+          <button class="pos-button">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M12.089 24a6.747 6.747 0 01-1.853-.26l-3.634-1.038A5.342 5.342 0 006 22.568v.682a.75.75 0 01-.75.75H.75a.75.75 0 01-.75-.75V9.75A.75.75 0 01.75 9h4.5a.75.75 0 01.75.75v1.512a6.747 6.747 0 006-6.708V3c0-1.654 1.346-3 3-3s3 1.346 3 3v3.382c0 .346.234.645.57.728l1.435.313c2.443.612 4.116 2.867 3.989 5.365l-.301 5.106C23.343 21.382 20.455 24 16.974 24h-4.885zM6 21.053c.342.043.682.112 1.014.207l3.634 1.038c.468.134.953.202 1.441.202h4.885a5.235 5.235 0 005.224-4.725l.298-5.069a3.758 3.758 0 00-2.834-3.823l-1.433-.313A2.253 2.253 0 0116.5 6.382V3c0-.827-.673-1.5-1.5-1.5s-1.5.673-1.5 1.5v1.554A8.236 8.236 0 016 12.77v8.283zM4.5 22.5v-12h-3v12h3z"></path></svg>
+            Button
+          </button>
+        </td>
+        <td>
+          <button class="pos-button pos-button-primary">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M12.089 24a6.747 6.747 0 01-1.853-.26l-3.634-1.038A5.342 5.342 0 006 22.568v.682a.75.75 0 01-.75.75H.75a.75.75 0 01-.75-.75V9.75A.75.75 0 01.75 9h4.5a.75.75 0 01.75.75v1.512a6.747 6.747 0 006-6.708V3c0-1.654 1.346-3 3-3s3 1.346 3 3v3.382c0 .346.234.645.57.728l1.435.313c2.443.612 4.116 2.867 3.989 5.365l-.301 5.106C23.343 21.382 20.455 24 16.974 24h-4.885zM6 21.053c.342.043.682.112 1.014.207l3.634 1.038c.468.134.953.202 1.441.202h4.885a5.235 5.235 0 005.224-4.725l.298-5.069a3.758 3.758 0 00-2.834-3.823l-1.433-.313A2.253 2.253 0 0116.5 6.382V3c0-.827-.673-1.5-1.5-1.5s-1.5.673-1.5 1.5v1.554A8.236 8.236 0 016 12.77v8.283zM4.5 22.5v-12h-3v12h3z"></path></svg>
+            Button
+          </button>
+        </td>
+        <td>
+          <button class="pos-button pos-button-small">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M12.089 24a6.747 6.747 0 01-1.853-.26l-3.634-1.038A5.342 5.342 0 006 22.568v.682a.75.75 0 01-.75.75H.75a.75.75 0 01-.75-.75V9.75A.75.75 0 01.75 9h4.5a.75.75 0 01.75.75v1.512a6.747 6.747 0 006-6.708V3c0-1.654 1.346-3 3-3s3 1.346 3 3v3.382c0 .346.234.645.57.728l1.435.313c2.443.612 4.116 2.867 3.989 5.365l-.301 5.106C23.343 21.382 20.455 24 16.974 24h-4.885zM6 21.053c.342.043.682.112 1.014.207l3.634 1.038c.468.134.953.202 1.441.202h4.885a5.235 5.235 0 005.224-4.725l.298-5.069a3.758 3.758 0 00-2.834-3.823l-1.433-.313A2.253 2.253 0 0116.5 6.382V3c0-.827-.673-1.5-1.5-1.5s-1.5.673-1.5 1.5v1.554A8.236 8.236 0 016 12.77v8.283zM4.5 22.5v-12h-3v12h3z"></path></svg>
+            Button
+          </button>
+        </td>
+        <td>
+          <button class="pos-button pos-button-small pos-button-primary">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M12.089 24a6.747 6.747 0 01-1.853-.26l-3.634-1.038A5.342 5.342 0 006 22.568v.682a.75.75 0 01-.75.75H.75a.75.75 0 01-.75-.75V9.75A.75.75 0 01.75 9h4.5a.75.75 0 01.75.75v1.512a6.747 6.747 0 006-6.708V3c0-1.654 1.346-3 3-3s3 1.346 3 3v3.382c0 .346.234.645.57.728l1.435.313c2.443.612 4.116 2.867 3.989 5.365l-.301 5.106C23.343 21.382 20.455 24 16.974 24h-4.885zM6 21.053c.342.043.682.112 1.014.207l3.634 1.038c.468.134.953.202 1.441.202h4.885a5.235 5.235 0 005.224-4.725l.298-5.069a3.758 3.758 0 00-2.834-3.823l-1.433-.313A2.253 2.253 0 0116.5 6.382V3c0-.827-.673-1.5-1.5-1.5s-1.5.673-1.5 1.5v1.554A8.236 8.236 0 016 12.77v8.283zM4.5 22.5v-12h-3v12h3z"></path></svg>
+            Button
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Link</th>
+        <td><a href="#" class="pos-button">Link</a></td>
+        <td><a href="#" class="pos-button pos-button-primary">Link</a></td>
+        <td><a href="#" class="pos-button pos-button-small">Link</a></td>
+        <td><a href="#" class="pos-button pos-button-small pos-button-primary">Link</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>

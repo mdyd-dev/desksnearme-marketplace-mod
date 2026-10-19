@@ -1,0 +1,16 @@
+{% doc %}
+  @param {string} _start - The start time for measuring elapsed time
+  @param {string} type - The type identifier
+  @param {string} env - The environment name for logging
+{% enddoc %}
+{% liquid
+  assign _stop = 'now' | to_time
+  assign _diff = _start | time_diff: _stop
+  if env
+    log _diff, type: type, env: env
+  else
+    log _diff, type: type
+  endif
+
+  return true
+%}

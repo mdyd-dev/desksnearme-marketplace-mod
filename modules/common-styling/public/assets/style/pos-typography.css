@@ -1,0 +1,468 @@
+/*
+  defines fonts, paragraphs and headings
+
+  icons
+  links
+  headings
+  sidenotes
+  kbds
+  utility classes
+  increasing text legibility
+  long text
+*/
+
+
+
+@layer common-styling {
+
+  /* icons
+  ============================================================================ */
+  .pos-icon {
+    fill: currentColor;
+  }
+
+
+  /* links
+  ============================================================================ */
+  :where(.pos-app) a {
+    color: var(--pos-color-interactive);
+
+    transition: color .1s linear;
+  }
+
+  :where(.pos-app) a:hover,
+  .pos-debug-link-hover {
+    color: var(--pos-color-interactive-hover);
+  }
+
+  :where(.pos-app) a:active,
+  .pos-debug-link-active {
+    color: var(--pos-color-interactive-active)
+  }
+
+  :where(.pos-app) a:not(.pos-button):focus-visible,
+  .pos-debug-link-focus {
+    border-radius: var(--pos-radius-button);
+    outline: 2px solid var(--pos-color-focused);
+    outline-offset: 2px;
+
+    color: var(--pos-color-interactive-hover);
+  }
+
+  :where(.pos-app) a svg {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+
+    fill: currentColor;
+  }
+
+  /* hidden text label */
+  :where(.pos-app) a .pos-label {
+    position: absolute;
+    inset-inline-start: -100vw;
+  }
+
+
+  /* headings
+  ============================================================================ */
+  .pos-heading-1,
+  .pos-prose h1 {
+    margin-inline-start: -.1ex;
+    display: block;
+
+    font-family: var(--pos-font-heading);
+    font-size: 3rem;
+    font-weight: 500;
+  }
+
+  .pos-heading-2,
+  .pos-prose h2 {
+    margin-inline-start: -.1ex;
+    display: block;
+
+    line-height: 1.2;
+    font-family: var(--pos-font-heading);
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .pos-heading-3,
+  .pos-prose h3 {
+    margin-inline-start: -.05ex;
+    display: block;
+
+    font-family: var(--pos-font-heading);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .pos-heading-4,
+  .pos-prose h4 {
+    display: block;
+
+    font-family: var(--pos-font-heading);
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
+
+  .pos-heading-3 + .pos-card {
+    margin-block-start: .3em;
+  }
+
+  .pos-card + .pos-heading-3 {
+    margin-block-start: var(--pos-gap-card-card);
+  }
+
+
+  /* sidenotes
+  ============================================================================ */
+  .pos-supplementary {
+    color: var(--pos-color-content-text-supplementary);
+  }
+
+
+  /* kbds
+  ============================================================================ */
+  .pos-app kbd {
+    padding-block: 1px;
+    padding-inline: 2px;
+
+    background-color: var(--pos-color-highlight-background);
+    border-radius: 2px;
+
+    font-family: var(--pos-font-code);
+    font-size: .9rem;
+    color: var(--pos-color-highlight-text);
+  }
+
+
+  /* tips
+  ============================================================================ */
+  .pos-tip {
+    margin-block-start: .3rem;
+    position: relative;
+    display: flex;
+    gap: .5em;
+
+    color: var(--pos-color-content-text-supplementary);
+  }
+
+    .pos-tip a {
+      text-decoration: underline;
+    }
+
+    .pos-tip a:not(:hover) {
+      color: inherit;
+    }
+
+    .pos-tip svg {
+      width: 1.2rem;
+      height: 1.2rem;
+      position: relative;
+      top: 2px;
+      flex-shrink: 0;
+    }
+
+
+  /* utility classes
+  ============================================================================ */
+  .pos-text-center {
+    text-align: center;
+  }
+
+
+  /* increasing text legibility
+  ============================================================================ */
+  .pos-increaseLegibility {
+    position: relative;
+  }
+
+  .pos-increaseLegibility:before {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    inset-block-end: 0;
+    opacity: .5;
+
+    border-start-end-radius: inherit;
+    border-start-start-radius: inherit;
+    background-image: var(--pos-gradient-legibility);
+
+    content: '';
+  }
+
+  .pos-increaseLegibility > * {
+    position: relative;
+    z-index: 2;
+  }
+
+
+  /* long text
+  ============================================================================ */
+  .pos-prose {
+    line-height: 1.4;
+  }
+
+  /* headings */
+  .pos-prose h1 + h2 {
+    margin-block-start: .4rem;
+  }
+
+  .pos-prose h2 + h3 {
+    margin-block-start: .3rem;
+  }
+
+  .pos-prose .pos-heading-1,
+  .pos-prose h1 {
+    line-height: 1em;
+  }
+
+    .pos-prose .pos-heading-1 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5),
+    .pos-prose h1 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) {
+      margin-block-start: 1rem;
+    }
+
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + .pos-heading-1,
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + h1 {
+      margin-block-start: 2rem;
+    }
+
+  .pos-prose .pos-heading-2,
+  .pos-prose h2 {
+    line-height: 1.1em;
+  }
+
+    .pos-prose .pos-heading-2 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5),
+    .pos-prose h2 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) {
+      margin-block-start: .75rem;
+    }
+
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + .pos-heading-2,
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + h2 {
+      margin-block-start: 1.75rem;
+    }
+
+  .pos-prose .pos-heading-3,
+  .pos-prose h3 {
+    line-height: 1.2em;
+  }
+
+    .pos-prose .pos-heading-3 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5),
+    .pos-prose h3 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) {
+      margin-block-start: .65rem;
+    }
+
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + .pos-heading-3,
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + h3 {
+      margin-block-start: 1.65rem;
+    }
+    
+  .pos-prose .pos-heading-4,
+  .pos-prose h4 {
+    line-height: 1.3em;
+  }
+
+    .pos-prose .pos-heading-4 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5),
+    .pos-prose h4 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) {
+      margin-block-start: .55rem;
+    }
+
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + .pos-heading-4,
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + h4 {
+      margin-block-start: 1.55rem;
+    }
+
+  .pos-prose .pos-heading-5,
+  .pos-prose h5 {
+    line-height: 1.4em;
+  }
+
+    .pos-prose .pos-heading-5 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5),
+    .pos-prose h5 + *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) {
+      margin-block-start: .45rem;
+    }
+
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + .pos-heading-5,
+    .pos-prose *:not(h1, h2, h3, h4, h5, .pos-heading-1, .pos-heading-2, .pos-heading-3, .pos-heading-4, .pos-heading-5) + h5 {
+      margin-block-start: 1.45rem;
+    }
+
+  
+  /* paragraphs */
+  .pos-prose p + p {
+    margin-block-start: .5em;
+  }
+
+  .pos-prose * + p {
+    margin-block-start: .5em;
+  }
+
+
+  /* lists */
+  .pos-prose * + ol,
+  .pos-prose * + ul {
+    margin-block-start: .5em;
+  }
+
+  .pos-prose ol {
+    margin-inline-start: 1.2em;
+
+    list-style-type: decimal;
+  }
+
+  .pos-prose ul {
+    margin-inline-start: 1.2em;
+
+    list-style-type: disc;
+  }
+
+  .pos-prose li + li {
+    margin-block-start: .5em;
+  }
+
+  .pos-prose .pos-prose-list-nested { 
+    counter-reset: section;
+  }
+
+    .pos-prose .pos-prose-list-nested * {
+      list-style: none;
+    }
+
+    .pos-prose .pos-prose-list-nested > li {
+      counter-increment: section;
+    }
+    
+    .pos-prose .pos-prose-list-nested > li:before {
+      content: counter(section) ". ";
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol {
+      counter-reset: subsection;
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol > li {
+      counter-increment: subsection;
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol > li:before {
+      content: counter(section) "." counter(subsection) ". ";
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol > li > ol {
+      counter-reset: subsubsection;
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol > li > ol > li {
+      counter-increment: subsubsection;
+    }
+
+    .pos-prose .pos-prose-list-nested > li > ol > li > ol > li:before {
+      content: counter(section) "." counter(subsection) "." counter(subsubsection) ". ";
+    }
+
+  /* headings in lists */
+  .pos-prose ol li:has(h2:first-child):before {
+    font-family: var(--pos-font-heading);
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .pos-prose ol li h2:first-child {
+    display: inline-block;
+  }
+
+  .pos-prose ol li:has(h3:first-child):before {
+    font-family: var(--pos-font-heading);
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .pos-prose ol li h3:first-child {
+    display: inline-block;
+  }
+
+
+
+  /* images */
+  .pos-prose img {
+    margin-block: .5rem;
+  }
+
+
+  /* code */
+  .pos-prose pre code {
+    margin-block: .5rem;
+  }
+
+  .pos-prose code {
+    padding-inline: 1px;
+
+    background-color: var(--pos-color-highlight-background);
+
+    font-family: var(--pos-font-code) !important;
+    font-size: 1rem;
+    color: var(--pos-color-highlight-text);
+  }
+
+  .pos-prose pre code {
+    padding: 1rem;
+    display: block;
+    overflow-x: auto;
+
+    border-radius: calc(var(--pos-radius-card) / 2);
+    background-color: var(--pos-color-highlight-background);
+  }
+
+
+  /* tables */
+  .pos-prose table th {
+    padding-inline: var(--pos-padding-cell);
+    padding-block: calc(var(--pos-padding-cell) / 2);
+
+    border: 0;
+
+    text-align: start;
+    text-transform: uppercase;
+    font-weight: normal;
+    font-size: .9rem;
+    color: var(--pos-color-content-text-supplementary);
+  }
+
+    .pos-prose table th:first-of-type {
+      padding-inline-start: 0;
+    }
+
+    .pos-prose table th:last-of-type {
+      padding-inline-end: 0;
+    }
+
+  .pos-prose table td {
+    padding: var(--pos-padding-cell);
+
+    border: 0;
+  }
+
+    .pos-prose table td:first-of-type {
+      padding-inline-start: 0;
+    }
+
+    .pos-prose table td:last-of-type {
+      padding-inline-end: 0;
+    }
+
+    .pos-prose table tr:not(:last-child) td {
+      border-block-end: 1px solid var(--pos-color-frame);
+    }
+
+
+  /* text styles */
+  .pos-prose strong {
+    font-weight: bold;
+  }
+
+  .pos-prose em {
+    font-style: italic;
+  }
+
+}

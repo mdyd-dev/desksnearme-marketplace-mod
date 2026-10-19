@@ -1,0 +1,487 @@
+<article id="forms">
+  <h2 class="pos-heading-2">Forms</h2>
+  <p>There are two ways for styling form controlls. You can add a <code>pos-form</code> class to a container and make all the child inputs styled automatically or you can add one of the following classes to any single input to style it separately.</p>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Basic example</h3>
+  <form action="" class="pos-form pos-form-simple styleguide-example">
+    <fieldset>
+      <label for="styleguide-form-example-a">Email</label>
+      <input type="email" id="styleguide-form-example-a" placeholder="Email address" required>
+    </fieldset>
+    <fieldset>
+      <label for="styleguide-form-example-b">Password</label>
+      <input type="password" id="styleguide-form-example-b" placeholder="••••••••" required>
+    </fieldset>
+    <fieldset>
+      <label for="styleguide-form-example-c">Message</label>
+      <textarea id="styleguide-form-example-c" placeholder="Your message"></textarea>
+    </fieldset>
+    <fieldset>
+      <input type="checkbox" id="styleguide-form-example-d" required>
+      <label for="styleguide-form-example-d">An agreement</label>
+    </fieldset>
+  </form>
+{% capture code %}{% raw %}
+<form action="" class="pos-form pos-form-simple">
+  <fieldset>
+    <label for="styleguide-form-example-a">Email</label>
+    <input type="email" id="styleguide-form-example-a" placeholder="Email address" required {% render 'modules/common-styling/forms/error_input_handler', name: 'styleguide-form-example-a', errors: errors['styleguide-form-example-a'] %}>
+    {% render 'modules/common-styling/forms/error_list', name: 'styleguide-example-error', errors: errors['styleguide-form-example-a'] %}
+  </fieldset>
+  <fieldset>
+    <label for="styleguide-form-example-b">Password</label>
+    <input type="password" id="styleguide-form-example-b" placeholder="••••••••" required {% render 'modules/common-styling/forms/error_input_handler', name: 'styleguide-form-example-b', errors: errors['styleguide-form-example-b'] %}>
+    {% render 'modules/common-styling/forms/error_list', name: 'styleguide-example-error', errors: errors['styleguide-form-example-b'] %}
+  </fieldset>
+  <fieldset>
+    <input type="checkbox" id="styleguide-form-example-c" required {% render 'modules/common-styling/forms/error_input_handler', name: 'styleguide-form-example-c', errors: errors['styleguide-form-example-c'] %}>
+    <label for="styleguide-form-example-c">An agreement</label>
+    {% render 'modules/common-styling/forms/error_list', name: 'styleguide-example-error', errors: errors['styleguide-form-example-c'] %}
+  </fieldset>
+</form>
+{% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Containers</h3>
+
+  <div class="styleguide-columns">
+
+    <div>
+      <form action="" class="pos-form styleguide-forms-placeholder-container">
+        <div class="styleguide-forms-placeholder-input"></div>
+        <div class="styleguide-forms-placeholder-radio"></div>
+        <div class="styleguide-forms-placeholder-radio"></div>
+        <div class="styleguide-forms-placeholder-button styleguide-forms-placeholder-button-next"></div>
+      </form>
+      <dl class="styleguide-details">
+        <dt>Class</dt><dd><code>pos-form</code></dd>
+      </dl>
+      <p>Used for complex forms that needs more manual customized styling. No automatic labels styling, no automatic spacing between elements.</p>
+    </div>
+
+    <div>
+      <form action="" class="pos-form pos-form-simple styleguide-forms-placeholder-container">
+        <div class="styleguide-forms-placeholder-input"></div>
+        <div class="styleguide-forms-placeholder-input"></div>
+        <div class="styleguide-forms-placeholder-button"></div>
+      </form>
+      <dl class="styleguide-details">
+        <dt>Class</dt><dd><code>pos-form pos-form-simple</code></dd>
+      </dl>
+      <p>Used for simple forms that can be styled automatically. Styles the labels and spacing between items as well. You can just throw this class onto the container and forget about styling each separate control.</p>
+    </div>
+
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Rows</h3>
+
+  <div class="styleguide-columns">
+    <div>
+      <dl class="styleguide-details">
+        <dt>Class</dt><dd><code>pos-form-fieldset</code></dd>
+        <dt>Properties</dt><dd><code>--pos-gap-text-text</code></dd>
+      </dl>
+{% capture code %}{% raw %}
+<fieldset class="pos-form-fieldset">
+
+</fieldset>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+    <form action="" class="pos-form styleguide-forms-placeholder-container">
+      <fieldset class="styleguide-forms-placeholder-fieldset"></fieldset>
+      <fieldset class="styleguide-forms-placeholder-fieldset"></fieldset>
+    </form>
+  </div>
+
+  <div class="styleguide-columns">
+    <div>
+      <dl class="styleguide-details">
+        <dt>Class</dt><dd><code>pos-form-fieldset-combined</code></dd>
+      </dl>
+{% capture code %}{% raw %}
+<fieldset class="pos-form-fieldset-combined">
+
+</fieldset>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+    <form action="" class="pos-form styleguide-forms-placeholder-container">
+      <fieldset class="styleguide-forms-placeholder-fieldset pos-form-fieldset-combined">
+        <div class="styleguide-forms-placeholder-input"></div>
+        <div class="styleguide-forms-placeholder-button"></div>
+      </fieldset>
+    </form>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Form actions</h3>
+  <form action="" class="pos-form styleguide-example">
+    <fieldset class="pos-form-actions">
+      <div class="styleguide-forms-placeholder-button"></div>
+      <div class="styleguide-forms-placeholder-button"></div>
+    </fieldset>
+  </form>
+{% capture code %}{% raw %}
+<fieldset class="pos-form-actions">
+
+</fieldset>
+{% endraw %}{% endcapture %}
+  <div class="styleguide-code">
+    <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+  </div>
+  
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Labels</h3>
+
+  <div class="styleguide-columns">
+    {% render 'modules/common-styling/tip', content: 'Labels that are placed in a <code>fieldset</code> that has a <code>reqired</code> input will automatically be marked with an asterisk.' %}
+    <div>
+      <div class="styleguide-example">
+        <form action="" class="pos-form pos-form-simple">
+          <fieldset>
+            <label for="input-id">My label</label>
+            <input type="text" id="input-id" placeholder="Placeholder text" required>
+          </fieldset>
+        </form>
+      </div>
+      {% capture code %}{% raw %}
+      <label for="input-id">My label</label>
+      {% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="styleguide-columns">
+
+    <div>
+      <h3 class="pos-heading-4 styleguide-heading-4">Radio</h3>
+
+      <form action="" class="pos-form pos-form-simple styleguide-example">
+        <fieldset>
+          <input type="radio" id="styleguide-radio-a"><label for="styleguide-radio-a">Default</label>
+        </fieldset>
+              <fieldset>
+          <input type="radio" checked id="styleguide-radio-b"><label for="styleguide-radio-b">Checked</label>
+        </fieldset>
+        <fieldset>
+          <input type="radio" id="styleguide-radio-c" class="pos-debug-radio-hover"><label for="styleguide-radio-c">Hover</label>
+        </fieldset>
+        <fieldset>
+          <input type="radio" id="styleguide-radio-d" class="pos-debug-radio-focus-visible"><label for="styleguide-radio-d">Focused</label>
+        </fieldset>
+        <fieldset>
+          <input type="radio" disabled checked id="styleguide-radio-e"><label for="styleguide-radio-e">Disabled & checked</label>
+        </fieldset>
+      </form>
+    </div>
+
+    <div>
+      <h3 class="pos-heading-4 styleguide-heading-4">Checkbox</h3>
+
+      <form action="" class="pos-form pos-form-simple styleguide-example">
+        <fieldset>
+          <input type="checkbox" id="styleguide-checkbox-a"><label for="styleguide-checkbox-a">Default</label>
+        </fieldset>
+              <fieldset>
+          <input type="checkbox" checked id="styleguide-checkbox-b"><label for="styleguide-checkbox-b">Checked</label>
+        </fieldset>
+        <fieldset>
+          <input type="checkbox" id="styleguide-checkbox-c" class="pos-debug-checkbox-hover"><label for="styleguide-checkbox-c">Hover</label>
+        </fieldset>
+        <fieldset>
+          <input type="checkbox" id="styleguide-checkbox-d" class="pos-debug-checkbox-focus-visible"><label for="styleguide-checkbox-d">Focused</label>
+        </fieldset>
+        <fieldset>
+          <input type="checkbox" disabled checked id="styleguide-checkbox-e"><label for="styleguide-checkbox-e">Disabled & checked</label>
+        </fieldset>
+      </form>
+    </div>
+
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Text inputs</h3>
+
+  <div id="text-inputs" class="styleguide-columns">
+
+    <div>
+      <div class="styleguide-example">
+        <input type="text" class="pos-form-input" placeholder="Text input">
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-form-input</code></dd>
+        </dl>
+      </div>
+{% capture code %}{% raw %}
+<input type="text" class="pos-form-input" placeholder="Text input">
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+
+      {% render 'modules/common-styling/tip', content: 'When overwriting the <code>&lt;input&gt;</code> classes, please remember to also overwrite the debug classes used in the style guide: <code>pos-debug-form-input-hover</code>, <code>pos-debug-form-input-focus-visible</code>.' %}
+    </div>
+
+    <div>
+      <table class="styleguide-examples-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Placeholder</th>
+            <th>Filled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Default</th>
+            <td><input type="text" class="pos-form-input" placeholder="Text input"></td>
+            <td><input type="text" class="pos-form-input" value="Lorem ipsum"></td>
+          </tr>
+          <tr>
+            <th class="styleguide-table-heading">Hover</th>
+            <td><input type="text" class="pos-form-input pos-debug-form-input-hover" placeholder="Text input"></td>
+            <td><input type="text" class="pos-form-input pos-debug-form-input-hover" value="Lorem ipsum"></td>
+          </tr>
+          <tr>
+            <th scope="row">Focused</th>
+            <td><input type="text" class="pos-form-input pos-debug-form-input-focus-visible" placeholder="Text input"></td>
+            <td><input type="text" class="pos-form-input pos-debug-form-input-focus-visible" value="Lorem ipsum"></td>
+          </tr>
+          <tr>
+            <th scope="row">Disabled</th>
+            <td><input type="text" disabled class="pos-form-input" placeholder="Text input"></td>
+            <td><input type="text" disabled class="pos-form-input" value="Lorem ipsum"></td>
+          </tr>
+          <tr>
+            <th scope="row">Error</th>
+            <td><input type="text" aria-invalid="true" class="pos-form-input" placeholder="Text input"></td>
+            <td><input type="text" aria-invalid="true" class="pos-form-input" value="Lorem ipsum"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div id="text-inputs-textarea" class="styleguide-columns">
+
+    <div>
+      <div class="styleguide-example">
+        <textarea class="pos-form-input" placeholder="Textarea"></textarea>
+        <dl class="styleguide-details">
+          <dt>Class</dt><dd><code>pos-form-input</code></dd>
+        </dl>
+      </div>
+  {% capture code %}{% raw %}
+  <textarea class="pos-form-input" placeholder="Textarea"></textarea>
+  {% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+
+      {% render 'modules/common-styling/tip', content: 'When overwriting the <code>&lt;input&gt;</code> classes, please remember to also overwrite the debug classes used in the style guide: <code>pos-debug-form-input-hover</code>, <code>pos-debug-form-input-focus-visible</code>.' %}
+    </div>
+
+    <div>
+      <table class="styleguide-examples-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Placeholder</th>
+            <th>Filled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Default</th>
+            <td><textarea class="pos-form-input" placeholder="Textarea"></textarea></td>
+            <td><textarea class="pos-form-input" placeholder="Textarea">Lorem ipsum</textarea></td>
+          </tr>
+          <tr>
+            <th class="styleguide-table-heading">Hover</th>
+            <td><textarea class="pos-form-input pos-debug-form-input-hover" placeholder="Textarea"></textarea></td>
+            <td><textarea class="pos-form-input pos-debug-form-input-hover" placeholder="Textarea">Lorem ipsum</textarea></td>
+          </tr>
+          <tr>
+            <th scope="row">Focused</th>
+            <td><textarea class="pos-form-input pos-debug-form-input-focus-visible" placeholder="Textarea"></textarea></td>
+            <td><textarea class="pos-form-input pos-debug-form-input-focus-visible" placeholder="Textarea">Lorem ipsum</textarea></td>
+          </tr>
+          <tr>
+            <th scope="row">Disabled</th>
+            <td><textarea disabled class="pos-form-input" placeholder="Textarea"></textarea></td>
+            <td><textarea disabled class="pos-form-input" placeholder="Textarea">Lorem ipsum</textarea></td>
+          </tr>
+          <tr>
+            <th scope="row">Error</th>
+            <td><textarea aria-invalid="true" class="pos-form-input" placeholder="Textarea"></textarea></td>
+            <td><textarea aria-invalid="true" class="pos-form-input" placeholder="Textarea">Lorem ipsum</textarea></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Markdown editor</h3>
+  {% render 'modules/common-styling/forms/markdown',
+    id: 'styleguide-markdown-editor',
+    name: 'styleguide-markdown-editor',
+    mention_search_url: '/api/users/search?query='
+  %}
+
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/forms/markdown',
+  id: 'styleguide-markdown-editor',
+  name: 'styleguide-markdown-editor',
+  presigned_upload: presigned_upload
+%}
+{% endraw %}{% endcapture %}
+    <div class="styleguide-code">
+      <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+    </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Password input</h3>
+
+  <div class="styleguide-columns">
+    <div>
+      <dl class="styleguide-details">
+        <dt>name</dt><dd>Input <code>name</code> attribute <i>string</i></dd>
+        <dt>id</dt><dd>Input <code>id</code> attribute <i>string</i></dd>
+        <dt>value</dt><dd>Current input value <i>string</i></dd>
+        <dt>class</dt><dd>Class list added to input container <i>string</i></dd>
+        <dt>meter</dt><dd>If you want to show the password strength meter <i>bool</i></dd>
+      </dl>
+      {% render 'modules/common-styling/tip', content: 'Strong passwords consists of small and capitalized letters, numbers, special signs and are at least 6 characters long. Remember to provide clear instructios for your users.' %}
+    </div>
+    <div>
+      <div class="styleguide-example" style="text-align: center;">
+        {% render 'modules/common-styling/forms/password', name: 'styleguide-form-password-test', id: 'styleguide-form-password-test', value: '123456', meter: true, class: null %}
+      </div>
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/forms/password',
+      name: 'styleguide-form-password-test',
+      value: '123',
+      id: 'styleguide-form-password-test',
+      meter: true
+%}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Select</h3>
+
+  <div class="styleguide-columns">
+    <div>
+      <dl class="styleguide-details">
+        <dt>class</dt><dd><code>pos-form-select</code></dd>
+      </dl>
+    </div>
+    <div class="styleguide-example" style="text-align: center;">
+      <select class="pos-form-select">
+        <option>Default 1</option>
+        <option>Default 2</option>
+        <option>Default 3</option>
+      </select>
+
+      <select disabled class="pos-form-select">
+        <option>Disabled 1</option>
+        <option>Disabled 2</option>
+        <option>Disabled 3</option>
+      </select>
+    </div>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Multiselect</h3>
+
+  <div class="styleguide-columns">
+    <div>
+      <dl class="styleguide-details">
+        <dt>id</dt><dd>Unique ID for the input <i>string</i></dd>
+        <dt>list</dt>
+        <dd>
+          an array of objects with items to show, must include 'value' and 'label' <i>array</i><br>
+          <code>[ { value: 'item1value', label: 'Item 1 label' }, { value: 'item2value', label: 'Item 2 label' } ]</code>
+        </dd>
+        <dt>selected</dt>
+        <dd>
+          array with selected values (the same as in the 'list') <i>array</i><br>
+          <code>[ 'item2value' ]</code>
+        </dd>
+        <dt>form</dt><dd>the <code>&lt;form&gt;</code> element that the multiselect corresponds to <i>string</i></dd>
+        <dt>name</dt><dd>the <code>name=""</code> property for the multiselect checkboxes <i>string</i></dd>
+        <dt>required</dt><dd>at least one option is required <i>bool</i></dd>
+        <dt>combine_selected</dt><dd>if you want to combine selected items into a single element ('2 selected' instead of displaying names) <i>bool</i></dd>
+        <dt>multiline</dt><dd>if you want the list to extend vertically if there are more items than fit the single line <i>bool</i></dd>
+        <dt>showFilter</dt><dd>allow to filter the list of options with a text input <i>bool</i></dd>
+        <dt>placeholder</dt><dd>translation key for the main select input placeholder <i>string</i></dd>
+        <dt>placeholder_filter</dt><dd>translation key for the filter input placeholder <i>string</i></dd>
+        <dt>placeholder_empty</dt><dd>translation key shown when the filter brings no results <i>string</i></dd>
+      </dl>
+    </div>
+    <div>
+      <div class="styleguide-example" style="display: flex; flex-direction: column; gap: var(--pos-gap-text-text);">
+        {% liquid
+          assign example_list = '' | split: ''
+
+          for i in (0..10)
+            assign value = 'value' | append: i
+            assign label = 'Label for value ' | append: i
+            assign example_item = {"value": value, "label": label}
+            assign example_list << example_item
+            assign selected = ["value0", "value5", "value6"]
+          endfor
+        %}
+        {% render 'modules/common-styling/forms/multiselect', name: 'styleguide-form-multiselect-test-1', id: 'styleguide-form-multiselect-test-1', list: example_list, showFilter: true, combine_selected: true, selected: selected, required: null, multiline: null, form: null, view: null, placeholder: null, placeholder_filter: null, placeholder_empty: null %}
+        {% render 'modules/common-styling/forms/multiselect', name: 'styleguide-form-multiselect-test-2', id: 'styleguide-form-multiselect-test-2', list: example_list, showFilter: true, selected: selected, required: null, multiline: null, combine_selected: null, form: null, view: null, placeholder: null, placeholder_filter: null, placeholder_empty: null %}
+        {% render 'modules/common-styling/forms/multiselect', name: 'styleguide-form-multiselect-test-3', id: 'styleguide-form-multiselect-test-3', list: example_list, showFilter: false, multiline: true, selected: selected, required: null, combine_selected: null, form: null, view: null, placeholder: null, placeholder_filter: null, placeholder_empty: null %}
+        {% render 'modules/common-styling/forms/multiselect', name: 'styleguide-form-multiselect-test-4', id: 'styleguide-form-multiselect-test-4', list: example_list, selected: selected, showFilter: true, combine_selected: true, required: null, multiline: null, form: null, view: null, placeholder: null, placeholder_filter: null, placeholder_empty: null %}
+      </div>
+{% capture code %}{% raw %}
+{% render 'modules/common-styling/forms/multiselect',
+      name: 'styleguide-form-multiselect-test',
+      id: 'styleguide-form-multiselect-test'
+%}
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Error handling</h3>
+
+    <p>There are two partials that can be helpful when dealing with forms validation. One can be added to the input itself to handle usability code and the other can output the error message.</p>
+
+    {% liquid
+      assign errors = { "styleguide-example-error": ["This is a field with two errors", "This is the second error"] }
+    %}
+    <div class="styleguide-example">
+      <input type="text" name="styleguide-example-error" id="styleguide-example-error" class="pos-form-input" {% render 'modules/common-styling/forms/error_input_handler', name: 'styleguide-example-error', errors: errors['styleguide-example-error'] %}>
+      {% render 'modules/common-styling/forms/error_list', name: 'styleguide-example-error', errors: errors['styleguide-example-error'] %}
+{% capture code %}{% raw %}
+<input type="text" name="styleguide-example-error" id="styleguide-example-error" class="pos-form-input" {% render 'modules/common-styling/forms/error_input_handler', name: 'styleguide-example-error', errors: errors['styleguide-example-error'] %}>
+
+{% render 'modules/common-styling/forms/error_list', name: 'styleguide-example-error', errors: errors['styleguide-example-error'] %}
+{% endraw %}{% endcapture %}
+    </div>
+    <div class="styleguide-code">
+      <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+    </div>
+
+</article>

@@ -1,0 +1,36 @@
+{% doc %}
+  @param {string} emails - List of email addresses
+  @param {string} first_name - The first name
+  @param {string} id - The record ID
+  @param {string} ids - List of record IDs to include
+  @param {string} last_name - The last name
+  @param {number} limit - Maximum number of results
+  @param {string} not_ids - List of record IDs to exclude
+  @param {number} page - Page number for pagination
+  @param {string} query - Search query string
+  @param {string} sort - Sort order
+  @param {string} user_id - The user ID
+  @param {string} uuid - The UUID identifier
+{% enddoc %}
+{% liquid
+  assign page = page | to_positive_integer: 1
+  if not_ids == blank
+    assign not_ids = null
+  endif
+
+  graphql r = 'modules/user/profiles/search', limit: limit, uuid: uuid, id: id, ids: ids, first_name: first_name , last_name: last_name , user_id: user_id, not_ids: not_ids, query: query, emails: emails, sort: sort, page: page
+
+  assign records = r.records
+  assign profiles = []
+  for profile in records.results
+    function slug = 'modules/user/helpers/profiles/slugs/build' , current_profile: profile, profile: null
+    assign profile.slug = slug
+    assign p = profile
+
+    assign profiles << p
+  endfor
+  assign records.results = profiles
+
+  return records
+%}
+

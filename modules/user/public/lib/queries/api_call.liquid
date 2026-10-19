@@ -1,0 +1,12 @@
+{% doc %}
+  @param {string} api_template - The API call template path
+  @param {object} data - The payload handed to the api call template
+  @param {number} timeout - Request timeout in seconds
+{% enddoc %}
+{%- liquid
+  graphql g = 'modules/user/api_call', api_template: api_template, data: data, timeout: timeout
+  if g.api_call_send == blank
+    log g, type: "QUERY ERROR"
+  endif
+  return g.api_call_send
+-%}

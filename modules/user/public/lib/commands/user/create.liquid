@@ -1,0 +1,41 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {string} first_name - The first name
+  @param {object} [hook_params] - Additional parameters to pass to hooks
+  @param {string} last_name - The last name
+  @param {string} password - The password
+  @param [roles] - The roles to assign; a comma separated string or an array
+{% enddoc %}
+{% liquid
+  function object = 'modules/user/commands/user/create/build', first_name: first_name, last_name: last_name, email: email, password: password, hook_params: hook_params, roles: roles
+  function object = 'modules/user/commands/user/create/check', object: object
+  if object.valid
+    transaction
+      function user = 'modules/core/commands/execute', mutation_name: 'modules/user/user/create', object: object, selection: 'user'
+      assign object.user_id = user.id
+
+      function profile = 'modules/user/commands/profiles/create', object: object
+      unless profile.valid == true
+        comment
+          Roll back the whole DB transaction so the user row is never committed
+          without a profile - otherwise it would have no roles (every can_do
+          check against it fails) and it would block the email address from
+          ever registering again, since user/create/check rejects addresses
+          that already exist.
+        endcomment
+        rollback
+      endunless
+    endtransaction
+
+    unless profile.valid == true
+      return profile
+    endunless
+
+    assign event_payload = {"user_id": user.id}
+    function _ = 'modules/core/commands/events/publish', type: 'user_created', object: event_payload, delay: null, max_attempts: null
+
+    return user
+  endif
+
+  return object
+%}

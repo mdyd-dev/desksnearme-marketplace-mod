@@ -1,0 +1,12 @@
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_redirect', requester: current_profile, do: 'users.register', access_callback: null, entity: null, return_url: null
+  # platformos-check-enable DeprecatedTag
+
+  function registration_fields = 'modules/user/queries/registration_fields/load'
+  assign values = {"email": context.params.email}
+
+  render 'modules/user/users/new', context: context, registration_fields: registration_fields, values: values, errors: null
+%}

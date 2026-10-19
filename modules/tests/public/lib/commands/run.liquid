@@ -1,0 +1,62 @@
+{% doc %}
+  @param {string} test_name - name of the test to run
+  @param {string} [format] - output format for test results
+{% enddoc %}
+{% liquid
+  assign ctx = context
+  assign ctx.tests = true
+  log 'Starting unit tests', type: test_name
+  assign __start = "now" | to_time
+  assign per_page = 100
+  graphql count_result = 'modules/tests/test_files/count', per_page: per_page, path: context.params.name
+  assign total_pages = count_result | hash_dig: "admin_liquid_partials" | hash_dig: "total_pages"
+
+  assign tests = null
+  if tests.size == 0
+    unless format == 'js'
+      echo 'no tests found'
+    endunless
+  endif
+  assign total_errors = 0
+  assign contracts = '' | split: ','
+
+  for page in (1..total_pages)
+    # platformos-check-disable NestedGraphQLQuery
+    graphql search_result = 'modules/tests/test_files/search', path: context.params.name, page: page, per_page: per_page
+    # platformos-check-enable NestedGraphQLQuery
+    assign tests = search_result | hash_dig: "admin_liquid_partials" | hash_dig: "results"
+    for test in tests
+      log test, type: test_name
+      assign contract = { "errors": {}, "success": true, "total": 0 }
+
+      # A test that raises would otherwise end the whole run: the report is rendered after this
+      # loop, so the results already collected are discarded with it. Caught here, the raise is
+      # recorded on that test's own contract and every other test still runs and still reports.
+      #
+      # `err` is not cleared when a try block completes, so without this reset the catch of every
+      # later test would run as well, on the error the first one raised.
+      assign err = null
+      # platformos-check-disable ConvertIncludeToRender, DeprecatedTag
+      try
+        include test.path, registry: test.path, contract: contract
+      catch err
+        assign raise_message = err.class_name | append: ': ' | append: err.message
+        function contract = 'modules/tests/helpers/register_error', contract: contract, field_name: '(raised)', message: raise_message
+      endtry
+      # platformos-check-enable ConvertIncludeToRender, DeprecatedTag
+      assign contract.test_path = test.path
+      assign contracts << contract
+      assign total_errors = total_errors | plus: contract.errors.size
+    endfor
+  endfor
+  assign __stop = "now" | to_time
+  assign total_duration = __start | time_diff: __stop, 'ms' | round
+
+  assign test_formatter = format | default: 'html' | prepend: 'modules/tests/tests/show_'
+  # platformos-check-disable ConvertIncludeToRender, DeprecatedTag
+  include test_formatter, contracts: contracts, total_errors: total_errors, total_duration: total_duration, test_name: test_name
+  # platformos-check-enable ConvertIncludeToRender, DeprecatedTag
+  if total_errors > 0
+    response_status 500
+  endif
+%}

@@ -1,0 +1,89 @@
+/*
+  avatar component
+
+  no-image avatar
+  image avatar
+*/
+
+
+
+/* no-image avatar
+============================================================================ */
+.pos-avatar {
+  all: unset;
+  display: revert;
+
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  
+  border-radius: 50%;
+  background-color: var(--pos-color-frame);
+
+  line-height: 0;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--pos-color-content-text-supplementary);
+}
+
+.pos-avatar-xs {
+  width: 20px;
+  height: 20px;
+
+  font-size: .6rem;
+}
+
+.pos-avatar-sm {
+  width: 24px;
+  height: 24px;
+
+  font-size: .7rem;
+}
+
+.pos-avatar-md {
+  width: 32px;
+  height: 32px;
+
+  font-size: .85rem;
+}
+
+
+.pos-avatar-lg {
+  width: 48px;
+  height: 48px;
+
+  font-size: 1rem;
+}
+
+.pos-avatar-xl {
+  width: 94px;
+  height: 94px;
+
+  font-size: 2rem;
+}
+
+.pos-avatar-2xl {
+  width: 160px;
+  height: 160px;
+
+  font-size: 3rem;
+}
+
+.pos-avatar-3xl {
+  width: 192px;
+  height: 192px;
+
+  font-size: 3.5rem;
+}
+
+
+
+/* image avatar
+============================================================================ */
+.pos-avatar img {
+  border-radius: 50%;
+}

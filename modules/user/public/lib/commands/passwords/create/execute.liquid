@@ -1,0 +1,15 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  graphql r = 'modules/user/user/update_password', args: object
+
+  if r.errors
+    log r.errors, type: 'errors.graphql.invalid'
+
+    assign object.valid = false
+    assign object.errors = r.errors
+  endif
+
+  return object
+ %}

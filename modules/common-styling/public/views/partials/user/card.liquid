@@ -1,0 +1,56 @@
+{% doc %}
+  @param {string} last_name - user last name
+  @param {string} first_name - user first name
+  @param {string} image_src - URL of the user avatar image
+  @param {string} url - link to user profile
+  @param {string} job_title - user job title
+  @param {string} employer - user employer name
+  @param {string} location - user location
+  @param {object} my_profile - current user profile object
+  @param {string} profile_id - profile ID for follow button
+  @param {boolean} allow_to_follow - whether to show follow button
+{% enddoc %}
+{% liquid
+  assign name = first_name | append: ' ' | append: last_name
+%}
+
+
+<div class="pos-card pos-card-user">
+
+  <a href="{{ url }}" class="pos-card-user-person">
+    {% render 'modules/common-styling/user/avatar', size: 'xxl', name: name, image_src: image_src %}
+    {{ name }}
+  </a>
+
+  <div class="pos-card-user-job pos-supplementary">
+    {% if job_title != blank %}
+      {{ job_title }}
+    {% endif %}
+    {% if employer != blank %}
+      {% comment %}platformos-check-disable TranslationKeyExists{% endcomment %}
+      {{ 'modules/community/app.at' | t: default: 'at' }} {{ employer }}{% if location != blank %}, {{ location }} {% endif %}
+      {% comment %}platformos-check-enable TranslationKeyExists{% endcomment %}
+    {% endif %}
+  </div>
+
+  <nav class="pos-card-user-actions">
+    <ul>
+      {% if my_profile %}
+        {% comment %}platformos-check-disable TranslationKeyExists{% endcomment %}
+        <li><a href="{{ url }}" class="pos-button pos-button-small">{{ 'modules/community/profiles.see_profile' | t: default: 'See profile' }}</a></li>
+        {% comment %}platformos-check-enable TranslationKeyExists{% endcomment %}
+      {% endif %}
+
+      {% if allow_to_follow %}
+        <li>
+          {% comment %}platformos-check-disable MissingPartial{% endcomment %}
+          {% liquid
+            theme_render_rc 'modules/community/components/molecules/profile-follow-button', profile_id: profile_id, size: 'small'
+          %}
+          {% comment %}platformos-check-enable MissingPartial{% endcomment %}
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+</div>

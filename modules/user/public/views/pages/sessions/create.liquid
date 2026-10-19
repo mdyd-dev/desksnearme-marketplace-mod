@@ -1,0 +1,39 @@
+---
+method: post
+slug: sessions
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_redirect', requester: current_profile, do: 'sessions.create', return_url: '/', access_callback: null, entity: null
+  # platformos-check-enable DeprecatedTag
+  function res = 'modules/user/commands/session/create', email: context.params.email, password: context.params.password, hook_params: context.params, validate_password: true, skip_otp: null, user_id: null
+  if res.valid and res.otp_required
+    render 'modules/user/2fa/verify', object: context.params
+  elsif res.valid and res.email_verification_required
+    comment
+      Send the link the visitor is about to be told to look for: at this point
+      the only thing standing between them and a session is a message that may
+      have been sent days ago. commands/email_verifications/create throttles and
+      stays silent, so repeated attempts cannot be used to flood the address.
+
+      Redirecting rather than rendering matters twice over: helpers/flash keeps
+      the message in the session until the pathname changes, so rendering here
+      would show it again on the following page, and a rendered POST response
+      re-submits the credentials on refresh.
+    endcomment
+    function _ = 'modules/user/commands/email_verifications/create', email: res.email, host: context.location.host, hcaptcha_params: null, verify_hcaptcha: false
+    function _ = 'modules/user/helpers/flash', error: 'modules/user/email_verification.login_blocked', info: null, notice: null, force_clear: null
+
+    assign encoded_email = res.email | url_encode
+    assign target = '/users/check-email?email=' | append: encoded_email
+    redirect_to target
+  elsif res.valid
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', default: null, error: null, format: null, info: null, notice: null, object: null, url: null
+    # platformos-check-enable DeprecatedTag
+  else
+    render 'modules/user/sessions/new', context: context, errors: res.errors, values: null
+  endif
+%}

@@ -1,0 +1,62 @@
+{% doc %}
+  @param {string} [email] - The email address; required unless validate_password is false
+  @param {object} [hook_params] - Additional parameters to pass to hooks
+  @param {string} [password] - The password; required unless validate_password is false
+  @param {boolean} [skip_otp] - Whether to skip OTP verification (default: false)
+  @param {string} [user_id] - The user ID; required when validate_password is false
+  @param {boolean} [validate_password] - Whether to validate the password (default: true)
+{% enddoc %}
+{% liquid
+  if validate_password == nil
+    assign validate_password = true
+  endif
+
+  if skip_otp == nil
+    assign skip_otp = false
+  endif
+
+  if validate_password
+    function user = 'modules/user/commands/user/verify_password', email: email, password: password
+    unless user.valid
+      return user
+    endunless
+    assign user_id = user.id
+  endif
+
+  function object = 'modules/user/commands/session/create/build', id: user_id
+  function object = 'modules/user/commands/session/create/check', object: object
+  if object.valid
+    function user = 'modules/user/queries/user/load', id: object.id
+    function profile = 'modules/user/queries/profiles/find', user_id: user.id, id: null, uuid: null, first_name: null, last_name: null
+    function verification_enabled = 'modules/user/helpers/email_verification_enabled'
+    assign email_unverified = false
+    if verification_enabled and profile.id != blank and profile.email_verified_at == blank
+      assign email_unverified = true
+    endif
+
+    if profile.otp_configured and skip_otp == false
+        assign object.otp_required = true
+    elsif email_unverified
+      comment
+        Credentials were correct but the address has not been confirmed, so no
+        sign_in, no user_login hook and no user_signed_in event. The caller
+        shows the "check your inbox" screen with a resend link.
+      endcomment
+      assign object.email_verification_required = true
+      assign object.email = user.email
+    else
+      if user.id
+        sign_in user_id: user.id
+        assign params = { "user": user, "hook_params": hook_params }
+        function results = 'modules/core/commands/hook/fire', hook: 'user_login', params: params, merge_to_object: true
+        assign user.hook_results = results
+      endif
+      assign object.user = user
+
+      assign event_payload = {"user_id": object.id}
+      function _ = 'modules/core/commands/events/publish', type: 'user_signed_in', object: event_payload, delay: null, max_attempts: null
+    endif
+  endif
+
+  return object
+%}

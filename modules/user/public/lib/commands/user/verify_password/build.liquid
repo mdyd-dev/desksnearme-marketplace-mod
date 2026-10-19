@@ -1,0 +1,14 @@
+{% doc %}
+  @param {string} email - The email address
+  @param {string} password - The password
+{% enddoc %}
+{% assign object =
+  {
+    "email":       email,
+    "password":    password
+  }
+%}
+
+{% liquid
+  return object
+%}

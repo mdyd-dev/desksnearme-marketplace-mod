@@ -1,0 +1,7 @@
+{% doc %}
+  @param {string} name - form input name used for error element ID
+  @param {object} errors - list of validation errors
+{% enddoc %}
+{% if errors %}
+  aria-invalid="true" aria-describedby="pos-form-{{ name }}-error"
+{% endif %}

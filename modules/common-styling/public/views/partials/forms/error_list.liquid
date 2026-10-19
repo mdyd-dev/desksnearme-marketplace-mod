@@ -1,0 +1,11 @@
+{% doc %}
+  @param {object} errors - list of validation errors to display
+  @param {string} name - form input name used for error element ID
+{% enddoc %}
+{% if errors %}
+  <ul id="pos-form-{{ name }}-error">
+    {% for error in errors %}
+      <li class="pos-form-error">{{ error }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

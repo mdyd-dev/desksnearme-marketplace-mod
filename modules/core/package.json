@@ -1,0 +1,32 @@
+{
+  "name": "pos-module-core",
+  "version": "1.2.1",
+  "description": "Module description",
+  "type": "module",
+  "scripts": {
+    "version": "(cd ../.. && pos-cli modules version --no-git && git add pos-module.json) && auto-changelog -p && git add CHANGELOG.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Platform-OS/pos-module-core.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Platform-OS/pos-module-core/issues"
+  },
+  "homepage": "https://github.com/Platform-OS/pos-module-core#readme",
+  "peerDependencies": {
+    "yeoman-generator": "^7.0.0"
+  },
+  "devDependencies": {
+    "auto-changelog": "^2.4.0",
+    "lodash.startcase": "^4.4.0",
+    "pluralize": "^8.0.0"
+  },
+  "auto-changelog": {
+    "template": "changelog-template.hbs",
+    "unreleased": true,
+    "commitLimit": false
+  }
+}

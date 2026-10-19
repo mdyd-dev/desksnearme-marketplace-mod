@@ -1,0 +1,81 @@
+<article id="text-styles">
+  <h2 class="pos-heading-2">Text styles</h2>
+  <h3 class="pos-heading-4 styleguide-heading-4">Sidenote</h3>
+  <div class="styleguide-columns">
+    <dl class="styleguide-details">
+      <dt>Class</dt><dd><code>pos-supplementary</code></dd>
+      <dt>Font family</dt><dd class="styleguide-typography-content-family"></dd>
+      <dt>Color</dt><dd class="styleguide-typography-content-color"></dd>
+      <dt>Size</dt><dd class="styleguide-typography-content-size"></dd>
+      <dt>Weight</dt><dd class="styleguide-typography-content-weight"></dd>
+      <dt>Line height</dt><dd class="styleguide-typography-content-lineheight"></dd>
+    </dl>
+    <div>
+      <picture class="styleguide-example pos-supplementary">
+        The quick brown fox jumps over the lazy dog
+      </picture>
+{% capture code %}{% raw %}
+<span class="pos-supplementary">The quick brown fox jumps over the lazy dog</span>
+{% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="pos-heading-4 styleguide-heading-4">Tip</h3>
+  <div class="styleguide-columns">
+    <dl class="styleguide-details">
+      <dt>Class</dt><dd><code>pos-tip</code></dd>
+      <dt>Font family</dt><dd class="styleguide-typography-content-family"></dd>
+      <dt>Color</dt><dd class="styleguide-typography-content-color"></dd>
+      <dt>Size</dt><dd class="styleguide-typography-content-size"></dd>
+      <dt>Weight</dt><dd class="styleguide-typography-content-weight"></dd>
+      <dt>Line height</dt><dd class="styleguide-typography-content-lineheight"></dd>
+    </dl>
+    <div>
+      <picture class="styleguide-example pos-supplementary">
+        {% render 'modules/common-styling/tip', content: 'The quick brown fox jumps over the lazy dog' %}
+      </picture>
+      {% capture code %}{% raw %}
+        {% render 'modules/common-styling/tip', content: 'The quick brown fox jumps over the lazy dog' %}
+      {% endraw %}{% endcapture %}
+      <div class="styleguide-code">
+        <pre><code>{{ code | lstrip | rstrip }}</code></pre>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+<article>
+
+  <h3 class="pos-heading-3">Long text</h3>
+
+  <dl class="styleguide-details">
+    <dt>Class</dt>
+    <dd><code>pos-prose</code></dd>
+  </dl>
+
+  <div class="styleguide-example pos-prose">
+    <h1 class="pos-heading-1">Title</h1>
+    <h2 class="pos-heading-2">Subtitle</h2> 
+
+    <h4 class="pos-heading-2">Lorem ipsum dolor</h4>
+    <p>Phasellus ultricies porta dui ac dapibus. Donec ipsum mi, interdum id turpis vel, aliquam ullamcorper orci.</p>
+    <p>Donec accumsan dignissim ligula, vitae <a href="">imperdiet velit</a> varius a. Phasellus quis elementum nibh. Suspendisse suscipit nisl sit amet quam tincidunt, in fermentum est mattis. Vivamus volutpat sagittis mattis. Praesent eu dapibus enim, in dignissim eros.</p>
+
+    <h5 class="pos-heading-3">Donec laoreet vitae</h5>
+    <p>Cras consequat, ipsum id consectetur elementum, nisl nulla blandit neque, ut commodo neque nisl non sapien. Integer rhoncus nisl semper nulla iaculis fringilla. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+    <p>Morbi venenatis condimentum dolor, sit amet consequat est blandit eu. Nam dapibus mollis cursus.</p>
+    <ol>
+      <li>Maecenas elementum nisi dolor, id viverra orci pretium placerat. Duis a elit quis purus pharetra vehicula. Vestibulum eu venenatis nisi.</li>
+      <li>Ut ante ex, ultrices non commodo ut, dictum at nibh.</li>
+    </ol>
+    <ul>
+      <li>Fusce non est in mi dignissim dictum sit amet a urna.</li>
+      <li>Nunc in turpis sit amet purus hendrerit tincidunt nec eu quam.</li>
+    </ul>
+  </div>
+
+</article>

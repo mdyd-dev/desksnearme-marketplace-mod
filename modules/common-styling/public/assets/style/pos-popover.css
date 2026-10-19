@@ -1,0 +1,142 @@
+/*
+  popover menu that floats around the button that triggers it's visiblity
+
+  popover position
+  opened state
+  menu inside the popover
+*/
+
+
+
+@layer common-styling {
+
+  /* popover position
+  ============================================================================ */
+  .pos-popover > [popovertarget] {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .pos-popover [popover] {
+    min-width: 100px;
+    max-width: 600px;
+    margin-block-start: 1rem;
+    position-area: block-end span-inline-start;
+    position-try-fallbacks: flip-block, flip-inline;
+    overflow: hidden;
+    position-anchor: auto;
+
+    border-radius: var(--pos-radius-panel);
+    background-color: var(--pos-color-content-background);
+    box-shadow: var(--pos-shadow-popover);
+  }
+
+  @media (max-width: 600px) {
+    .pos-popover [popover] {
+      width: calc(100vw - var(--pos-padding-page) * 2) !important;
+      position-area: none;
+      position-try-fallbacks: none;
+      position: absolute;
+      inset-block-start: anchor(bottom);
+      inset-inline-start: var(--pos-padding-page) !important;
+    }
+  }
+
+
+  /* opened state
+  ============================================================================ */
+  .pos-popover:has(:popover-open) {
+    z-index: 10;
+  }
+
+  .pos-popover:has(:popover-open) > [popovertarget] {
+    color: var(--pos-color-interactive-active);
+  }
+
+  .pos-popover:has(:popover-open) > [popovertarget]:after {
+    width: 16px;
+    height: 11px;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: calc(50% - 8px);
+
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    background-color: var(--pos-color-interactive);
+
+    content: '';
+  }
+
+  .pos-popover:has(:popover-open) .pos-button {
+    background-color: var(--pos-color-button-secondary-hover-background);
+    border-color: var(--pos-color-button-secondary-hover-frame);
+
+    color: var(--pos-color-button-secondary-hover-text);
+  }
+
+  .pos-popover:has(:popover-open) .pos-button-primary {
+    background-color: var(--pos-color-button-primary-hover-background);
+    border-color: var(--pos-color-button-primary-hover-frame);
+
+    color: var(--pos-color-button-primary-hover-text);
+  }
+
+
+  /* menu inside the popover
+  ============================================================================ */
+  .pos-popover menu li a,
+  .pos-popover menu li button {
+    width: 100%;
+    padding: 1rem .75rem;
+    display: flex;
+    gap: .6em;
+    align-items: center;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+    color: var(--pos-color-interactive);
+
+    transition-property: color, background-color;
+    transition-duration: .1s;
+    transition-timing-function: linear;
+  }
+
+  .pos-popover menu li a:hover,
+  .pos-popover menu li button:hover,
+  .pos-popover menu li a:focus-visible,
+  .pos-popover menu li button:focus-visible {
+    outline: none;
+    border-radius: 0;
+    background-color: var(--pos-color-button-primary-background);
+
+    color: var(--pos-color-button-primary-text);
+  }
+
+  .pos-popover menu svg {
+    width: 1.2em;
+    height: 1.2em;
+
+    color: var(--pos-color-content-text-supplementary);
+  }
+
+    .pos-popover menu li a:hover svg,
+    .pos-popover menu li a:focus-visible svg,
+    .pos-popover menu li button:hover svg,
+    .pos-popover menu li button:focus-visible svg {
+      color: inherit;
+    }
+
+  .pos-popover .pos-popover-menu-item-important button,
+  .pos-popover .pos-popover-menu-item-important a,
+  .pos-popover .pos-popover-menu-item-important svg {
+    color: var(--pos-color-important);
+  }
+
+    .pos-popover  .pos-popover-menu-item-important a:hover,
+    .pos-popover  .pos-popover-menu-item-important button:hover,
+    .pos-popover  .pos-popover-menu-item-important a:focus-visible,
+    .pos-popover  .pos-popover-menu-item-important button:focus-visible {
+      background-color: var(--pos-color-important);
+    }
+
+}

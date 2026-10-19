@@ -1,0 +1,18 @@
+{% doc %}
+  @param {string} id - The record ID
+  @param {string} name - The name identifier
+  @param {string} reference_id - The reference record ID
+  @param {string} requester_id - The ID of the requester
+  @param {number} [limit] - Maximum number of results
+  @param {number} page - Page number for pagination
+  @param {string} reference_schema - The reference schema name
+  @param {string} timestamp - The timestamp
+{% enddoc %}
+{% liquid
+  assign page = page | to_positive_integer: 1
+  assign limit = limit | default: 20
+
+  graphql r = 'modules/core/statuses/search', limit: limit, page: page, id: id, name: name, reference_id: reference_id, requester_id: requester_id, reference_schema: reference_schema, timestamp: timestamp
+
+  return r.statuses
+%}

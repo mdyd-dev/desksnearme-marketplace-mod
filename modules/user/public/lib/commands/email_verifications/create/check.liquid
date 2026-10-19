@@ -1,0 +1,36 @@
+{% doc %}
+  Validates only what the caller supplied. Whether the address belongs to a real
+  or an unverified account is deliberately NOT validated here - that decision
+  lives in create.liquid, which stays silent about it so the endpoint cannot be
+  used to test which addresses are registered.
+
+  @param {object} object - The object to process
+  @param {object} hcaptcha_params - The hCaptcha parameters
+  @param {boolean} verify_hcaptcha - Whether the calling endpoint presented an hCaptcha widget whose answer should be checked
+{% enddoc %}
+{% liquid
+  assign c = { "errors": {}, "valid": true }
+
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'email', key: 'modules/user/validation.email.required'
+  function c = 'modules/core/validations/email', c: c, object: object, field_name: 'email', key: 'modules/user/validation.email.format'
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'host'
+
+  comment
+    The captcha belongs to the endpoint that rendered the widget, not to this
+    command: only a caller that showed one can be asked for the answer. Callers
+    that did not - registration, which has already validated its own form - pass
+    verify_hcaptcha false, and must not reach the filter at all, because the
+    hcaptcha filter raises a LiquidArgumentError on a blank or empty argument
+    rather than returning false. That error propagated out as a 500 for the whole
+    request, which is why this is gated on the caller rather than on whether any
+    params happen to be present.
+  endcomment
+  if verify_hcaptcha and context.constants.VERIFY_HCAPTCHA == "true"
+    function c = 'modules/core/validations/hcaptcha', c: c, hcaptcha_params: hcaptcha_params, key: null
+  endif
+
+  assign object.valid = c.valid
+  assign object.errors = c.errors
+
+  return object
+%}

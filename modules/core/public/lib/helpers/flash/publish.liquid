@@ -1,0 +1,32 @@
+{% doc %}
+  @param {string} error - The error flash message
+  @param {string} info - The info flash message
+  @param {string} notice - The notice flash message
+  @param {boolean} [force_clear] - If true, clear flash messages immediately
+{% enddoc %}
+{% liquid
+  if error and error contains 'app.'
+    assign error = error | t
+  endif
+
+  if notice and notice contains 'app.'
+    assign notice = notice | t
+  endif
+
+  if info and info contains 'app.'
+    assign info = info | t
+  endif
+
+  assign now = force_clear | default: false
+  assign flash = {
+    "error": error,
+    "notice": notice,
+    "info": info,
+    "from": context.location.pathname,
+    "now": now
+  }
+
+  assign sflash = flash | json
+  session sflash = sflash
+%}
+

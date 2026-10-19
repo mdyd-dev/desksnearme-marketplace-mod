@@ -1,0 +1,9 @@
+{% doc %}
+  @param {string} name - The name identifier
+{% enddoc %}
+{% liquid
+  function timezones = 'modules/core/helpers/timezone/get_all'
+  assign timezone = timezones | array_detect: name: name
+
+  return timezone
+%}

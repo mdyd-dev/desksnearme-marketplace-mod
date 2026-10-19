@@ -1,0 +1,15 @@
+{% doc %}
+  @param {number} limit - Maximum number of results
+  @param {number} page - Page number for pagination
+  @param {string} [uuids] - List of UUID identifiers
+{% enddoc %}
+{% liquid
+  assign page = page | to_positive_integer: 1
+  assign uuids = uuids | default: null
+
+  graphql r = 'modules/core/events/search', limit: limit, page: page, uuids: uuids
+
+  assign events = r.activities
+
+  return events
+%}

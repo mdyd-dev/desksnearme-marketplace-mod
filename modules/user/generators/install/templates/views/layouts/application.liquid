@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html class="pos-app">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
+    <title>{% if context.page.metadata.title %}{{ context.page.metadata.title }}{% else %}platformOS{% endif %}</title>
+
+    {% comment %} platformOS common-styling: loads the design system CSS/JS into the page head {% endcomment %}
+    {% render 'modules/common-styling/init', reset: true %}
+  </head>
+  <body>
+    {{ content_for_layout }}
+
+    {% liquid
+      function flash = 'modules/core/commands/session/get', key: 'sflash', clear: null
+      if context.location.pathname != flash.from or flash.force_clear
+        function _ = 'modules/core/commands/session/clear', key: 'sflash'
+      endif
+
+      render 'modules/common-styling/toasts', autohide: null, delay: null, message: flash.message, severity: flash.severity
+    %}
+  </body>
+</html>

@@ -1,0 +1,37 @@
+{% doc %}
+  @param {string} [type] - one of success, error, warning, info
+  @param {string} content - alert content
+{% enddoc %}
+{% comment %}
+
+  alert box
+
+  type - (string) one of 'success', 'error', 'warning', 'info' (default: 'info')
+  content - (string) card description
+
+{% endcomment %}
+
+
+{% liquid
+
+  assign type = type | default: 'info'
+
+%}
+
+
+<div class="pos-card-alert pos-card-alert-{{ type }} pos-card">
+  {% case type %}
+    {% when 'info' %}
+      {% render 'modules/common-styling/icon', icon: 'info', class: null %}
+    {% when 'warning' %}
+      {% render 'modules/common-styling/icon', icon: 'warning', class: null %}
+    {% when 'error' %}
+      {% render 'modules/common-styling/icon', icon: 'delete', class: null %}
+    {% when 'success' %}
+      {% render 'modules/common-styling/icon', icon: 'checkBadge', class: null %}
+  {% endcase %}
+  
+  <span>
+    {{ content | html_safe }}
+  </span>
+</div>

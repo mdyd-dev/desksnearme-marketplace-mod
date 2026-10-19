@@ -1,0 +1,12 @@
+{% doc %}
+  @param {object} current_profile - The current user profile
+  @param {object} [profile] - The profile object
+{% enddoc %}
+{% liquid
+  assign profile = profile | default: current_profile
+  assign first_name = profile.first_name
+  assign last_name = profile.last_name
+  assign slug = first_name | append: '-' | append: last_name | append: '-' | append: profile.id | slugify
+
+  return slug
+%}

@@ -1,0 +1,31 @@
+{% doc %}
+  @param {number} total_errors - total number of errors
+  @param {object} contracts - collection of test contracts
+  @param {number} total_duration - total test duration in ms
+{% enddoc %}
+{% liquid
+  assign result = {}
+  assign total_assertions = 0
+
+  assign tests_array = []
+  for contract in contracts
+    assign total_assertions = total_assertions | plus: contract.total
+
+    assign test_result = { "name": contract.test_path, "success": contract.success, "assertions": contract.total, "errors": contract.errors }
+
+    assign tests_array << test_result
+  endfor
+
+  if total_errors > 0
+    assign result.success = false
+  else
+    assign result.success = true
+  endif
+
+  assign result.total_tests = contracts.size
+  assign result.total_assertions = total_assertions
+  assign result.total_errors = total_errors
+  assign result.duration_ms = total_duration
+  assign result.tests = tests_array
+ %}
+{{ result | json }}

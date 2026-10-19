@@ -1,0 +1,30 @@
+{% doc %}
+  @param {string} email - The email address the token was issued for
+  @param {string} token - The token from the verification link
+{% enddoc %}
+{% liquid
+  comment
+    user_from_temporary_token returns null for an expired, tampered or simply
+    unknown token. All three are treated the same by the caller, so a
+    verification URL cannot be used to probe which addresses exist.
+
+    A token that is still within its TTL resolves again, which is why
+    verify.liquid checks whether the profile was already confirmed instead of
+    relying on the token to be single use.
+  endcomment
+  function user = 'modules/user/helpers/user_from_temporary_token', token: token, email: email
+
+  comment
+    Guarded for the same reason as in create/build: a bad token is an ordinary
+    unauthenticated request, and calling profiles/find with a blank user_id
+    would write an ERROR line for every one of them.
+  endcomment
+  assign profile = null
+  if user.id
+    function profile = 'modules/user/queries/profiles/find', user_id: user.id, id: null, uuid: null, first_name: null, last_name: null
+  endif
+
+  assign object = { "email": email, "token": token, "user": user, "profile": profile }
+
+  return object
+%}

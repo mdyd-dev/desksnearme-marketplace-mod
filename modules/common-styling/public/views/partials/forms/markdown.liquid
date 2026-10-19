@@ -1,0 +1,78 @@
+{% doc %}
+  Renders an rich-text markdown editor with optional @mention support and file uploads.
+
+  @param {string} [id] - unique id for the module
+  @param {string} [class] - class(es) added to module container
+  @param {string} name - name for the textarea
+  @param {string} [value] - pre-filled content for the textarea
+
+  @param {object} [presigned_upload] - presigned upload data for file uploads
+
+  @param {number} [minlength] - minimum number of characters allowed
+  @param {number} [maxlength] - maximum number of characters allowed
+
+  @param {string} [mention_search_url] - URL to search for @mentions, the typed query is appended to its end as is, e.g. `/api/v1/users/search?query=`
+
+
+  @example
+  {% render 'modules/common-styling/forms/markdown',
+    id: 'markdown-editor',
+    name: 'markdown-editor',
+    presigned_upload: presigned_upload
+  %}
+{% enddoc %}
+
+{% liquid
+  assign id = id | default: 'pos-rte'
+  assign class = class | default: 'pos-markdown'
+
+  assign minlength = minlength | default: 0
+  assign maxlength = maxlength | default: 10000
+%}
+
+<div class="{{ class }}" id="{{ id }}" data-minlength="{{ minlength }}" data-maxlength="{{ maxlength }}" aria-describedby="{{ id }}-instructions">
+
+  <textarea
+    class="pos-forms-text"
+    rows="2"
+    name="{{ name }}"
+
+    data-upload-url="{{ presigned_upload.upload_url }}"
+    {% for field in presigned_upload.upload_url_payload %}
+        data-request-{{ field[0] }}="{{ field[1] }}"
+    {% endfor %}
+  >{{ value }}</textarea>
+
+  {% if mention_search_url %}
+    <div class="pos-popover pos-markdown-mention" data-url="{{ mention_search_url }}">
+      <template>
+        <li>
+          <button type="button">
+            <div class="pos-avatar pos-avatar-sm pos-markdown-mention-avatar">
+              <img width="24" height="24" loading="lazy" class="pos-avatar">
+              <div class="pos-markdown-mention-avatar-initials"></div>
+            </div>
+            <span class="pos-markdown-mention-name"></span>
+          </button>
+        </li>
+      </template>
+      <menu popover id="{{ id }}-mention-popover">
+      </menu>
+    </div>
+  {% endif %}
+
+  <small id="{{ id }}-instructions" class="pos-tip">
+    {% render 'modules/common-styling/icon', icon: 'info' %}
+    <span>
+      {{ 'modules/common-styling/form.markdown.instructions' | t }}
+    </span>
+  </small>
+
+
+  <ul class="pos-form-errors">
+    <li class="pos-form-error pos-markdown-error-disabled" data-pos-markdown-error-minlength>{{ 'modules/common-styling/form.minimum_length_validation' | t: count: minlength }}</li>
+    <li class="pos-form-error pos-markdown-error-disabled" data-pos-markdown-error-maxlength>{{ 'modules/common-styling/form.maximum_length_validation' | t: count: maxlength }}</li>
+  </ul>
+
+
+</div>

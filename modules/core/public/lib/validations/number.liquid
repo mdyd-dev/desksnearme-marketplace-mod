@@ -1,0 +1,69 @@
+{% doc %}
+  @param {object} c - The contract object for collecting validation errors
+  @param {string} field_name - The name of the field to validate
+  @param {object} object - The object to process
+  @param {number} eq - Must be equal to this value
+  @param {number} gt - Must be greater than this value
+  @param {number} gte - Must be greater than or equal to this value
+  @param {number} lt - Must be less than this value
+  @param {number} lte - Must be less than or equal to this value
+  @param {string} [message] - Custom error message override
+  @param {string} [message_eq] - Custom error message for eq validation
+  @param {string} [message_gt] - Custom error message for gt validation
+  @param {string} [message_gte] - Custom error message for gte validation
+  @param {string} [message_lt] - Custom error message for lt validation
+  @param {string} [message_lte] - Custom error message for lte validation
+  @param {string} [message_ne] - Custom error message for ne validation
+  @param {number} ne - Must not be equal to this value
+  @param {number} [number] - The number to validate
+{% enddoc %}
+{% liquid
+  assign number = number | default: object[field_name]
+%}
+{% capture test1 %}{{ number }}{% endcapture %}
+{% capture test2 %}{{ test1 | plus: 0 }}{% endcapture %}
+{% liquid
+  if test1 != test2
+    assign message = message | default: 'modules/core/validation.number.invalid' | t: value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+
+    return c
+  endif
+
+  assign number = number | plus: 0
+
+  if lt != null and number >= lt
+    assign message = message_lt | default: 'modules/core/validation.number.lt' | t: count: lt, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  if lte == blank
+    assign lte = 2147483647
+  endif
+  if number > lte
+    assign message = message_lte | default: 'modules/core/validation.number.lte' | t: count: lte, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  if gt != null and number <= gt
+    assign message = message_gt | default: 'modules/core/validation.number.gt' | t: count: gt, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  if gte != null and number < gte
+    assign message = message_gte | default: 'modules/core/validation.number.gte' | t: count: gte, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  if eq != null and number != eq
+    assign message = message_eq | default: 'modules/core/validation.number.eq' | t: count: eq, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  if ne != null and number == ne
+    assign message = message_ne | default: 'modules/core/validation.number.ne' | t: count: ne, value: number
+    function c = 'modules/core/helpers/register_error', contract: c, field_name: field_name, message: message
+  endif
+
+  return c
+%}

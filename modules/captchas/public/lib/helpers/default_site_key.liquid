@@ -1,0 +1,14 @@
+{% doc %}
+  @description Resolve the active site key. Mirrors helpers/default_provider: an explicit
+    value always wins; otherwise falls back to the CAPTCHA_DEFAULT_SITE_KEY constant. Only
+    whitespace is trimmed — unlike the provider key, site keys are case-sensitive and are not
+    downcased.
+  @param {string} [site_key] Explicit site key; used when present.
+  @returns {string} site key — explicit value, else the CAPTCHA_DEFAULT_SITE_KEY constant, else ''.
+{% enddoc %}
+{% liquid
+  assign resolved = site_key | strip
+  assign resolved = resolved | default: context.constants.CAPTCHA_DEFAULT_SITE_KEY | strip
+  assign resolved = resolved | default: ''
+  return resolved
+%}

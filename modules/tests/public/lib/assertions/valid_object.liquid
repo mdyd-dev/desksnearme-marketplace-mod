@@ -1,0 +1,13 @@
+{% doc %}
+  @param {object} contract - test contract object tracking results
+  @param {object} object - object to check validity of
+  @param {string} field_name - name of the field being tested
+{% enddoc %}
+{% liquid
+  assign contract.total = contract['total'] | plus: 1
+  if object.valid != true
+    assign message = 'should be valid: ' | append: object.errors
+    function contract = 'modules/tests/helpers/register_error', contract: contract, field_name: field_name, message: message
+  endif
+  return contract
+%}

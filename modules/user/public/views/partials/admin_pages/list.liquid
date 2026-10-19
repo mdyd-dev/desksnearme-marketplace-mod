@@ -1,0 +1,59 @@
+{% function users = 'modules/user/queries/user/get_all' %}
+<div class="container">
+
+  <h2 class="p-8">Users</h2>>
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th>ID</th>
+        {% for property in users.first %}
+          {% unless property[0] == 'id' or property[0] == 'hook_results' %}
+          <th>{{ property[0] }}</th>
+          {% endunless %}
+        {% endfor %}
+        <th>Additional fields</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+      {% liquid
+        assign id = user.id
+        comment
+          hook_results is not part of what modules/user/user/list selects, so the linter
+          cannot see it. An app that overrides modules/user/queries/user/get_all to enrich
+          the rows can put it there, which is what the 'Additional fields' column renders.
+        endcomment
+        # platformos-check-disable UnknownProperty
+        assign hook_results = user.hook_results
+        # platformos-check-enable UnknownProperty
+        assign user = user | hash_delete_key: 'id'
+        assign user = user | hash_delete_key: 'hook_results'
+      %}
+      <tr>
+        <td>{{ id }}</td>
+        {% for property in user %}
+        <td>
+          {% assign type = property[1] | type_of %}
+          {% if type == 'Array' %}
+            {{ property[1] | join: ', ' }}
+          {% else %}
+            {{ property[1] }}
+          {% endif %}
+        </td>
+        {% endfor %}
+        <td>
+        {% if hook_results %}
+          {% for hook_result in hook_results %}
+            {% if hook_result[1] %}
+              <b>{{ hook_result[0] }}:</b><br>
+              {{ hook_result[1] }}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>

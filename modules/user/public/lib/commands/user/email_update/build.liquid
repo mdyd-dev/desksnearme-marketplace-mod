@@ -1,0 +1,9 @@
+{% doc %}
+  @param {object} current_user - The current user object
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign object = {"id": current_user.id, "email": object.email, "password": object.password}
+
+  return object
+%}

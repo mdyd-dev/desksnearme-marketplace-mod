@@ -1,0 +1,8 @@
+{% doc %}
+  @param {number} limit - maximum number of results to return
+  @param {number} page - page number for pagination
+{% enddoc %}
+{% liquid
+  graphql r = 'modules/tests/sent_mails/search', limit: limit, page: page
+  return r.mails
+%}

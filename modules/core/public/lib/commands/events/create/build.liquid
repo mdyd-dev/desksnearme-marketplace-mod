@@ -1,0 +1,12 @@
+{% doc %}
+  @param {object} object - The object to process
+  @param {string} type - The type identifier
+{% enddoc %}
+{% liquid
+  assign now = 'now' | to_time
+  assign data = object
+  assign data.type = type
+  assign data.date = data.date | default: now
+
+  return data
+%}

@@ -1,0 +1,12 @@
+---
+layout: ''
+---
+{% if context.environment == 'staging' %}
+  {% assign test_name = 5 | random_string | prepend: "liquid_test_" %}
+  {% background source_name: "liquid_tests", test_name: test_name %}
+    {% comment %}platformos-check-disable DeprecatedTag{% endcomment %}
+    {% include 'modules/tests/commands/run', format: 'log', test_name: test_name %}
+    {% comment %}platformos-check-enable DeprecatedTag{% endcomment %}
+  {% endbackground %}
+  {{ test_name }}
+{% endif %}

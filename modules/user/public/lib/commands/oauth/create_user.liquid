@@ -1,0 +1,35 @@
+{% doc %}
+  @param {string} user_email - The user email address
+  @param {string} user_first_name - The user first name
+  @param {string} user_last_name - The user last name
+{% enddoc %}
+{% liquid
+    assign password = 30 | random_string
+    assign full_name = user_first_name | append: " " | append: user_last_name
+    assign object = {"email": user_email, "firstName": user_first_name, "lastName": user_last_name, "fullName": full_name}
+
+    function new_user = "modules/user/commands/user/create", first_name: user_first_name, last_name: user_last_name, email: user_email, password: password, hook_params: object, roles: null
+
+    comment
+      The address came from the identity provider, which has already confirmed
+      the user controls it, so there is nothing for us to verify. Marking the
+      profile here keeps OAuth sign-ups out of the verification flow entirely -
+      without it they would land on "check your inbox" for a mailbox they never
+      need to open.
+
+      Routed through the confirm command rather than marking the profile
+      directly, so these users also reach hook_user_email_verified and the
+      user_email_verified event; an application that moved work off user_created
+      onto that event would otherwise never run it for anyone arriving by OAuth.
+    endcomment
+    if new_user.id
+      function verification_enabled = 'modules/user/helpers/email_verification_enabled'
+
+      if verification_enabled
+        function profile = 'modules/user/queries/profiles/find', user_id: new_user.id, id: null, uuid: null, first_name: null, last_name: null
+        function _ = 'modules/user/commands/email_verifications/confirm', user: new_user, profile: profile
+      endif
+    endif
+
+    return new_user
+%}

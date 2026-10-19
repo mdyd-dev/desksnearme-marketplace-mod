@@ -1,0 +1,8 @@
+{% doc %}
+  @param {string} name - The name identifier
+  @param {string} value - The value
+{% enddoc %}
+{% liquid
+  graphql result = 'modules/core/variable/set', name: name, value: value
+  return result.variable
+%}

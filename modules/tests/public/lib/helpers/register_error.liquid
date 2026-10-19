@@ -1,0 +1,25 @@
+{% doc %}
+  @param {string} [key] - i18n key to be resolved into message
+  @param {string} [message] - error message
+  @param {object} contract - test contract object tracking results
+  @param {string} field_name - name of the field with error
+{% enddoc %}
+{% liquid
+  assign key = key | default: null
+  assign message = message | default: null
+  if key
+    assign msg = key | t
+  else
+    assign msg = message
+  endif
+
+  assign errors = contract.errors
+
+  assign field_erorrs = errors[field_name] | default: '[]' | parse_json
+  assign field_erorrs << msg
+
+  assign errors[field_name] = field_erorrs
+  assign contract.success = false
+
+  return contract
+%}

@@ -1,0 +1,7 @@
+{% doc %}
+  @param {object} object - The object to process
+{% enddoc %}
+{% liquid
+  assign tokenized_names = [] | array_add: object.email | array_add: object.first_name | array_add: object.last_name | array_compact | uniq | join: ' ' | downcase
+  return tokenized_names
+ %}
