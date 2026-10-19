@@ -6,11 +6,16 @@
   Three product roles. A visitor picks guest or host at signup; admin is
   assigned separately.
 
-  Note on `users.register`: granting it to `anonymous` is what makes the
-  module's own /users/new and POST /users pages reachable. Our signup runs
-  through an app-owned endpoint that applies the honeypot, fill timer and
-  disposable-domain checks, so if we ever want the module's bare registration
-  form closed off, removing this one permission does it without an override.
+  Note on `users.register`: it is granted to nobody, deliberately. That
+  permission is what gates the module's own /users/new and POST /users pages,
+  and those pages cannot take a guest-or-host choice: they always fall back to
+  USER_DEFAULT_ROLE, so a host registering there would silently become a guest.
+  Withholding it closes that path and leaves exactly one way to sign up, our
+  own endpoint, which is also where the anti-spam checks will live. Closing it
+  by permission rather than by overriding the module's pages means nothing to
+  re-diff on upgrade.
+
+  `signup.create` is ours and gates our own signup pages instead.
 
   `admin` is given explicit permissions rather than being aliased to
   `superadmin`, because superadmin short-circuits every can_do check. Keep one
@@ -18,7 +23,7 @@
 {% endcomment %}
 {% liquid
   assign data = {
-    "anonymous": ["sessions.create", "users.register"],
+    "anonymous": ["sessions.create", "signup.create"],
     "authenticated": ["sessions.destroy", "profile.manage"],
     "guest": ["listings.view", "favorites.manage", "messages.manage.own"],
     "host": ["listings.view", "favorites.manage", "messages.manage.own", "listings.manage.own", "photos.manage.own"],

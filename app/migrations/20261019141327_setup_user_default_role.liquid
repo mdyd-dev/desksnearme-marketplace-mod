@@ -1,0 +1,12 @@
+{% comment %}
+  The role a profile gets when nothing passes one explicitly.
+
+  Our own signup always passes a role, because a visitor chooses guest or host.
+  This is the floor for every other path that creates a user without asking:
+  oauth, invites, a console-created account. Guest is the safe floor, since it
+  grants no listing or admin permission.
+{% endcomment %}
+{% liquid
+  function result = 'modules/core/commands/variable/set', name: 'USER_DEFAULT_ROLE', value: 'guest'
+  log result, type: 'setup_user_default_role result'
+%}

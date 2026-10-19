@@ -1,0 +1,20 @@
+---
+# Override of one key in modules/core/public/translations/en/validation.yml.
+#
+# Upstream reads:
+#   too_short: has to be longer than %{value} characters
+#
+# validations/length interpolates count: minimum and value: size, so %{value}
+# is the length of what the visitor typed, not the requirement. The message
+# therefore repeats their own input length back as if it were the rule: type
+# three characters and it says "longer than 3". validation.length.minimum in
+# the same file gets this right with %{count}, and too_short is the message
+# validations/password_complexity selects, so this is the one a visitor sees
+# when their password is too short.
+#
+# Only this key is listed. Deploy upserts translations per key, so the rest of
+# the upstream file is left in place; app/views/pages/index.liquid is not the
+# place to check that, the signup form is.
+en:
+  validation:
+    too_short: is too short (minimum is %{count} characters)

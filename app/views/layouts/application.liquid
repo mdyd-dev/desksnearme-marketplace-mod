@@ -147,11 +147,12 @@
           </div>
         {%- else -%}
           {%- comment -%}
-            Plain links to the module's own forms for now. The signup and login
-            modals come back with the role-aware signup endpoint.
+            /signup is ours, because the role choice has to reach user/create.
+            The module's /users/new is closed off by permission. Login is still
+            the module's page; the modals come back when the design is ported.
           {%- endcomment -%}
-          <a class="nav-link" href="/users/new">List your desk</a>
-          <a class="nav-link" href="/users/new">Sign up</a>
+          <a class="nav-link" href="/signup?role=host">List your desk</a>
+          <a class="nav-link" href="/signup">Sign up</a>
           <a class="btn btn--primary nav-login" href="/sessions/new">Log in</a>
         {%- endif -%}
       </div>

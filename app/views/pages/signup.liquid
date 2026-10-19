@@ -1,0 +1,15 @@
+---
+slug: signup
+metadata:
+  title: Sign up
+---
+{%- liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+
+  # platformos-check-disable DeprecatedTag, UnreachableCode
+  include 'modules/user/helpers/can_do_or_redirect', requester: current_profile, do: 'signup.create', access_callback: null, entity: null, return_url: '/'
+  # platformos-check-enable DeprecatedTag, UnreachableCode
+
+  assign values = { "role": context.params.role, "email": context.params.email }
+  render 'signup/form', values: values, errors: null
+-%}

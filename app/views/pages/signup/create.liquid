@@ -1,0 +1,58 @@
+---
+slug: signup
+method: post
+---
+{%- comment -%}
+  Role-aware signup.
+
+  This exists instead of the module's POST /users because that page passes
+  roles: null, so every account it creates falls back to USER_DEFAULT_ROLE. Our
+  product requires the visitor to choose guest or host, so the choice has to
+  reach commands/user/create.
+
+  Everything below the role allow-list is the module's: validation, the user
+  row, the profile, the surrounding transaction and the user_created event. We
+  add a role and nothing else, which is why there is no override here.
+{%- endcomment -%}
+{%- liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+
+  # platformos-check-disable DeprecatedTag, UnreachableCode
+  include 'modules/user/helpers/can_do_or_redirect', requester: current_profile, do: 'signup.create', access_callback: null, entity: null, return_url: '/'
+  # platformos-check-enable DeprecatedTag, UnreachableCode
+
+  comment
+    Never trust the submitted role. Anything that is not exactly 'host' is a
+    guest, so a tampered field cannot mint an admin or an unknown role that
+    would make every can_do check log a warning.
+  endcomment
+  assign role = context.params.role
+  unless role == 'host'
+    assign role = 'guest'
+  endunless
+  assign roles = []
+  assign roles << role
+
+  assign email = context.params.email | strip | downcase
+
+  function object = 'modules/user/commands/user/create', email: email, password: context.params.password, first_name: context.params.first_name, last_name: context.params.last_name, roles: roles, hook_params: context.params
+
+  if object.valid
+    function _ = 'modules/user/commands/session/create', validate_password: false, user_id: object.id, email: null, password: null, hook_params: null, skip_otp: null
+
+    comment
+      Both roles land on / for now. Once the pages exist a host belongs on
+      /account/listings and a guest on /listings.
+    endcomment
+    redirect_to '/'
+  else
+    comment
+      Re-render rather than redirect, so the field errors and what was typed
+      survive. The password is dropped on purpose.
+    endcomment
+    assign values = context.params
+    assign values.password = ''
+    assign values.role = role
+    render 'signup/form', values: values, errors: object.errors
+  endif
+-%}

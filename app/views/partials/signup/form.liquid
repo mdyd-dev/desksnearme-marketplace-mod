@@ -1,0 +1,124 @@
+---
+metadata:
+  name: Signup form
+  params:
+    values: {}
+    errors: {}
+---
+{% doc %}
+  @param {object} values - Submitted values, echoed back so a rejected form keeps what was typed
+  @param {object} errors - Field name to array of translated messages, from modules/user/commands/user/create
+{% enddoc %}
+{%- liquid
+  assign role = values.role
+  unless role == 'host'
+    assign role = 'guest'
+  endunless
+-%}
+
+<div class="authpage">
+  <div class="authbox">
+    <h1>Create your account</h1>
+    <p class="authbox__lead">Rent a workspace, or list one of your own.</p>
+
+    <form action="/signup" method="post" novalidate>
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+
+      {%- comment -%}
+        Role is chosen here and nowhere else. The module's own registration
+        pages cannot express this, which is why they are closed off by
+        permission and this endpoint exists.
+      {%- endcomment -%}
+      <fieldset class="rolepick">
+        <legend>What brings you here?</legend>
+        <label class="rolepick__opt">
+          <input type="radio" name="role" value="guest"{% if role == 'guest' %} checked{% endif %}>
+          <span class="rolepick__title">I need a workspace</span>
+          <span class="rolepick__desc">Search desks, meeting rooms and offices near you.</span>
+        </label>
+        <label class="rolepick__opt">
+          <input type="radio" name="role" value="host"{% if role == 'host' %} checked{% endif %}>
+          <span class="rolepick__title">I have space to list</span>
+          <span class="rolepick__desc">List a desk or office and set your own rates.</span>
+        </label>
+        {% render 'modules/common-styling/forms/error_list', name: 'role', errors: errors.role %}
+      </fieldset>
+
+      <div class="field">
+        <label for="signup-first-name">First name</label>
+        <input class="input" type="text" id="signup-first-name" name="first_name" value="{{ values.first_name }}" autocomplete="given-name" required{% render 'modules/common-styling/forms/error_input_handler', name: 'first_name', errors: errors.first_name %}>
+        {% render 'modules/common-styling/forms/error_list', name: 'first_name', errors: errors.first_name %}
+      </div>
+
+      <div class="field">
+        <label for="signup-last-name">Last name</label>
+        <input class="input" type="text" id="signup-last-name" name="last_name" value="{{ values.last_name }}" autocomplete="family-name" required{% render 'modules/common-styling/forms/error_input_handler', name: 'last_name', errors: errors.last_name %}>
+        {% render 'modules/common-styling/forms/error_list', name: 'last_name', errors: errors.last_name %}
+      </div>
+
+      <div class="field">
+        <label for="signup-email">Email</label>
+        <input class="input" type="email" id="signup-email" name="email" value="{{ values.email }}" autocomplete="email" required{% render 'modules/common-styling/forms/error_input_handler', name: 'email', errors: errors.email %}>
+        {% render 'modules/common-styling/forms/error_list', name: 'email', errors: errors.email %}
+      </div>
+
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <div class="input-reveal">
+          <input class="input" type="password" id="signup-password" name="password" autocomplete="new-password" required{% render 'modules/common-styling/forms/error_input_handler', name: 'password', errors: errors.password %}>
+          <button class="input-reveal__btn" type="button" data-reveal="signup-password" aria-label="Show password" aria-pressed="false">
+            <svg class="ico-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="ico-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" hidden><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a18 18 0 0 1-2.4 3.3M6.5 6.6A18 18 0 0 0 2 12s3.6 7 10 7a10.8 10.8 0 0 0 4-.7"/></svg>
+          </button>
+        </div>
+        <p class="field__hint">At least 6 characters.</p>
+        {% render 'modules/common-styling/forms/error_list', name: 'password', errors: errors.password %}
+      </div>
+
+      {%- comment -%}
+        The captcha widget and the honeypot plus fill timer belong here, once
+        captchas is configured and near_me_antispam exists. .authbox__captcha
+        is already sized for the reCAPTCHA v2 checkbox.
+      {%- endcomment -%}
+
+      <button class="btn btn--primary btn--block" type="submit">Create account</button>
+    </form>
+
+    <hr class="authbox__sep">
+    <p class="authbox__foot">Already have an account? <a href="/sessions/new">Log in</a></p>
+  </div>
+</div>
+
+<style>
+  .rolepick { border: 0; padding: 0; margin: 0 0 1.4rem; }
+  .rolepick legend { font-size: var(--fs-sm); font-weight: 600; margin-bottom: .5rem; padding: 0; }
+  .rolepick__opt {
+    display: grid; grid-template-columns: auto 1fr; gap: 0 .65rem;
+    border: 1.5px solid var(--line); border-radius: var(--r-sm);
+    padding: .75rem .85rem; margin-bottom: .55rem; cursor: pointer;
+  }
+  .rolepick__opt:has(input:checked) { border-color: var(--accent); background: var(--surface-2); }
+  .rolepick__opt:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rolepick__opt input { margin-top: .2rem; accent-color: var(--accent); }
+  .rolepick__title { font-size: var(--fs-sm); font-weight: 600; }
+  .rolepick__desc { grid-column: 2; font-size: var(--fs-xs); color: var(--muted); }
+</style>
+
+<script>
+  document.querySelectorAll('[data-reveal]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var input = document.getElementById(b.getAttribute('data-reveal'));
+      if (!input) return;
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      b.setAttribute('aria-pressed', show ? 'true' : 'false');
+      b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      var eye = b.querySelector('.ico-eye');
+      var off = b.querySelector('.ico-eye-off');
+      if (eye && off) {
+        if (show) { eye.setAttribute('hidden', ''); off.removeAttribute('hidden'); }
+        else { eye.removeAttribute('hidden'); off.setAttribute('hidden', ''); }
+      }
+    });
+  });
+</script>
