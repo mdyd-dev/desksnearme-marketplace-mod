@@ -1,0 +1,496 @@
+---
+slug: listings/:id
+metadata:
+  title: Space details
+---
+{%- liquid
+  assign real_id = context.params.id | split: '-' | first
+  graphql g = 'listings/get', id: real_id
+  assign listing = g.records.results.first
+
+  assign is_owner = false
+  if context.current_user and listing.host_id == context.current_user.id
+    assign is_owner = true
+  endif
+
+  assign visible = false
+  if listing
+    if listing.status == 'published' or is_owner
+      assign visible = true
+    endif
+  endif
+
+  graphql hp = 'profiles/get_by_user', user_id: listing.host_id
+  assign host_profile = hp.records.results.first
+  graphql hpp = 'photos/search', object_uuid: listing.host_id, photo_type: 'profile', limit: 1
+  assign host_avatar = hpp.photos.results.first.photo.versions.sm | default: ''
+  assign host_display = host_profile.company_name | default: listing.host.first_name | default: listing.host.name | default: 'a Desks Near Me host'
+  assign joined = host_profile.created_at | date: '%B %Y'
+
+  graphql hl = 'listings/get_published_by_user', host_id: listing.host_id, per_page: 5, page: 1
+  assign host_all = hl.records.results
+  assign host_total = hl.records.total_entries
+  assign other_count = host_total | minus: 1
+  if other_count < 0
+    assign other_count = 0
+  endif
+
+  assign is_general = false
+  if listing.location_precision == 'general'
+    assign is_general = true
+  endif
+
+  assign map_lat = listing.latitude
+  assign map_lng = listing.longitude
+  if is_general
+    assign map_lat = listing.latitude | round: 2
+    assign map_lng = listing.longitude | round: 2
+  endif
+
+  assign loc_line = listing.city
+  if listing.state != blank and listing.city != blank
+    assign loc_line = listing.city | append: ', ' | append: listing.state
+  endif
+  if loc_line == blank and is_general == false
+    assign loc_line = listing.address
+  endif
+  if loc_line == blank
+    assign loc_line = 'Location available on request'
+  endif
+
+  assign street_line = ''
+  if listing.address != blank and is_general == false
+    assign street_line = listing.address
+    if listing.city != blank
+      assign street_line = street_line | append: ', ' | append: listing.city
+    endif
+    if listing.state != blank
+      assign street_line = street_line | append: ', ' | append: listing.state
+    endif
+    if listing.postcode != blank
+      assign street_line = street_line | append: ' ' | append: listing.postcode
+    endif
+  endif
+
+  assign has_geo = false
+  if listing.latitude != blank and listing.longitude != blank
+    assign has_geo = true
+  endif
+
+  assign m_amount = ''
+  assign m_unit = ''
+  if listing.price_hour
+    assign m_amount = listing.price_hour
+    assign m_unit = 'hour'
+  elsif listing.price_day
+    assign m_amount = listing.price_day
+    assign m_unit = 'day'
+  elsif listing.price_week
+    assign m_amount = listing.price_week
+    assign m_unit = 'week'
+  elsif listing.price_month
+    assign m_amount = listing.price_month
+    assign m_unit = 'month'
+  endif
+
+  assign dir_dest = map_lat | append: ',' | append: map_lng
+-%}
+{%- capture canonical -%}{% render 'listings/url', id: listing.id, title: listing.title %}{%- endcapture -%}
+{%- liquid
+  if visible
+    assign title = listing.title | default: 'Space details'
+    if listing.city != blank
+      assign title = title | append: ' — ' | append: loc_line
+    endif
+
+    assign description = listing.listing_type | default: 'Workspace'
+    if listing.capacity != blank
+      assign description = description | append: ' for ' | append: listing.capacity
+      if listing.capacity == 1
+        assign description = description | append: ' person'
+      else
+        assign description = description | append: ' people'
+      endif
+    endif
+    if listing.city != blank
+      assign description = description | append: ' in ' | append: loc_line
+    endif
+    if m_unit != blank
+      assign m_fmt = m_amount | advanced_format: '%.2f'
+      assign description = description | append: '. From $' | append: m_fmt | append: ' per ' | append: m_unit
+    endif
+    assign description = description | append: '. Book it on Desks Near Me.'
+    assign description = description | truncate: 155
+
+    export title, description, canonical, namespace: 'seo'
+  endif
+-%}
+
+{% if visible == false %}
+  <div class="listings-empty">
+    <h1>Space not found</h1>
+    <p class="muted">This listing may have been removed or isn’t available right now. <a href="/listings">Browse all spaces</a>.</p>
+  </div>
+{% else %}
+  {%- if has_geo -%}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  {%- endif -%}
+  <article class="listing-detail">
+    <a class="listing-detail__back" href="/listings">← Back to spaces</a>
+
+    {% if is_owner and listing.status != 'published' %}
+      <div class="flash flash--notice">This is a preview — your listing is currently <strong>{{ listing.status | default: 'unpublished' }}</strong> and not visible to others.</div>
+    {% endif %}
+
+    <header class="detail-head">
+      <p class="detail-crumbs">
+        <span>{{ listing.listing_type }}</span>
+        {%- if listing.capacity -%}<span>Fits {{ listing.capacity }} {% if listing.capacity == 1 %}person{% else %}people{% endif %}</span>{%- endif -%}
+        {%- if loc_line != blank -%}<span>{{ loc_line }}</span>{%- endif -%}
+      </p>
+      <div class="detail-head__row">
+        <h1 class="detail-head__title">{{ listing.title }}</h1>
+        <div class="detail-head__aside">
+          {% if listing.host.id != blank %}
+            <a class="host-byline" href="/users/{{ listing.host.id }}">
+              {% include 'hosts/avatar', name: host_display, size: 'sm', image_url: host_avatar %}
+              <span class="host-byline__text">
+                <span class="host-byline__label">Hosted by</span>
+                <strong>{{ host_display }}</strong>
+              </span>
+            </a>
+          {% else %}
+            <p class="muted" style="margin:0;">Hosted by {{ host_display }}</p>
+          {% endif %}
+          {% render 'listings/favorite_button', listing_id: listing.id, variant: 'inline' %}
+        </div>
+      </div>
+    </header>
+
+    {%- liquid
+      assign gallery = nil
+      if listing.uuid != blank
+        graphql gp = 'photos/search', object_uuid: listing.uuid, photo_type: 'listing'
+        assign gallery = gp.photos.results
+      endif
+    -%}
+    {% if gallery and gallery.size > 0 %}
+      {% render 'photos/gallery', photos: gallery, alt: listing.title %}
+    {% else %}
+      <div class="listing-detail__media">
+        <span class="listing-card__badge">{{ listing.listing_type }}</span>
+      </div>
+    {% endif %}
+
+    <div class="listing-detail__grid">
+      <div class="listing-detail__main">
+        <section class="listing-detail__about">
+          <h2>About this space</h2>
+          <p class="listing-detail__desc">{{ listing.description | default: 'No description provided yet.' }}</p>
+        </section>
+
+        {%- if listing.amenities != blank -%}
+          {%- liquid
+            capture am_raw
+              render 'listings/amenities_json'
+            endcapture
+            assign am_groups = am_raw | parse_json
+            assign have = listing.amenities | join: '|'
+          -%}
+          <section class="listing-detail__amenities">
+            <h2>What this space offers</h2>
+            <ul class="amenity-list">
+              {%- for g in am_groups -%}
+                {%- for a in g.items -%}
+                  {%- if have contains a.slug -%}
+                    <li>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+                      {{ a.label }}
+                    </li>
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+            </ul>
+          </section>
+        {%- endif -%}
+
+        {% render 'listings/hours', building_raw: listing.building_hours, listing_raw: listing.listing_hours %}
+
+        <section class="host-block">
+          <h2>Meet your host</h2>
+          <div class="host-card">
+            <div class="host-card__top">
+              {% include 'hosts/avatar', name: host_display, size: 'md', image_url: host_avatar %}
+              <div class="host-card__id">
+                <strong>{{ host_display }}</strong>
+                <span class="host-card__meta">
+                  {%- if joined != blank -%}Host since {{ joined }}{%- endif -%}
+                  {%- if joined != blank and host_total > 0 -%} · {%- endif -%}
+                  {%- if host_total > 0 -%}{{ host_total }} {% if host_total == 1 %}space{% else %}spaces{% endif %} listed{%- endif -%}
+                </span>
+              </div>
+            </div>
+            {% if host_profile.bio != blank %}
+              <p class="host-card__bio">{{ host_profile.bio }}</p>
+            {% endif %}
+            {% if listing.host.id != blank %}
+              <a class="host-card__link" href="/users/{{ listing.host.id }}">View full profile →</a>
+            {% endif %}
+          </div>
+        </section>
+
+        {%- if other_count > 0 -%}
+          <section class="host-more">
+            <h2>More from {{ host_display }}</h2>
+            <div class="minicards">
+              {%- assign shown = 0 -%}
+              {%- for hl_item in host_all -%}
+                {%- if hl_item.id != listing.id and shown < 4 -%}
+                  {%- assign shown = shown | plus: 1 -%}
+                  {%- assign hc = hl_item.covers.first -%}
+                  {%- assign h_img = hc.photo.versions.sm | default: hc.photo.url -%}
+                  {%- assign hp_amount = '' -%}
+                  {%- assign hp_unit = '' -%}
+                  {%- if hl_item.price_hour -%}
+                    {%- assign hp_amount = hl_item.price_hour -%}{%- assign hp_unit = 'hour' -%}
+                  {%- elsif hl_item.price_day -%}
+                    {%- assign hp_amount = hl_item.price_day -%}{%- assign hp_unit = 'day' -%}
+                  {%- elsif hl_item.price_week -%}
+                    {%- assign hp_amount = hl_item.price_week -%}{%- assign hp_unit = 'week' -%}
+                  {%- elsif hl_item.price_month -%}
+                    {%- assign hp_amount = hl_item.price_month -%}{%- assign hp_unit = 'month' -%}
+                  {%- endif -%}
+                  <a class="minicard" href="{% render 'listings/url', id: hl_item.id, title: hl_item.title %}">
+                    <span class="minicard__media">
+                      {%- if hc.photo -%}<img src="{{ h_img }}" alt="" loading="lazy" width="120" height="90">{%- endif -%}
+                    </span>
+                    <span class="minicard__body">
+                      <span class="minicard__title">{{ hl_item.title }}</span>
+                      <span class="minicard__loc">{{ hl_item.city }}{% if hl_item.state != blank %}, {{ hl_item.state }}{% endif %}</span>
+                      <span class="minicard__price">
+                        {%- if hp_unit != blank -%}${{ hp_amount | advanced_format: '%.2f' }} <em>/ {{ hp_unit }}</em>{%- else -%}Price on request{%- endif -%}
+                      </span>
+                    </span>
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </section>
+        {%- endif -%}
+      </div>
+
+      <aside class="listing-detail__aside">
+        <div class="rate-card">
+          <h3>Rates</h3>
+          {%- liquid
+            assign has_rate = false
+            if listing.price_hour or listing.price_day or listing.price_week or listing.price_month
+              assign has_rate = true
+            endif
+          -%}
+          {% if has_rate %}
+            <ul class="rate-table">
+              {% if listing.price_hour %}<li><span>Hourly</span><strong>${{ listing.price_hour | advanced_format: '%.2f' }}</strong></li>{% endif %}
+              {% if listing.price_day %}<li><span>Daily</span><strong>${{ listing.price_day | advanced_format: '%.2f' }}</strong></li>{% endif %}
+              {% if listing.price_week %}<li><span>Weekly</span><strong>${{ listing.price_week | advanced_format: '%.2f' }}</strong></li>{% endif %}
+              {% if listing.price_month %}<li><span>Monthly</span><strong>${{ listing.price_month | advanced_format: '%.2f' }}</strong></li>{% endif %}
+            </ul>
+          {% else %}
+            <p class="muted">Rates not set yet.</p>
+          {% endif %}
+          {%- if context.current_user -%}
+            {%- if is_owner -%}
+              <p class="rate-card__note muted">This is your listing.</p>
+            {%- else -%}
+              <form action="/messages/inquire" method="post">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                <button class="btn btn--primary btn--block" type="submit">Inquire</button>
+              </form>
+            {%- endif -%}
+          {%- else -%}
+            <button class="btn btn--primary btn--block" type="button" data-open-modal="login">Log in to inquire</button>
+          {%- endif -%}
+        </div>
+
+        <div class="where-card">
+          <h3>Where you’ll be</h3>
+          {%- if street_line != blank -%}
+            <p class="where-card__addr">{{ street_line }}</p>
+          {%- elsif is_general -%}
+            <p class="where-card__approx">Approximate area. The host shares the exact address once you’re in touch.</p>
+          {%- endif -%}
+          <div class="map-ph map-ph--detail" id="listing-map"
+               {% if has_geo %}data-geo-map data-map-key="{{ context.constants.geoapify_map_key }}" data-points-from="listing-map-data"{% endif %}>
+            <svg class="map-ph__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+            <p class="map-ph__addr">{{ loc_line }}</p>
+            <p class="map-ph__note">Location not mapped yet</p>
+          </div>
+          {%- if has_geo -%}
+            <a class="where-card__dir" href="https://www.google.com/maps/dir/?api=1&destination={{ dir_dest }}" target="_blank" rel="noopener">{% if is_general %}Directions to the area →{% else %}Get directions →{% endif %}</a>
+          {%- endif -%}
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  {%- unless is_owner -%}
+    <div class="mobile-cta">
+      <div class="mobile-cta__price">
+        {%- if m_unit != blank -%}
+          <strong>${{ m_amount | advanced_format: '%.2f' }}</strong> <span>/ {{ m_unit }}</span>
+        {%- else -%}
+          <strong>Price on request</strong>
+        {%- endif -%}
+      </div>
+      {%- if context.current_user -%}
+        <form action="/messages/inquire" method="post">
+          <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+          <input type="hidden" name="listing_id" value="{{ listing.id }}">
+          <button class="btn btn--primary" type="submit">Inquire</button>
+        </form>
+      {%- else -%}
+        <button class="btn btn--primary" type="button" data-open-modal="login">Log in to inquire</button>
+      {%- endif -%}
+    </div>
+  {%- endunless -%}
+
+  {%- if has_geo -%}
+    {%- parse_json detail_point -%}
+    [{ "lat": {{ map_lat | json }}, "lng": {{ map_lng | json }}, "title": {{ listing.title | json }}, "price": "", "url": ""{% if is_general %}, "fuzzy": true{% endif %} }]
+    {%- endparse_json -%}
+    <script type="application/json" id="listing-map-data">{{ detail_point | json | replace: '</', '<\/' | html_safe }}</script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="{{ 'scripts/geo-map.js' | asset_url }}" defer></script>
+  {%- endif -%}
+  <script src="{{ 'scripts/favorites.js' | asset_url }}" defer></script>
+{% endif %}
+
+<style>
+  .listing-detail__back { display: inline-block; font-size: var(--fs-sm); margin-bottom: 1rem; }
+
+  .detail-head { margin: 0 0 1.5rem; }
+  .detail-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 0 0 .5rem; padding: 0; font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent-ink); }
+  .detail-crumbs span + span::before { content: "—"; margin-right: .5rem; color: var(--muted); font-weight: 400; }
+  .detail-head__row { display: flex; align-items: stretch; justify-content: space-between; gap: 1.5rem; }
+  .detail-head__title { margin: 0; display: flex; align-items: center; }
+  .detail-head__aside { flex: none; display: flex; align-items: stretch; gap: .75rem; }
+  .detail-head__aside .host-byline { align-items: center; }
+
+  .listing-detail__media { position: relative; aspect-ratio: 16 / 7; background: linear-gradient(135deg, var(--charcoal), var(--charcoal-2)); border-radius: var(--r); margin-bottom: 1.5rem; }
+  .listing-detail__media .listing-card__badge { position: absolute; top: 1rem; left: 1rem; font-size: var(--fs-xs); font-weight: 600; color: #fff; background: var(--accent); padding: .2rem .55rem; border-radius: var(--r-pill); }
+
+  .listing-detail__grid { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; align-items: start; }
+  .listing-detail__main { min-width: 0; }
+  .listing-detail__main h1 { margin: 0 0 .3rem; }
+  .listing-detail__loc { color: var(--muted); font-size: var(--fs-md); margin: 0 0 1.1rem; }
+
+  .host-byline { display: inline-flex; align-items: center; gap: .65rem; padding: .4rem .85rem .4rem .4rem; border: 1px solid var(--line); border-radius: var(--r-pill); background: #fff; transition: box-shadow .15s ease, border-color .15s ease; }
+  .host-byline:hover { text-decoration: none; border-color: var(--accent); box-shadow: var(--shadow-1); }
+  .host-byline__text { display: flex; flex-direction: column; line-height: 1.2; }
+  .host-byline__label { font-size: var(--fs-xs); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .host-byline strong { font-size: var(--fs-sm); color: var(--ink); }
+
+  .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(135deg, var(--charcoal), var(--charcoal-2)); color: #fff; font-family: var(--font-display); font-weight: 600; object-fit: cover; flex: none; }
+  .avatar--sm { width: 36px; height: 36px; font-size: var(--fs-sm); }
+  .avatar--md { width: 46px; height: 46px; font-size: var(--fs-md); }
+
+  .listing-detail__about { max-width: 70ch; }
+  .listing-detail__about h2 { font-size: var(--fs-lg); margin: 0 0 .5rem; }
+  .listing-detail__desc { white-space: pre-line; overflow-wrap: break-word; word-break: break-word; margin: 0; }
+
+  .listing-detail__amenities { margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+  .listing-detail__amenities h2 { font-size: var(--fs-lg); margin: 0 0 .85rem; }
+  .amenity-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1.25rem; }
+  .amenity-list li { display: flex; align-items: center; gap: .6rem; font-size: var(--fs-sm); }
+  .amenity-list svg { width: 16px; height: 16px; color: var(--accent-ink); flex: none; }
+
+  .host-block { margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+  .host-block h2 { font-size: var(--fs-lg); margin: 0 0 .85rem; }
+  .host-card { border: 1px solid var(--line); border-radius: var(--r); padding: 1.1rem 1.25rem; background: #fff; box-shadow: var(--shadow-1); max-width: 70ch; }
+  .host-card__top { display: flex; align-items: center; gap: .8rem; }
+  .host-card__id { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
+  .host-card__id strong { font-size: var(--fs-md); color: var(--ink); }
+  .host-card__meta { font-size: var(--fs-sm); color: var(--muted); }
+  .host-card__bio { margin: .9rem 0 0; font-size: var(--fs-sm); white-space: pre-line; overflow-wrap: break-word; }
+  .host-card__link { display: inline-block; margin-top: .9rem; font-size: var(--fs-sm); font-weight: 600; }
+
+  .host-more { margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+  .host-more h2 { font-size: var(--fs-lg); margin: 0 0 .85rem; }
+  .minicards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.1rem .9rem; }
+  .minicard { display: block; }
+  .minicard:hover { text-decoration: none; }
+  .minicard__media { display: block; position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-sm); overflow: hidden; background: linear-gradient(135deg, var(--charcoal), var(--charcoal-2)); transition: box-shadow .15s ease; }
+  .minicard:hover .minicard__media { box-shadow: var(--shadow-2); }
+  .minicard__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .minicard__body { display: block; padding-top: .5rem; }
+  .minicard__title { display: block; font-size: var(--fs-sm); font-weight: 700; color: var(--ink); }
+  .minicard__loc { display: block; font-size: var(--fs-xs); color: var(--muted); margin: .05rem 0 .15rem; }
+  .minicard__price { display: block; font-size: var(--fs-sm); font-weight: 700; color: var(--ink); }
+  .minicard__price em { font-style: normal; font-weight: 500; color: var(--muted); }
+
+  .listing-detail__aside { position: sticky; top: calc(var(--header-h) + 1rem); display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .rate-card { border: 1px solid var(--line); border-radius: var(--r); padding: 1.25rem; box-shadow: var(--shadow-1); background: #fff; }
+  .rate-card h3 { margin: 0 0 .75rem; }
+  .rate-table { list-style: none; margin: 0 0 1rem; padding: 0; }
+  .rate-table li { display: flex; justify-content: space-between; align-items: baseline; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+  .rate-table li:last-child { border-bottom: 0; }
+  .rate-table span { color: var(--muted); font-size: var(--fs-sm); }
+  .rate-table strong { font-size: var(--fs-md); }
+  .rate-card__note { font-size: var(--fs-xs); margin: 0; }
+
+  .where-card { border: 1px solid var(--line); border-radius: var(--r); padding: 1.25rem; box-shadow: var(--shadow-1); background: #fff; }
+  .where-card h3 { margin: 0 0 .4rem; }
+  .where-card__addr { font-size: var(--fs-sm); color: var(--ink); margin: 0 0 .8rem; }
+  .where-card__approx { font-size: var(--fs-sm); color: var(--muted); margin: 0 0 .8rem; }
+  .where-card__dir { display: inline-block; font-size: var(--fs-sm); font-weight: 600; margin-top: .75rem; }
+
+  .map-ph { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .55rem; text-align: center; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--muted); background-color: var(--surface-2); background-image: repeating-linear-gradient(0deg, transparent 0 27px, rgba(31,33,36,.055) 27px 28px), repeating-linear-gradient(90deg, transparent 0 27px, rgba(31,33,36,.055) 27px 28px); overflow: hidden; }
+  .map-ph__pin { width: 30px; height: 30px; color: var(--accent); filter: drop-shadow(0 2px 4px rgba(0,0,0,.18)); }
+  .map-ph__addr { font-weight: 700; color: var(--ink); margin: 0; font-size: var(--fs-sm); }
+  .map-ph__note { font-size: var(--fs-xs); margin: 0; text-transform: uppercase; letter-spacing: .07em; }
+  .map-ph--detail { aspect-ratio: 4 / 3; min-height: 200px; }
+
+  #listing-map.leaflet-container { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+
+  .geo-pin svg { width: 34px; height: 34px; fill: #1f2124; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); transition: transform .12s ease, filter .12s ease; transform-origin: 50% 100%; }
+  .geo-pin:hover svg { transform: scale(1.18); filter: drop-shadow(0 4px 7px rgba(0,0,0,.4)); }
+  .geo-pin:hover { z-index: 1000 !important; }
+  .geo-pop { display: flex; flex-direction: column; gap: .1rem; }
+  .geo-pop__title { font-weight: 700; font-size: var(--fs-sm); color: var(--ink); }
+  .geo-pop__price { font-size: var(--fs-xs); color: var(--muted); }
+  .geo-pop__note { font-size: var(--fs-xs); color: var(--muted); font-style: italic; }
+  .leaflet-container { font: inherit; }
+
+  .mobile-cta { display: none; }
+
+  @media (max-width: 820px) {
+    .listing-detail__grid { grid-template-columns: 1fr; gap: 1.75rem; }
+    .listing-detail__aside { position: static; }
+    .listing-detail__media { aspect-ratio: 16 / 10; }
+    .amenity-list { grid-template-columns: 1fr; }
+    .detail-head__row { flex-direction: column; gap: 1rem; }
+    .detail-head__aside { flex-wrap: wrap; }
+
+    .mobile-cta {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+      background: #fff; border-top: 1px solid var(--line);
+      box-shadow: 0 -6px 16px rgba(0,0,0,.08);
+      padding: .7rem clamp(1rem, 4vw, 1.5rem);
+      padding-bottom: calc(.7rem + env(safe-area-inset-bottom));
+    }
+    .mobile-cta__price strong { font-size: var(--fs-md); }
+    .mobile-cta__price span { color: var(--muted); font-size: var(--fs-sm); }
+    .mobile-cta form { margin: 0; }
+    .listing-detail { padding-bottom: 4.5rem; }
+  }
+
+  .facts-strip { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem .75rem; margin: 0 0 1.25rem; padding: 0; }
+  .fact { display: inline-flex; align-items: center; gap: .45rem; font-size: var(--fs-sm); font-weight: 600; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-pill); padding: .35rem .8rem; }
+  .fact svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
+
+  .detail-actions { margin: 0 0 1.25rem; }
+
+</style>

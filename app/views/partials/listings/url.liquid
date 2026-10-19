@@ -1,0 +1,19 @@
+{%- liquid
+  assign s = title | default: '' | downcase
+  assign s = s | replace: '&', ' and '
+  assign s = s | replace: '_', ' ' | replace: '—', ' ' | replace: '–', ' ' | replace: '-', ' '
+  assign s = s | remove: ',' | remove: '.' | remove: "'" | remove: '"' | remove: '!' | remove: '?'
+  assign s = s | remove: '(' | remove: ')' | remove: '[' | remove: ']' | remove: '{' | remove: '}'
+  assign s = s | remove: ':' | remove: ';' | remove: '/' | remove: '\' | remove: '|'
+  assign s = s | remove: '@' | remove: '#' | remove: '$' | remove: '%' | remove: '^' | remove: '*'
+  assign s = s | remove: '+' | remove: '=' | remove: '~' | remove: '`' | remove: '<' | remove: '>'
+  assign s = s | split: ' ' | join: '-'
+  assign s = s | truncate: 60, ''
+  assign s = s | split: '-' | join: '-'
+
+  assign out = '/listings/' | append: id
+  unless s == blank
+    assign out = out | append: '-' | append: s
+  endunless
+  echo out
+-%}

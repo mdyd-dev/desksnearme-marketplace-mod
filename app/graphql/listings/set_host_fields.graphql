@@ -1,0 +1,17 @@
+mutation listing_set_host_fields(
+  $id: ID!
+  $host_name: String
+  $search_text: String
+) {
+  record_update(
+    id: $id
+    record: {
+      properties: [
+        { name: "host_name", value: $host_name }
+        { name: "search_text", value: $search_text }
+      ]
+    }
+  ) {
+    id
+  }
+}

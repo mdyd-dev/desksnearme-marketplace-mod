@@ -1,0 +1,193 @@
+---
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign id = context.params.id
+  graphql g = 'listings/get', id: id
+  assign listing = g.records.results.first
+
+  graphql me = 'profiles/get_by_user', user_id: context.current_user.id
+  assign my_role = me.records.results.first.role
+
+  assign is_owner = false
+  if listing and listing.host_id == context.current_user.id
+    assign is_owner = true
+  endif
+
+  assign is_admin = false
+  if my_role == 'admin'
+    assign is_admin = true
+  endif
+
+  assign can_edit = false
+  if listing != blank
+    if is_owner or is_admin
+      assign can_edit = true
+    endif
+  endif
+
+  assign as_admin = false
+  if is_admin and is_owner == false
+    assign as_admin = true
+  endif
+
+  unless can_edit
+    redirect_to '/account/listings'
+    break
+  endunless
+
+  assign owner_email = ''
+  assign owner_name = ''
+  assign owner_company = ''
+  if listing.host_id != blank
+    graphql ho = 'users/get_user', id: listing.host_id
+    assign owner_email = ho.user.email | default: ''
+    assign owner_name = ho.user.name | default: ''
+    graphql hprof = 'profiles/get_by_user', user_id: listing.host_id
+    assign owner_company = hprof.records.results.first.company_name | default: ''
+  endif
+
+  assign host_name = listing.host_name
+  if host_name == blank
+    assign host_name = owner_company
+  endif
+  if host_name == blank
+    assign host_name = owner_name
+  endif
+  if host_name == blank
+    assign host_name = owner_email
+  endif
+
+  assign intent = context.params.intent | default: 'save'
+  assign title = context.params.title | strip
+  assign listing_type = context.params.listing_type
+
+  assign capacity = nil
+  if context.params.capacity != blank
+    assign capacity = context.params.capacity | plus: 0
+  endif
+
+  assign b_preset = context.params.building_preset | default: 'weekdays_9_5'
+  assign l_preset = context.params.listing_preset | default: 'same'
+  assign eff_preset = l_preset
+  if l_preset == 'same'
+    assign eff_preset = b_preset
+  endif
+  assign access_24_7 = false
+  if eff_preset == '24_7'
+    assign access_24_7 = true
+  endif
+
+  assign price_hour = nil
+  if context.params.price_hour != blank
+    assign price_hour = context.params.price_hour | plus: 0.0
+  endif
+  assign price_day = nil
+  if context.params.price_day != blank
+    assign price_day = context.params.price_day | plus: 0.0
+  endif
+  assign price_week = nil
+  if context.params.price_week != blank
+    assign price_week = context.params.price_week | plus: 0.0
+  endif
+  assign price_month = nil
+  if context.params.price_month != blank
+    assign price_month = context.params.price_month | plus: 0.0
+  endif
+
+  assign lat = nil
+  if context.params.lat != blank
+    assign lat = context.params.lat | plus: 0.0
+  endif
+  assign lng = nil
+  if context.params.lng != blank
+    assign lng = context.params.lng | plus: 0.0
+  endif
+
+  assign geo_verified = false
+  if context.params.geo_verified == 'true'
+    assign geo_verified = true
+  endif
+
+  assign location_precision = context.params.location_precision
+  unless location_precision == 'general'
+    assign location_precision = 'exact'
+  endunless
+
+  assign amenities = context.params.amenities | default: nil
+  if amenities == blank
+    assign amenities = nil
+  endif
+
+  assign has_price = false
+  if price_hour or price_day or price_week or price_month
+    assign has_price = true
+  endif
+
+  assign missing = ''
+  if title == blank
+    assign missing = missing | append: 'title,'
+  endif
+  if listing_type == blank
+    assign missing = missing | append: 'type,'
+  endif
+  if capacity == nil or capacity < 1
+    assign missing = missing | append: 'capacity,'
+  endif
+  if has_price == false
+    assign missing = missing | append: 'price,'
+  endif
+  if lat == nil or lng == nil
+    assign missing = missing | append: 'location,'
+  endif
+  # photos are only checked when going live — drafts can be photo-less
+  if intent == 'publish'
+    assign photo_uuid = context.params.uuid | default: listing.uuid
+    graphql pchk = 'photos/search', object_uuid: photo_uuid, photo_type: 'listing'
+    assign photo_count = pchk.photos.results | size
+    if photo_count == 0
+      assign missing = missing | append: 'photo,'
+    endif
+  endif
+
+  assign status = listing.status | default: 'draft'
+  assign outcome = 'saved'
+  if intent == 'publish'
+    if missing == blank
+      assign status = 'published'
+      assign outcome = 'published'
+    else
+      assign outcome = 'blocked'
+    endif
+  elsif intent == 'unpublish'
+    assign status = 'draft'
+    assign outcome = 'unpublished'
+  endif
+-%}
+{%- capture building_hours %}{% render 'listings/hours_json', prefix: 'building' %}{% endcapture -%}
+{%- capture listing_hours %}{% render 'listings/hours_json', prefix: 'listing' %}{% endcapture -%}
+{%- liquid
+  assign search_text = title | append: ' ' | append: owner_company | append: ' ' | append: owner_name | append: ' ' | append: owner_email | append: ' ' | append: context.params.city | append: ' ' | append: context.params.state | append: ' ' | append: context.params.postcode | downcase
+
+  graphql r = 'listings/update', id: id, uuid: context.params.uuid, title: title, description: context.params.description, listing_type: listing_type, capacity: capacity, building_hours: building_hours, listing_hours: listing_hours, access_24_7: access_24_7, amenities: amenities, address: context.params.address, city: context.params.city, state: context.params.state, postcode: context.params.postcode, country_code: context.params.country_code, formatted_address: context.params.formatted_address, place_id: context.params.place_id, geo_verified: geo_verified, location_precision: location_precision, latitude: lat, longitude: lng, price_hour: price_hour, price_day: price_day, price_week: price_week, price_month: price_month, host_name: host_name, search_text: search_text, status: status
+
+  assign edit_base = '/account/listings/' | append: id | append: '/edit'
+  if as_admin
+    assign edit_base = '/admin/listings/' | append: id | append: '/edit'
+  endif
+
+  if outcome == 'published'
+    if as_admin
+      redirect_to '/admin/listings?done=1'
+    else
+      redirect_to '/account/listings?published=1'
+    endif
+  elsif outcome == 'blocked'
+    assign blocked_url = edit_base | append: '?error=publish&missing=' | append: missing
+    redirect_to blocked_url
+  else
+    assign saved_url = edit_base | append: '?saved=1'
+    redirect_to saved_url
+  endif
+-%}

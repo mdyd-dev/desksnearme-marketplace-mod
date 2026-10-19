@@ -1,0 +1,14 @@
+name: message
+properties:
+- name: conversation_id
+  type: string
+- name: sender_id
+  type: string
+- name: sender_name
+  type: string
+- name: recipient_id
+  type: string
+- name: body
+  type: text
+- name: read
+  type: boolean

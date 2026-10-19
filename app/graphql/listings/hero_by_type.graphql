@@ -1,0 +1,31 @@
+query listings_hero_by_type($listing_type: String!) {
+  records(
+    per_page: 6
+    sort: [{ properties: { name: "featured_at", order: DESC } }]
+    filter: {
+      table: { value: "listing" }
+      properties: [
+        { name: "status", value: "published" }
+        { name: "listing_type", value: $listing_type }
+      ]
+    }
+  ) {
+    results {
+      id
+      uuid: property(name: "uuid")
+      title: property(name: "title")
+      covers: related_records(
+        table: "listing_photo"
+        join_on_property: "uuid"
+        foreign_property: "object_uuid"
+        sort: [
+          { properties: { name: "position", order: ASC } }
+          { created_at: { order: ASC } }
+        ]
+        filter: { properties: { name: "photo_type", value: "listing" } }
+      ) {
+        photo: property_upload(name: "photo") { url versions }
+      }
+    }
+  }
+}

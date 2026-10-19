@@ -1,0 +1,50 @@
+query conversations_for_user($user_id: String!) {
+  as_guest: records(
+    per_page: 100
+    sort: [{ properties: { name: "last_message_at", order: DESC } }]
+    filter: { table: { value: "conversation" }, properties: [{ name: "guest_id", value: $user_id }] }
+  ) {
+    results {
+      id
+      type: property(name: "type")
+      listing_id: property(name: "listing_id")
+      listing_title: property(name: "listing_title")
+      host_name: property(name: "host_name")
+      guest_name: property(name: "guest_name")
+      last_message_at: property(name: "last_message_at")
+      guest_archived_at: property(name: "guest_archived_at")
+      host_avatar: related_records(
+        table: "listing_photo"
+        join_on_property: "host_id"
+        foreign_property: "object_uuid"
+        filter: { properties: { name: "photo_type", value: "profile" } }
+      ) {
+        photo: property_upload(name: "photo") { versions }
+      }
+    }
+  }
+  as_host: records(
+    per_page: 100
+    sort: [{ properties: { name: "last_message_at", order: DESC } }]
+    filter: { table: { value: "conversation" }, properties: [{ name: "host_id", value: $user_id }] }
+  ) {
+    results {
+      id
+      type: property(name: "type")
+      listing_id: property(name: "listing_id")
+      listing_title: property(name: "listing_title")
+      host_name: property(name: "host_name")
+      guest_name: property(name: "guest_name")
+      last_message_at: property(name: "last_message_at")
+      host_archived_at: property(name: "host_archived_at")
+      guest_avatar: related_records(
+        table: "listing_photo"
+        join_on_property: "guest_id"
+        foreign_property: "object_uuid"
+        filter: { properties: { name: "photo_type", value: "profile" } }
+      ) {
+        photo: property_upload(name: "photo") { versions }
+      }
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{% comment %} params: photos (array of listing_photo records), alt {% endcomment %}
+{%- if photos and photos.size > 0 -%}
+  <div class="listing-gallery" data-count="{{ photos.size }}" data-lightbox-gallery>
+    {% for p in photos %}
+      {%- liquid
+        if forloop.first
+          assign jpg = p.photo.versions.lg | default: p.photo.versions.m | default: p.photo.url
+          assign avif = p.photo.versions.lg_avif | default: p.photo.versions.m_avif
+        else
+          assign jpg = p.photo.versions.m | default: p.photo.versions.sm | default: p.photo.url
+          assign avif = p.photo.versions.m_avif | default: p.photo.versions.sm_avif
+        endif
+        assign full = p.photo.versions.xl | default: p.photo.versions.lg | default: p.photo.url
+        assign full_avif = p.photo.versions.xl_avif | default: p.photo.versions.lg_avif
+
+        assign jpg = jpg | replace: ' ', '%20' | replace: ',', '%2C'
+        assign avif = avif | replace: ' ', '%20' | replace: ',', '%2C'
+        assign full = full | replace: ' ', '%20' | replace: ',', '%2C'
+        assign full_avif = full_avif | replace: ' ', '%20' | replace: ',', '%2C'
+      -%}
+      <a class="listing-gallery__item{% if forloop.first %} listing-gallery__item--lead{% endif %}"
+         href="{{ full }}"
+         data-avif="{{ full_avif }}"
+         aria-label="View photo {{ forloop.index }} of {{ photos.size }}">
+        <picture>
+          {%- if avif != blank -%}
+            <source type="image/avif" srcset="{{ avif }}">
+          {%- endif -%}
+          <img src="{{ jpg }}"
+               alt="{{ alt | default: 'Listing photo' }}"
+               width="1200" height="800"
+               {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+               decoding="async">
+        </picture>
+      </a>
+    {% endfor %}
+
+    {% if photos.size > 1 %}
+      <button type="button" class="listing-gallery__all" data-lightbox-all>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Show all {{ photos.size }} photos
+      </button>
+    {% endif %}
+  </div>
+
+  <script type="module" src="{{ 'scripts/lightbox.js' | asset_url }}"></script>
+
+  <style>
+    /* fixed-height gallery: the container owns the height, tiles fill it */
+    .listing-gallery { position: relative; display: grid; aspect-ratio: 2 / 1; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: .5rem; border-radius: var(--r); overflow: hidden; margin-bottom: 1.5rem; }
+    .listing-gallery__item { display: block; width: 100%; height: 100%; overflow: hidden; background: var(--surface-2); cursor: zoom-in; }
+    .listing-gallery__item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s ease; }
+    .listing-gallery__item:hover img { transform: scale(1.04); }
+
+    /* default (5+ photos): lead 2x2 + four singles fills the grid exactly */
+    .listing-gallery__item--lead { grid-column: span 2; grid-row: span 2; }
+    .listing-gallery__item:nth-child(n+6) { display: none; }
+
+    /* sparse counts subdivide the same fixed space, no empty cells */
+    .listing-gallery[data-count="1"] .listing-gallery__item--lead { grid-column: span 4; grid-row: span 2; }
+    .listing-gallery[data-count="2"] .listing-gallery__item { grid-column: span 2; grid-row: span 2; }
+    .listing-gallery[data-count="3"] .listing-gallery__item { grid-column: span 2; grid-row: span 1; }
+    .listing-gallery[data-count="3"] .listing-gallery__item--lead { grid-column: span 2; grid-row: span 2; }
+    .listing-gallery[data-count="4"] .listing-gallery__item--lead { grid-column: span 2; grid-row: span 2; }
+    .listing-gallery[data-count="4"] .listing-gallery__item:nth-child(2) { grid-column: span 2; grid-row: span 1; }
+
+    .listing-gallery__all { position: absolute; right: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .9rem; border: 1px solid var(--ink); border-radius: var(--r-sm); background: #fff; color: var(--ink); font: inherit; font-size: var(--fs-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-1); transition: background .12s ease; }
+    .listing-gallery__all:hover { background: var(--surface-2); }
+    .listing-gallery__all svg { width: 14px; height: 14px; }
+    .listing-gallery__all:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    @media (max-width: 560px) {
+      .listing-gallery { aspect-ratio: 4 / 3; grid-template-columns: 1fr; grid-template-rows: 1fr; }
+      .listing-gallery__item--lead,
+      .listing-gallery[data-count="1"] .listing-gallery__item--lead,
+      .listing-gallery[data-count="2"] .listing-gallery__item,
+      .listing-gallery[data-count="3"] .listing-gallery__item,
+      .listing-gallery[data-count="3"] .listing-gallery__item--lead,
+      .listing-gallery[data-count="4"] .listing-gallery__item--lead,
+      .listing-gallery[data-count="4"] .listing-gallery__item:nth-child(2) { grid-column: auto; grid-row: auto; }
+      .listing-gallery__item:nth-child(n+2) { display: none; }
+      .listing-gallery__all { right: .75rem; bottom: .75rem; }
+    }
+
+    .lightbox { position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; background: rgba(12,13,15,.92); padding: clamp(.75rem, 3vw, 2.5rem); }
+    .lightbox[hidden] { display: none; }
+    .lightbox__figure { margin: 0; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center; }
+    .lightbox__img { max-width: min(1400px, 92vw); max-height: 86vh; width: auto; height: auto; object-fit: contain; display: block; border-radius: var(--r-sm); box-shadow: 0 12px 48px rgba(0,0,0,.45); }
+    .lightbox__close { position: absolute; top: .75rem; right: .9rem; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; transition: background .12s ease; }
+    .lightbox__close:hover { background: rgba(255,255,255,.24); }
+    .lightbox__nav { flex: 0 0 auto; width: 48px; height: 48px; margin: 0 .35rem; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 30px; line-height: 1; cursor: pointer; transition: background .12s ease; }
+    .lightbox__nav:hover { background: rgba(255,255,255,.24); }
+    .lightbox__nav[hidden] { display: none; }
+    .lightbox__count { position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; margin: 0; color: rgba(255,255,255,.75); font-size: var(--fs-sm); letter-spacing: .04em; }
+    .lightbox__close:focus-visible, .lightbox__nav:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    @media (max-width: 560px) {
+      .lightbox { padding: .5rem; }
+      .lightbox__nav { position: absolute; bottom: 3.25rem; }
+      .lightbox__nav--prev { left: 1rem; }
+      .lightbox__nav--next { right: 1rem; }
+      .lightbox__img { max-height: 74vh; }
+    }
+  </style>
+{%- endif -%}

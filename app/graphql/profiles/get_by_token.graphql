@@ -1,0 +1,10 @@
+query profile_get_by_token($token: String!) {
+  records(per_page: 1, filter: { table: { value: "profile" }, properties: [{ name: "confirmation_token", value: $token }] }) {
+    results {
+      id
+      user_id: property(name: "user_id")
+      confirmed_at: property(name: "confirmed_at")
+      confirmation_sent_at: property(name: "confirmation_sent_at")
+    }
+  }
+}

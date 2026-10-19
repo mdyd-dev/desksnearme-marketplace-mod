@@ -1,0 +1,32 @@
+---
+slug: api/favorites/toggle
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign uid = context.current_user.id | append: ''
+  assign lid = context.params.listing_id | append: '' | strip
+
+  if lid == blank
+    echo '{"error":"missing_listing_id"}'
+    break
+  endif
+
+  graphql lg = 'listings/get', id: lid
+  assign listing = lg.records.results.first
+  if listing == blank
+    echo '{"error":"not_found"}'
+    break
+  endif
+
+  graphql fg = 'favorites/find', user_id: uid, listing_id: lid
+  assign existing = fg.records.results.first
+
+  if existing
+    graphql d = 'favorites/delete', id: existing.id
+    echo '{"favorited":false}'
+  else
+    graphql c = 'favorites/create', user_id: uid, listing_id: lid
+    echo '{"favorited":true}'
+  endif
+-%}

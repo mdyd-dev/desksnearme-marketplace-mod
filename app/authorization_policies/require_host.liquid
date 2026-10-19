@@ -1,0 +1,14 @@
+---
+name: require_host
+redirect_to: /
+flash_alert: This area is for hosts only.
+---
+{%- liquid
+  if context.current_user
+    graphql g = 'profiles/get_by_user', user_id: context.current_user.id
+    assign role = g.records.results.first.role
+    if role == 'host'
+      echo true
+    endif
+  endif
+-%}

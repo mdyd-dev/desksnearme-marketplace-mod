@@ -1,0 +1,3 @@
+mutation profile_update_role($id: ID!, $role: String!) {
+  record_update(id: $id, record: { properties: [{ name: "role", value: $role }] }) { id }
+}

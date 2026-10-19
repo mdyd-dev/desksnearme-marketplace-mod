@@ -1,0 +1,3 @@
+mutation listing_set_status($id: ID!, $status: String!) {
+  record_update(id: $id, record: { properties: [{ name: "status", value: $status }] }) { id }
+}

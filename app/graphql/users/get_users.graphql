@@ -1,0 +1,12 @@
+query users_get_all($per_page: Int = 100, $page: Int = 1) {
+  users(per_page: $per_page, page: $page) {
+    total_entries
+    results {
+      id
+      email
+      first_name
+      last_name
+      created_at
+    }
+  }
+}

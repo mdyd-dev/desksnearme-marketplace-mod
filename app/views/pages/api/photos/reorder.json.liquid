@@ -1,0 +1,24 @@
+---
+slug: api/photos/reorder
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign ids = context.params.ids
+  assign me = context.current_user.id | append: ''
+
+  if ids == blank
+    echo '{"error":"missing_ids"}'
+  else
+    assign ok = 0
+    for pid in ids
+      graphql g = 'photos/get', id: pid
+      assign row = g.photo.results.first
+      if row and row.host_id == me
+        graphql u = 'photos/set_position', id: pid, position: forloop.index0
+        assign ok = ok | plus: 1
+      endif
+    endfor
+    echo '{"reordered":' | append: ok | append: '}'
+  endif
+-%}

@@ -1,0 +1,12 @@
+mutation admin_set_hero($id: ID!, $hero: String!) {
+  record_update(
+    id: $id
+    record: {
+      properties: [
+        { name: "hero", value: $hero }
+      ]
+    }
+  ) {
+    id
+  }
+}

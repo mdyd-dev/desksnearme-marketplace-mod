@@ -1,0 +1,9 @@
+query profile_get_by_reset_token($token: String!) {
+  records(per_page: 1, filter: { table: { value: "profile" }, properties: [{ name: "reset_token", value: $token }] }) {
+    results {
+      id
+      user_id: property(name: "user_id")
+      reset_sent_at: property(name: "reset_sent_at")
+    }
+  }
+}

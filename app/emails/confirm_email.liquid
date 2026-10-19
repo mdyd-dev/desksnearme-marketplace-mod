@@ -1,0 +1,22 @@
+---
+to: '{{ form.email }}'
+delay: 0
+enabled: true
+trigger_condition: true
+from: no-reply@desksnear.me
+reply_to: no-reply@desksnear.me
+subject: 'Confirm your email for Desks Near Me'
+layout: mailer
+---
+
+<h1>Confirm your email</h1>
+
+<p>Hi{% if form.first_name != blank %} {{ form.first_name }}{% endif %},</p>
+
+<p>Thanks for signing up for Desks Near Me. Confirm your email address to activate your account:</p>
+
+<p><a href="{{ form.confirm_url }}">Confirm my email</a></p>
+
+<p>If the button doesn't work, paste this link into your browser:<br>{{ form.confirm_url }}</p>
+
+<p>This link expires in 24 hours. If you didn't sign up, you can ignore this email.</p>

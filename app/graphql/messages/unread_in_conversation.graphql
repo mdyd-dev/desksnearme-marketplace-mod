@@ -1,0 +1,15 @@
+query messages_unread_in_conversation($user_id: String!, $conversation_id: String!) {
+  records(
+    per_page: 200
+    filter: {
+      table: { value: "message" }
+      properties: [
+        { name: "recipient_id", value: $user_id }
+        { name: "conversation_id", value: $conversation_id }
+        { name: "read", value_boolean: false }
+      ]
+    }
+  ) {
+    results { id }
+  }
+}

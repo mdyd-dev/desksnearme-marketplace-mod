@@ -1,0 +1,57 @@
+{%- comment -%} params: days_map {%- endcomment -%}
+{%- liquid
+  assign days = 'mon,tue,wed,thu,fri,sat,sun' | split: ','
+  assign day_labels = 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday' | split: ','
+  assign groups = ''
+  assign prev_sig = ''
+  assign start_i = 0
+  assign prev_i = 0
+  for d in days
+    assign i = forloop.index0
+    assign dd = days_map[d]
+    if dd.closed
+      assign sig = 'closed'
+    else
+      assign sig = dd.open | append: '-' | append: dd.close
+    endif
+    if i == 0
+      assign prev_sig = sig
+      assign start_i = 0
+    elsif sig != prev_sig
+      assign groups = groups | append: start_i | append: '|' | append: prev_i | append: '|' | append: prev_sig | append: '~'
+      assign prev_sig = sig
+      assign start_i = i
+    endif
+    assign prev_i = i
+    if forloop.last
+      assign groups = groups | append: start_i | append: '|' | append: i | append: '|' | append: sig | append: '~'
+    endif
+  endfor
+  assign group_list = groups | split: '~'
+-%}
+<ul class="hours-list">
+  {%- for gstr in group_list -%}
+    {%- liquid
+      assign parts = gstr | split: '|'
+      assign si = parts[0] | plus: 0
+      assign ei = parts[1] | plus: 0
+      assign sig = parts[2]
+      assign label = day_labels[si]
+      if ei > si
+        assign label = label | append: ' – ' | append: day_labels[ei]
+      endif
+      assign times = sig | split: '-'
+      assign t_open = times[0]
+      assign t_close = times[1]
+    -%}
+    <li>
+      <span class="hours-list__day">{{ label }}</span>
+      <span class="hours-list__val">
+        {%- if sig == 'closed' -%}Closed
+        {%- elsif t_open == '00:00' and t_close == '23:59' -%}Open 24 hours
+        {%- else -%}{% render 'listings/hours_time', t: t_open %} – {% render 'listings/hours_time', t: t_close %}
+        {%- endif -%}
+      </span>
+    </li>
+  {%- endfor -%}
+</ul>

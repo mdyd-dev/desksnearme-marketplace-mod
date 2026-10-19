@@ -1,0 +1,51 @@
+query listings_get_published_by_user($host_id: String!, $per_page: Int = 24, $page: Int = 1) {
+  records(
+    per_page: $per_page
+    page: $page
+    sort: [{ created_at: { order: DESC } }]
+    filter: {
+      table: { value: "listing" }
+      properties: [
+        { name: "host_id", value: $host_id }
+        { name: "status", value: "published" }
+      ]
+    }
+  ) {
+    total_entries
+    total_pages
+    current_page
+    has_next_page
+    has_previous_page
+    results {
+      id
+      uuid: property(name: "uuid")
+      title: property(name: "title")
+      description: property(name: "description")
+      listing_type: property(name: "listing_type")
+      city: property(name: "city")
+      state: property(name: "state")
+      address: property(name: "address")
+      amenities: property_array(name: "amenities")
+      location_precision: property(name: "location_precision")
+      latitude: property_float(name: "latitude")
+      longitude: property_float(name: "longitude")
+      price_hour: property_float(name: "price_hour")
+      price_day: property_float(name: "price_day")
+      price_week: property_float(name: "price_week")
+      price_month: property_float(name: "price_month")
+      created_at
+      covers: related_records(
+        table: "listing_photo"
+        join_on_property: "uuid"
+        foreign_property: "object_uuid"
+        sort: [
+          { properties: { name: "position", order: ASC } }
+          { created_at: { order: ASC } }
+        ]
+        filter: { properties: { name: "photo_type", value: "listing" } }
+      ) {
+        photo: property_upload(name: "photo") { url versions }
+      }
+    }
+  }
+}

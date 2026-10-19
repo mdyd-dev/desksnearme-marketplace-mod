@@ -1,0 +1,47 @@
+---
+slug: account/favorites
+metadata:
+  title: Saved spaces
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign uid = context.current_user.id | append: ''
+  graphql fg = 'favorites/ids_for_user', user_id: uid
+
+  assign id_str = ''
+  for f in fg.records.results
+    assign id_str = id_str | append: f.listing_id | append: ','
+  endfor
+  assign fav_ids = id_str | split: ','
+
+  assign listings = ''
+  if fav_ids.size > 0
+    graphql lg = 'listings/get_many', ids: fav_ids
+    assign listings = lg.records.results
+  endif
+-%}
+<div class="page-head">
+  <div class="page-head__text">
+    <h1>Saved spaces</h1>
+    {%- if listings != blank -%}
+      <p class="page-head__meta">{{ listings.size }} saved {% if listings.size == 1 %}space{% else %}spaces{% endif %}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% if listings == blank %}
+  <div class="listings-empty">
+    <h2>Nothing saved yet</h2>
+    <p class="muted">Tap the heart on any space to keep it here. <a href="/listings">Browse spaces</a>.</p>
+  </div>
+{% else %}
+  <div class="wgrid">
+    {% for l in listings %}{% render 'listings/wcard', listing: l, index: forloop.index %}{% endfor %}
+  </div>
+{% endif %}
+
+<script src="{{ 'scripts/favorites.js' | asset_url }}" defer></script>
+
+<style>
+  .listings-empty { text-align: center; padding: 3rem 1rem; border: 1px dashed var(--line); }
+</style>

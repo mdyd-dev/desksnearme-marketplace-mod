@@ -1,0 +1,445 @@
+{%- liquid
+  assign l = listing
+  assign puid = form_uuid
+  graphql presign = 'photos/presign'
+  graphql existing_p = 'photos/search', object_uuid: puid, photo_type: 'listing'
+  assign no_photos = '' | split: ','
+  assign addr_display = l.formatted_address | default: l.address
+  assign has_geo = false
+  if l.latitude != blank and l.longitude != blank
+    assign has_geo = true
+  endif
+  assign lh_preset = 'same'
+  if l.listing_hours != blank
+    assign lh_parsed = l.listing_hours | parse_json
+    assign lh_preset = lh_parsed.preset | default: 'same'
+  endif
+  assign photo_count = existing_p.photos.results | size
+  assign lp = l.location_precision | default: 'exact'
+-%}
+{%- capture preview_url %}{% render 'listings/url', id: l.id, title: l.title %}{% endcapture -%}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<div class="lf-layout">
+  <div class="lf-layout__main">
+
+    <form action="{{ form_action }}" method="post" class="listing-form" id="listing-form">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      <input type="hidden" name="uuid" value="{{ puid }}">
+      <input type="hidden" name="id" value="{{ l.id }}">
+
+      <section class="lf-section" id="sec-basics">
+        <div class="lf-section__head">
+          <h2 class="lf-section__title">The basics</h2>
+        </div>
+
+        <div class="field">
+          <label for="lf-title">Title</label>
+          <input class="input" id="lf-title" name="title" type="text" value="{{ l.title }}"
+                 placeholder="e.g. Quiet desk in a Shoreditch studio">
+        </div>
+
+        <div class="lf-row">
+          <div class="field">
+            <label for="lf-type">Space type</label>
+            <select class="select" id="lf-type" name="listing_type">
+              <option value="">Choose…</option>
+              {% assign types = "Desk,Meeting Room,Office Space" | split: "," %}
+              {% for t in types %}<option value="{{ t }}"{% if l.listing_type == t %} selected{% endif %}>{{ t }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="lf-capacity">Capacity</label>
+            <input class="input" id="lf-capacity" name="capacity" type="number" min="1" max="1000" step="1"
+                   value="{% if l.capacity != blank %}{{ l.capacity }}{% endif %}" placeholder="How many?">
+            <span class="field__hint">Most people it fits at once. A single desk is 1.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="lf-desc">Description</label>
+          <textarea class="textarea" id="lf-desc" name="description" rows="5"
+                    placeholder="What's it like to work here? Light, noise, the coffee situation, who else is around.">{{ l.description }}</textarea>
+        </div>
+      </section>
+
+      <section class="lf-section" id="sec-location">
+        <div class="lf-section__head">
+          <h2 class="lf-section__title">Location</h2>
+          <p class="lf-section__hint">Guests search by distance — this is how you get found.</p>
+        </div>
+
+        <div class="field addr-field">
+          <label for="lf-address-search">Address</label>
+          <input class="input" id="lf-address-search" type="text"
+                 autocomplete="off" spellcheck="false"
+                 role="combobox" aria-expanded="false" aria-autocomplete="list"
+                 aria-controls="lf-address-list"
+                 placeholder="Start typing the address…"
+                 value="{{ addr_display }}">
+          <ul class="addr-list" id="lf-address-list" role="listbox" hidden></ul>
+          <span class="field__hint" id="lf-address-status"{% if has_geo %} data-state="set"{% endif %}>
+            {%- if has_geo -%}
+              Location set ✓
+            {%- else -%}
+              Pick a result from the list so your space appears in map searches.
+            {%- endif -%}
+          </span>
+        </div>
+
+        <div class="field map-picker" id="lf-map-wrap"
+             data-map-key="{{ context.constants.geoapify_map_key }}"
+             {% unless has_geo %}hidden{% endunless %}>
+          <span class="map-picker__label">Confirm the exact spot</span>
+          <p class="field__hint">Drag the pin to your entrance.</p>
+          <div class="map-picker__canvas" id="lf-map"></div>
+          <span class="field__hint" id="lf-map-note"
+                {% if l.geo_verified %}data-state="set"{% endif %}>
+            {%- if l.geo_verified -%}Pin position saved ✓{%- else -%}This pin came from the address lookup — adjust it if it's off.{%- endif -%}
+          </span>
+        </div>
+
+        <fieldset class="loc-precision">
+          <legend>How much of this should guests see?</legend>
+          <label class="loc-precision__opt">
+            <input type="radio" name="location_precision" value="exact"{% unless lp == 'general' %} checked{% endunless %}>
+            <span>
+              <strong>Show the exact address</strong>
+              <em>Right for offices, cafés, and staffed venues.</em>
+            </span>
+          </label>
+          <label class="loc-precision__opt">
+            <input type="radio" name="location_precision" value="general"{% if lp == 'general' %} checked{% endif %}>
+            <span>
+              <strong>Show the general area</strong>
+              <em>Right for home offices. Guests see a circle, and you share the address when you're ready.</em>
+            </span>
+          </label>
+        </fieldset>
+
+        <input type="hidden" name="address" id="lf-address" value="{{ l.address }}">
+        <input type="hidden" name="city" id="lf-city" value="{{ l.city }}">
+        <input type="hidden" name="state" id="lf-state" value="{{ l.state }}">
+        <input type="hidden" name="postcode" id="lf-postcode" value="{{ l.postcode }}">
+        <input type="hidden" name="country_code" id="lf-country" value="{{ l.country_code }}">
+        <input type="hidden" name="formatted_address" id="lf-formatted" value="{{ l.formatted_address }}">
+        <input type="hidden" name="place_id" id="lf-place-id" value="{{ l.place_id }}">
+        <input type="hidden" name="geo_verified" id="lf-geo-verified" value="{% if l.geo_verified %}true{% else %}false{% endif %}">
+        <input type="hidden" name="lat" id="lf-lat" value="{{ l.latitude }}">
+        <input type="hidden" name="lng" id="lf-lng" value="{{ l.longitude }}">
+      </section>
+
+      <section class="lf-section" id="sec-rates">
+        <div class="lf-section__head">
+          <h2 class="lf-section__title">Rates</h2>
+          <p class="lf-section__hint">Fill in whichever apply. At least one is needed to publish.</p>
+        </div>
+
+        <div class="rate-grid">
+          <div class="field"><label for="lf-ph">Hourly</label><div class="input-money"><span>$</span><input class="input" id="lf-ph" name="price_hour" type="number" min="0" step="0.01" placeholder="—" value="{% if l.price_hour != blank %}{{ l.price_hour | advanced_format: '%.2f' }}{% endif %}"></div></div>
+          <div class="field"><label for="lf-pd">Daily</label><div class="input-money"><span>$</span><input class="input" id="lf-pd" name="price_day" type="number" min="0" step="0.01" placeholder="—" value="{% if l.price_day != blank %}{{ l.price_day | advanced_format: '%.2f' }}{% endif %}"></div></div>
+          <div class="field"><label for="lf-pw">Weekly</label><div class="input-money"><span>$</span><input class="input" id="lf-pw" name="price_week" type="number" min="0" step="0.01" placeholder="—" value="{% if l.price_week != blank %}{{ l.price_week | advanced_format: '%.2f' }}{% endif %}"></div></div>
+          <div class="field"><label for="lf-pm">Monthly</label><div class="input-money"><span>$</span><input class="input" id="lf-pm" name="price_month" type="number" min="0" step="0.01" placeholder="—" value="{% if l.price_month != blank %}{{ l.price_month | advanced_format: '%.2f' }}{% endif %}"></div></div>
+        </div>
+      </section>
+
+      <section class="lf-section" id="sec-hours">
+        <div class="lf-section__head">
+          <h2 class="lf-section__title">Access hours</h2>
+        </div>
+
+        {% render 'listings/hours_fields', prefix: 'building', legend: 'Building access hours', allow_same: false, existing: l.building_hours %}
+
+        <details class="lf-details"{% if lh_preset != 'same' %} open{% endif %}>
+          <summary>The space has different hours from the building</summary>
+          {% render 'listings/hours_fields', prefix: 'listing', legend: 'Space access hours', allow_same: true, existing: l.listing_hours %}
+        </details>
+      </section>
+
+      <section class="lf-section" id="sec-amenities">
+        <div class="lf-section__head">
+          <h2 class="lf-section__title">Amenities</h2>
+        </div>
+        {%- assign sel = l.amenities | join: '|' -%}
+        {% render 'listings/amenity_fields', current: sel %}
+      </section>
+    </form>
+
+    <section class="lf-section lf-section--photos" id="sec-photos">
+      <div class="lf-section__head">
+        <h2 class="lf-section__title">Photos</h2>
+        <p class="lf-section__hint">Saved as soon as you add them — no need to press Save. Drag to reorder; the first is the cover.</p>
+      </div>
+      {% render 'photos/s3_form',
+         presigned_url: presign.presigned,
+         object_uuid: puid,
+         photo_type: 'listing',
+         max_number_of_files: 12,
+         editor_enabled: true,
+         existing_photos: no_photos,
+         note: 'PNG / JPG / WEBP · up to 12 images' %}
+      {% render 'photos/sortable', photos: existing_p.photos.results %}
+    </section>
+
+  </div>
+
+  <div class="lf-layout__side">
+    <div class="lf-bar" data-readiness>
+      <div class="lf-bar__inner">
+
+        <button class="lf-bar__toggle" type="button" data-readiness-toggle
+                aria-expanded="false" aria-controls="lf-readiness-panel">
+          <span class="lf-track" aria-hidden="true">
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+            <span class="lf-track__seg" data-seg data-on="false"></span>
+          </span>
+          <span class="lf-bar__summary" data-readiness-summary aria-live="polite">0 of 6</span>
+          <span class="lf-bar__chev" data-chevron aria-hidden="true">⌃</span>
+        </button>
+
+        <div class="lf-panel" id="lf-readiness-panel" data-readiness-panel hidden>
+
+          <div class="lf-panel__desktop-head">
+            <span class="lf-track" aria-hidden="true">
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+              <span class="lf-track__seg" data-seg data-on="false"></span>
+            </span>
+            <span class="lf-bar__summary" data-readiness-summary>0 of 6</span>
+          </div>
+
+          <p class="lf-panel__head">Needed to publish</p>
+          <ul class="lf-panel__list">
+            <li class="lf-panel__row" data-req="title" data-ok="false">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>Title</span>
+              <button class="lf-panel__go" type="button" data-jump="#lf-title">Go</button>
+            </li>
+            <li class="lf-panel__row" data-req="type" data-ok="false">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>Space type</span>
+              <button class="lf-panel__go" type="button" data-jump="#lf-type">Go</button>
+            </li>
+            <li class="lf-panel__row" data-req="capacity" data-ok="false">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>Capacity</span>
+              <button class="lf-panel__go" type="button" data-jump="#lf-capacity">Go</button>
+            </li>
+            <li class="lf-panel__row" data-req="price" data-ok="false">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>At least one rate</span>
+              <button class="lf-panel__go" type="button" data-jump="#lf-pd">Go</button>
+            </li>
+            <li class="lf-panel__row" data-req="location" data-ok="false">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>An address</span>
+              <button class="lf-panel__go" type="button" data-jump="#lf-address-search">Go</button>
+            </li>
+            <li class="lf-panel__row" data-req="photo" data-ok="{% if photo_count > 0 %}true{% else %}false{% endif %}">
+              <span class="lf-panel__mark" aria-hidden="true"></span>
+              <span>At least one photo</span>
+              <button class="lf-panel__go" type="button" data-jump="#sec-photos">Go</button>
+            </li>
+          </ul>
+
+          <p class="lf-panel__head lf-panel__head--sub">Also worth filling in</p>
+          <ul class="lf-panel__list">
+            <li class="lf-panel__srow"><span>Amenities</span><span class="lf-panel__val" data-status="amenities">none</span></li>
+          </ul>
+
+          <nav class="lf-panel__nav" aria-label="Form sections">
+            <p class="lf-panel__head lf-panel__head--sub">Jump to</p>
+            <ul class="lf-panel__list">
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-basics">The basics</button></li>
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-location">Location</button></li>
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-rates">Rates</button></li>
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-hours">Access hours</button></li>
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-amenities">Amenities</button></li>
+              <li><button class="lf-panel__navlink" type="button" data-jump="#sec-photos">Photos</button></li>
+            </ul>
+          </nav>
+
+        </div>
+
+        <div class="lf-bar__actions">
+          {%- if l.status == 'published' -%}
+            <button class="btn btn--primary" type="submit" form="listing-form" name="intent" value="save">Save changes</button>
+            <button class="btn btn--ghost" type="submit" form="listing-form" name="intent" value="unpublish"
+                    onclick="return confirm('Unpublish this listing? It will stop appearing in search results.');">Unpublish</button>
+          {%- else -%}
+            <button class="btn btn--primary" type="submit" form="listing-form" name="intent" value="publish" data-publish-btn>Publish</button>
+            <button class="btn btn--ghost" type="submit" form="listing-form" name="intent" value="save">Save draft</button>
+            <span class="lf-bar__blocked" data-publish-blocked{% if photo_count > 0 %} hidden{% endif %}>Add a photo to publish</span>
+          {%- endif -%}
+          <span class="lf-bar__dirty" data-dirty hidden>Unsaved changes</span>
+          <a class="lf-bar__cancel" href="{{ cancel_url | default: '/account/listings' }}">Cancel</a>
+          <a class="lf-bar__preview" href="{{ preview_url }}" target="_blank" rel="noopener">Preview →</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .listing-form, .lf-section--photos, .lf-bar__inner { max-width: 680px; }
+
+  .lf-layout__side { display: contents; }
+
+  .lf-section { padding: 3.25rem 0 0; border-bottom: 0; }
+  .lf-section:first-of-type { padding-top: .5rem; }
+  .lf-section__head { margin-bottom: 1.15rem; }
+  .lf-section__title { margin: 0; font-size: 1.375rem; letter-spacing: -.01em; }
+  .lf-section__hint { margin: .2rem 0 0; font-size: var(--fs-sm); color: var(--muted); }
+
+  .lf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .input-money { position: relative; }
+  .input-money > span { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: var(--fs-sm); pointer-events: none; }
+  .input-money .input { padding-left: 1.7rem; }
+
+  .lf-details { border: 1px solid var(--line); border-radius: var(--r-sm); padding: .1rem .9rem; margin-top: .75rem; }
+  .lf-details[open] { padding-bottom: .5rem; }
+  .lf-details > summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 600; padding: .75rem .1rem; list-style-position: inside; }
+  .lf-details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  .lf-details .hours-fields { border: 0; padding: 0 0 .5rem; margin: 0; }
+  .lf-details .hours-fields legend { display: none; }
+
+  .loc-precision { border: 1px solid var(--line); border-radius: var(--r-sm); padding: .9rem 1rem; margin-top: 1rem; }
+  .loc-precision legend { font-size: var(--fs-sm); font-weight: 600; padding: 0 .35rem; }
+  .loc-precision__opt { display: flex; gap: .6rem; align-items: flex-start; padding: .45rem 0; cursor: pointer; }
+  .loc-precision__opt input { width: 17px; height: 17px; accent-color: var(--accent); flex: none; margin: .15rem 0 0; }
+  .loc-precision__opt strong { display: block; font-size: var(--fs-sm); font-weight: 600; }
+  .loc-precision__opt em { display: block; font-style: normal; font-size: var(--fs-xs); color: var(--muted); margin-top: .1rem; }
+
+  .lf-section--photos { padding-bottom: 1rem; }
+  .listing-uppy { position: relative; z-index: 0; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+
+  .lf-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -6px 16px rgba(0,0,0,.06); margin-top: 1rem; z-index: 30; }
+  .lf-bar__inner { margin: 0 auto; }
+
+  .lf-bar__toggle { display: flex; align-items: center; gap: .6rem; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--line); padding: .55rem 0; cursor: pointer; font: inherit; color: var(--ink); text-align: left; }
+  .lf-bar__toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .lf-track { display: flex; gap: 3px; flex: none; width: 96px; }
+  .lf-track__seg { flex: 1; height: 4px; border-radius: 999px; background: var(--line); }
+  .lf-track__seg[data-on="true"] { background: var(--accent); }
+  .lf-bar__summary { font-size: var(--fs-sm); color: var(--muted); }
+  .lf-bar__chev { margin-left: auto; color: var(--muted); font-size: var(--fs-sm); }
+
+  .lf-panel { padding: .6rem 0 .8rem; border-bottom: 1px solid var(--line); }
+  .lf-panel[hidden] { display: none; }
+  .lf-panel__desktop-head { display: none; }
+  .lf-panel__head { margin: 0 0 .3rem; font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .lf-panel__head--sub { margin-top: .9rem; }
+  .lf-panel__list { list-style: none; margin: 0; padding: 0; }
+  .lf-panel__row { display: flex; align-items: center; gap: .55rem; padding: .3rem 0; font-size: var(--fs-sm); }
+  .lf-panel__mark { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--line); }
+  .lf-panel__row[data-ok="true"] .lf-panel__mark { background: var(--success); border-color: var(--success); }
+  .lf-panel__row[data-ok="true"] > span:not(.lf-panel__mark) { color: var(--muted); }
+  .lf-panel__go { margin-left: auto; background: none; border: 0; padding: 0; font: inherit; font-size: var(--fs-xs); font-weight: 600; color: var(--accent-ink); cursor: pointer; }
+  .lf-bar__blocked { font-size: var(--fs-xs); color: var(--muted); }
+  .lf-panel__srow { display: flex; align-items: center; justify-content: space-between; padding: .25rem 0; font-size: var(--fs-sm); }
+  .lf-panel__val { font-size: var(--fs-xs); color: var(--muted); }
+  .lf-panel__nav { display: none; }
+  .lf-panel__navlink { display: block; width: 100%; text-align: left; background: none; border: 0; padding: .3rem 0; font: inherit; font-size: var(--fs-sm); color: var(--ink); cursor: pointer; }
+  .lf-panel__navlink:hover { color: var(--accent-ink); }
+  .lf-panel__navlink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  .lf-bar__actions { display: flex; align-items: center; gap: .75rem; padding: .7rem 0; }
+  .lf-bar__dirty { font-size: var(--fs-xs); color: var(--accent-ink); }
+  .lf-bar__cancel { font-size: var(--fs-sm); color: var(--muted); }
+  .lf-bar__cancel:hover { color: var(--ink); }
+  .lf-bar__preview { margin-left: auto; font-size: var(--fs-sm); font-weight: 600; }
+
+  .addr-field { position: relative; }
+  .addr-list {
+    position: absolute; z-index: 40; top: 100%; left: 0; right: 0;
+    margin: .25rem 0 0; padding: .25rem; list-style: none;
+    background: var(--surface, #fff); border: 1px solid var(--line);
+    border-radius: var(--r-sm); box-shadow: var(--shadow-1);
+    max-height: 17rem; overflow-y: auto;
+  }
+  .addr-list[hidden] { display: none; }
+  .addr-list__item { padding: .5rem .6rem; border-radius: calc(var(--r-sm) - 2px); cursor: pointer; }
+  .addr-list__item[aria-selected="true"], .addr-list__item:hover { background: var(--surface-2); }
+  .addr-list__item--weak { opacity: .55; }
+  .addr-list__line1 { display: block; font-weight: 600; font-size: var(--fs-sm); }
+  .addr-list__line2 { display: block; font-size: var(--fs-xs); color: var(--muted); margin-top: .1rem; }
+  .addr-list__empty { padding: .6rem; font-size: var(--fs-sm); color: var(--muted); }
+  .field__hint[data-state="set"] { color: var(--ok, #157a4a); font-weight: 600; }
+  .field__hint[data-state="cleared"] { color: var(--warn, #a15c00); }
+
+  .map-picker[hidden] { display: none; }
+  .map-picker__label { display: block; font-weight: 600; font-size: var(--fs-sm); margin-bottom: .15rem; }
+  .map-picker .field__hint { margin: 0 0 .5rem; }
+  .map-picker__canvas { height: 300px; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; z-index: 0; }
+  .leaflet-container { font: inherit; }
+
+  .geo-pin svg { width: 34px; height: 34px; fill: var(--charcoal, #1f2124); filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
+  .geo-pin--drag { cursor: grab; }
+  .geo-pin--drag:active { cursor: grabbing; }
+
+  .amenity-group { border: 0; padding: 0; margin: 0 0 1.35rem; }
+  .amenity-group legend { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0; margin-bottom: .55rem; }
+  .amenity-group__grid { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem .9rem; }
+  .amenity-check { display: flex; align-items: center; gap: .55rem; font-size: var(--fs-sm); cursor: pointer; padding: .25rem 0; }
+  .amenity-check input { width: 17px; height: 17px; accent-color: var(--accent); flex: none; cursor: pointer; margin: 0; }
+
+  @media (min-width: 1000px) {
+    .lf-layout { display: grid; grid-template-columns: minmax(0, 680px) 300px; gap: 2.5rem; align-items: start; }
+    .lf-layout__side { display: block; position: sticky; top: calc(var(--header-h) + 1.5rem); }
+
+    .lf-bar { position: static; margin: 0; border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-1); }
+    .lf-bar__inner { max-width: none; padding: 1.1rem 1.25rem; }
+    .lf-bar__toggle { display: none; }
+
+    .lf-panel, .lf-panel[hidden] { display: block; padding: 0; border-bottom: 0; }
+    .lf-panel__desktop-head { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; margin-bottom: 1.1rem; }
+    .lf-panel__desktop-head .lf-track { width: 100%; }
+    .lf-panel__desktop-head .lf-bar__summary { white-space: nowrap; }
+    .lf-panel__nav { display: block; }
+
+    .lf-bar__actions { flex-wrap: wrap; padding: 1rem 0 0; margin-top: 1rem; border-top: 1px solid var(--line); }
+    .lf-bar__actions .btn { flex: 1 1 100%; }
+    .lf-bar__dirty { order: 2; flex: 1 1 100%; }
+    .lf-bar__cancel { order: 3; }
+    .lf-bar__preview { order: 4; margin-left: auto; }
+  }
+
+  @media (max-width: 560px) {
+    .lf-row, .rate-grid { grid-template-columns: 1fr; }
+    .amenity-group__grid { grid-template-columns: 1fr; }
+    .lf-section { padding-top: 2.5rem; }
+    .lf-bar__cancel, .lf-bar__preview { display: none; }
+    .lf-bar__actions .btn { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="{{ 'scripts/address-autocomplete.js' | asset_url }}" defer></script>
+<script src="{{ 'scripts/map-picker.js' | asset_url }}" defer></script>
+<script src="{{ 'scripts/listing-readiness.js' | asset_url }}" defer></script>
+<script>
+  (function () {
+    document.querySelectorAll('.hours-fields').forEach(function (fs) {
+      var grid = fs.querySelector('[data-hours-grid]');
+      fs.querySelectorAll('input[type="radio"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+          if (grid) grid.hidden = r.value !== 'custom';
+        });
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,149 @@
+---
+metadata:
+  title: Manage users
+authorization_policies: [require_admin]
+---
+{%- liquid
+  assign q = context.params.q | strip
+  assign per_page = 25
+  assign page_num = context.params.page | default: 1 | plus: 0
+  if page_num < 1
+    assign page_num = 1
+  endif
+
+  if q == blank
+    graphql gu = 'users/get_users', per_page: per_page, page: page_num
+  else
+    graphql gu = 'users/admin_search', q: q, per_page: per_page, page: page_num
+  endif
+
+  assign users = gu.users.results
+  assign total = gu.users.total_entries
+  assign total_pages = total | plus: per_page | minus: 1 | divided_by: per_page
+
+  assign uid_list = ''
+  for u in users
+    assign uid_list = uid_list | append: u.id | append: ','
+  endfor
+  assign uids = uid_list | split: ','
+
+  assign profiles = ''
+  if uids.size > 0
+    graphql gp = 'profiles/get_by_users', user_ids: uids
+    assign profiles = gp.records.results
+  endif
+
+  assign qs = ''
+  unless q == blank
+    assign q_enc = q | url_encode
+    assign qs = 'q=' | append: q_enc | append: '&'
+  endunless
+-%}
+<a class="listing-detail__back" href="/admin">← Admin</a>
+<h1>Manage users</h1>
+{% if context.params.updated %}<div class="flash flash--notice">Role updated.</div>{% endif %}
+{% if context.params.deleted %}<div class="flash flash--notice">User deleted.</div>{% endif %}
+{% if context.params.error == 'self_delete' %}<div class="flash flash--error">You can't delete your own account.</div>{% endif %}
+
+<form class="admin-search" action="/admin/users" method="get" role="search">
+  <input class="input" type="search" name="q" value="{{ q }}" placeholder="Search by name or email…" aria-label="Search users">
+  <button class="btn btn--primary" type="submit">Search</button>
+  {% if q != blank %}<a class="btn btn--ghost" href="/admin/users">Clear</a>{% endif %}
+</form>
+
+<p class="muted admin-count">{{ total }} {% if total == 1 %}user{% else %}users{% endif %}{% if q != blank %} matching “{{ q }}”{% endif %}</p>
+
+{% if users == blank %}
+  <div class="listings-empty">
+    <h2>No users found</h2>
+    <p class="muted">{% if q != blank %}Nothing matches “{{ q }}”. <a href="/admin/users">Clear the search</a>.{% else %}There are no users on this page.{% endif %}</p>
+  </div>
+{% else %}
+<table class="admin-table">
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Set role</th><th>Delete</th></tr></thead>
+  <tbody>
+    {% for u in users %}
+      {%- liquid
+        assign role = 'guest'
+        for p in profiles
+          if p.user_id == u.id
+            assign role = p.role | default: 'guest'
+            break
+          endif
+        endfor
+      -%}
+      <tr>
+        <td>{{ u.first_name }} {{ u.last_name }}</td>
+        <td>{{ u.email }}</td>
+        <td><span class="status-pill status-pill--{{ role }}">{{ role }}</span></td>
+        <td>
+          <form action="/admin/users/set_role" method="post" class="roleform">
+            <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+            <input type="hidden" name="user_id" value="{{ u.id }}">
+            <input type="hidden" name="page" value="{{ page_num }}">
+            <input type="hidden" name="q" value="{{ q }}">
+            <select class="select" name="role">
+              <option value="guest"{% if role == 'guest' %} selected{% endif %}>Guest</option>
+              <option value="host"{% if role == 'host' %} selected{% endif %}>Host</option>
+              <option value="admin"{% if role == 'admin' %} selected{% endif %}>Admin</option>
+            </select>
+            <button class="btn btn--ghost" type="submit">Update</button>
+          </form>
+        </td>
+        <td>
+          {%- if u.id == context.current_user.id -%}
+            <span class="you-tag">You</span>
+          {%- else -%}
+            <form action="/admin/users/delete" method="post" class="deleteform"
+                  onsubmit="return confirm('Permanently delete this user, their profile, and all their listings? This cannot be undone.');">
+              <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+              <input type="hidden" name="id" value="{{ u.id }}">
+              <input type="hidden" name="page" value="{{ page_num }}">
+              <input type="hidden" name="q" value="{{ q }}">
+              <button class="btn btn--danger" type="submit">Delete</button>
+            </form>
+          {%- endif -%}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if total_pages > 1 %}
+  <nav class="pagination" aria-label="Pagination">
+    {% if page_num > 1 %}<a class="btn btn--ghost" href="?{{ qs }}page={{ page_num | minus: 1 }}">← Previous</a>{% endif %}
+    <span class="muted">Page {{ page_num }} of {{ total_pages }}</span>
+    {% if page_num < total_pages %}<a class="btn btn--ghost" href="?{{ qs }}page={{ page_num | plus: 1 }}">Next →</a>{% endif %}
+  </nav>
+{% endif %}
+{% endif %}
+
+<style>
+  .admin-search { display:flex; gap:.5rem; margin:1.25rem 0 .5rem; max-width:520px; }
+  .admin-search .input { flex:1 1 auto; }
+  .admin-count { margin: 0 0 1.25rem; font-size: var(--fs-sm); }
+  .admin-table { width:100%; border-collapse:collapse; }
+  .admin-table th, .admin-table td { text-align:left; padding:.75rem .5rem; border-bottom:1px solid var(--line); font-size:var(--fs-sm); vertical-align:middle; }
+  .admin-table th { color:var(--muted); font-weight:600; }
+  .roleform { display:flex; gap:.4rem; align-items:center; }
+  .roleform .select { width:auto; padding:.4rem .6rem; }
+  .roleform .btn { padding:.4rem .7rem; }
+  .deleteform { display:flex; }
+  .deleteform .btn { padding:.4rem .7rem; }
+  .btn--danger { color:#b42318; border:1px solid color-mix(in srgb, #b42318 40%, var(--line)); background:transparent; }
+  .btn--danger:hover { background:color-mix(in srgb, #b42318 8%, #fff); }
+  .you-tag { color:var(--muted); font-size:var(--fs-xs); }
+  .flash--error { background:color-mix(in srgb, #b42318 12%, #fff); color:#b42318; }
+  .status-pill { display:inline-block; font-size:var(--fs-xs); font-weight:600; padding:.15rem .55rem; border-radius:var(--r-pill); text-transform:capitalize; }
+  .status-pill--admin { background:color-mix(in srgb, var(--accent) 18%, #fff); color:var(--accent-ink); }
+  .status-pill--host { background:color-mix(in srgb, var(--success) 15%, #fff); color:var(--success); }
+  .status-pill--guest { background:var(--surface-2); color:var(--muted); }
+  .pagination { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:2rem; }
+  @media (max-width:640px){
+    .admin-table thead { display:none; }
+    .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display:block; width:100%; }
+    .admin-table tr { border:1px solid var(--line); border-radius:var(--r-sm); margin-bottom:.75rem; padding:.5rem; }
+    .admin-table td { border:0; padding:.35rem .5rem; }
+    .roleform { flex-wrap:wrap; }
+  }
+</style>

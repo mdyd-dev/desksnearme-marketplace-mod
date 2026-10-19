@@ -1,0 +1,173 @@
+---
+metadata:
+  title: Manage listings
+authorization_policies: [require_admin]
+---
+{%- liquid
+  assign q = context.params.q | strip
+  assign q_down = q | downcase
+  assign page_num = context.params.page | default: 1 | plus: 0
+  graphql g = 'admin/listings_search', q: q_down, per_page: 25, page: page_num
+  assign rs = g.records
+  assign listings = rs.results
+  graphql gf = 'listings/featured', per_page: 9
+  assign feat_count = gf.records.total_entries
+  graphql hh = 'listings/hero'
+  assign hero_now = hh.records.results.first
+  assign qs = ''
+  unless q == blank
+    assign q_enc = q | url_encode
+    assign qs = 'q=' | append: q_enc | append: '&'
+  endunless
+-%}
+<a class="listing-detail__back" href="/admin">← Admin</a>
+<h1>Manage listings</h1>
+
+{% if context.params.done == 'featured' %}<div class="flash flash--notice">Listing featured on the homepage.</div>
+{% elsif context.params.done == 'unfeatured' %}<div class="flash flash--notice">Listing removed from the homepage.</div>
+{% elsif context.params.done == 'hero' %}<div class="flash flash--notice">Set as the homepage spotlight.</div>
+{% elsif context.params.done == 'unhero' %}<div class="flash flash--notice">Removed from the spotlight.</div>
+{% elsif context.params.done %}<div class="flash flash--notice">Listing updated.</div>{% endif %}
+
+<p class="muted admin-featnote">
+  {%- if feat_count == 0 -%}
+    No featured listings — the homepage section is hidden.
+  {%- elsif feat_count > 9 -%}
+    {{ feat_count }} featured — the 9 most recently featured show on the homepage.
+  {%- else -%}
+    {{ feat_count }} of 9 featured slots used.
+  {%- endif -%}
+</p>
+
+<p class="muted admin-featnote">
+  {%- if hero_now -%}
+    Spotlight: <strong>{{ hero_now.title }}</strong>{% if hero_now.status != 'published' %} — not published, so the homepage shows a fallback{% endif %}.
+  {%- else -%}
+    No spotlight set — the homepage shows the newest featured space.
+  {%- endif -%}
+</p>
+
+<form class="admin-search" action="/admin/listings" method="get" role="search">
+  <input class="input" type="search" name="q" value="{{ q }}" placeholder="Search by title or author…" aria-label="Search listings">
+  <button class="btn btn--primary" type="submit">Search</button>
+  {% if q != blank %}<a class="btn btn--ghost" href="/admin/listings">Clear</a>{% endif %}
+</form>
+
+<p class="muted admin-count">{{ rs.total_entries }} {% if rs.total_entries == 1 %}listing{% else %}listings{% endif %}{% if q != blank %} matching “{{ q }}”{% endif %}</p>
+
+{% if listings == blank %}
+  <div class="listings-empty">
+    <h2>No listings found</h2>
+    <p class="muted">{% if q != blank %}Nothing matches “{{ q }}”. <a href="/admin/listings">Clear the search</a>.{% else %}Nothing has been listed on the marketplace.{% endif %}</p>
+  </div>
+{% else %}
+  <table class="admin-table">
+    <thead><tr><th></th><th>Title</th><th>Author</th><th>Type</th><th>City</th><th>Status</th><th>Featured</th><th>Spotlight</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for l in listings %}
+        <tr>
+          <td class="admin-thumb-cell">
+            {%- assign l_cover = l.covers.first -%}
+            {%- if l_cover.photo -%}
+              <img class="admin-thumb" src="{{ l_cover.photo.versions.sm | default: l_cover.photo.url }}" alt="" loading="lazy" width="120" height="80">
+            {%- else -%}
+              <span class="admin-thumb admin-thumb--empty" aria-hidden="true"></span>
+            {%- endif -%}
+          </td>
+          <td><a href="{% render 'listings/url', id: l.id, title: l.title %}">{{ l.title }}</a></td>
+          <td>{{ l.host_name | default: '—' }}</td>
+          <td>{{ l.listing_type }}</td>
+          <td>{{ l.city | default: '—' }}</td>
+          <td><span class="status-pill status-pill--{{ l.status | default: 'draft' }}">{{ l.status | default: 'draft' }}</span></td>
+          <td>
+            <form action="/admin/listings/set_featured" method="post" class="featureform">
+              <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+              <input type="hidden" name="id" value="{{ l.id }}">
+              <input type="hidden" name="q" value="{{ q }}">
+              <input type="hidden" name="page" value="{{ rs.current_page }}">
+              <input type="hidden" name="featured" value="{% if l.featured == 'true' %}false{% else %}true{% endif %}">
+              <input type="checkbox" onchange="this.form.submit()" {% if l.featured == 'true' %}checked{% endif %} aria-label="Feature {{ l.title }} on the homepage">
+              {% if l.featured == 'true' and l.status != 'published' %}<span class="feat-warn">not live</span>{% endif %}
+            </form>
+          </td>
+          <td>
+            <form action="/admin/listings/set_hero" method="post" class="featureform">
+              <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+              <input type="hidden" name="id" value="{{ l.id }}">
+              <input type="hidden" name="q" value="{{ q }}">
+              <input type="hidden" name="page" value="{{ rs.current_page }}">
+              <input type="hidden" name="hero" value="{% if l.hero == 'true' %}false{% else %}true{% endif %}">
+              <input type="checkbox" onchange="this.form.submit()" {% if l.hero == 'true' %}checked{% endif %} aria-label="Set {{ l.title }} as the homepage spotlight">
+              {% if l.hero == 'true' and l.status != 'published' %}<span class="feat-warn">not live</span>{% endif %}
+            </form>
+          </td>
+          <td>
+            <div class="admin-actions">
+              <a class="btn btn--ghost" href="/admin/listings/{{ l.id }}/edit">Edit</a>
+              {% if l.status == 'published' %}
+                <form action="/admin/listings/set_status" method="post">
+                  <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                  <input type="hidden" name="id" value="{{ l.id }}">
+                  <input type="hidden" name="status" value="unpublished">
+                  <button class="btn btn--ghost" type="submit">Unpublish</button>
+                </form>
+              {% else %}
+                <form action="/admin/listings/set_status" method="post">
+                  <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                  <input type="hidden" name="id" value="{{ l.id }}">
+                  <input type="hidden" name="status" value="published">
+                  <button class="btn btn--ghost" type="submit">Publish</button>
+                </form>
+              {% endif %}
+              <form action="/admin/listings/delete" method="post" onsubmit="return confirm('Delete this listing permanently?');">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="id" value="{{ l.id }}">
+                <button class="btn btn--danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if rs.total_pages > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% if rs.has_previous_page %}<a class="btn btn--ghost" href="?{{ qs }}page={{ rs.current_page | minus: 1 }}">← Previous</a>{% endif %}
+      <span class="muted">Page {{ rs.current_page }} of {{ rs.total_pages }}</span>
+      {% if rs.has_next_page %}<a class="btn btn--ghost" href="?{{ qs }}page={{ rs.current_page | plus: 1 }}">Next →</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endif %}
+
+<style>
+  .admin-search { display:flex; gap:.5rem; margin:1.25rem 0 .5rem; max-width:520px; }
+  .admin-search .input { flex:1 1 auto; }
+  .admin-count { margin:0 0 1.25rem; font-size:var(--fs-sm); }
+  .admin-featnote { margin:.75rem 0 0; font-size:var(--fs-sm); }
+  .admin-table { width:100%; border-collapse:collapse; }
+  .admin-table th, .admin-table td { text-align:left; padding:.75rem .5rem; border-bottom:1px solid var(--line); font-size:var(--fs-sm); vertical-align:middle; }
+  .admin-table th { color:var(--muted); font-weight:600; }
+  .admin-thumb-cell { width:60px; }
+  .admin-thumb { width:56px; height:56px; border-radius:var(--r-sm); object-fit:cover; display:block; background:var(--surface-2); }
+  .admin-thumb--empty { background:linear-gradient(135deg, var(--charcoal), var(--charcoal-2)); }
+  .featureform { display:flex; align-items:center; gap:.4rem; }
+  .featureform input[type="checkbox"] { width:18px; height:18px; accent-color:var(--accent); cursor:pointer; }
+  .feat-warn { font-size:var(--fs-xs); color:var(--muted); }
+  .admin-actions { display:flex; gap:.4rem; align-items:center; }
+  .admin-actions form { display:flex; margin:0; }
+  .admin-actions .btn { padding:.4rem .7rem; white-space:nowrap; }
+  .status-pill { display:inline-block; font-size:var(--fs-xs); font-weight:600; padding:.15rem .55rem; border-radius:var(--r-pill); text-transform:capitalize; }
+  .status-pill--published { background:color-mix(in srgb, var(--success) 15%, #fff); color:var(--success); }
+  .status-pill--draft { background:var(--surface-2); color:var(--muted); }
+  .status-pill--unpublished { background:color-mix(in srgb, var(--danger) 12%, #fff); color:var(--danger); }
+  .pagination { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:1.75rem; }
+  @media (max-width:720px){
+    .admin-table thead { display:none; }
+    .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display:block; width:100%; }
+    .admin-table tr { border:1px solid var(--line); border-radius:var(--r-sm); margin-bottom:.75rem; padding:.5rem; }
+    .admin-table td { border:0; padding:.35rem .5rem; }
+    .admin-thumb-cell { width:auto; }
+    .admin-actions { flex-wrap:wrap; }
+  }
+</style>

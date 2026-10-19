@@ -1,0 +1,32 @@
+mutation photo_create(
+  $user_id: ID!,
+  $host_id: String!,
+  $direct_url: String!,
+  $origin_url: String,
+  $object_uuid: String!,
+  $photo_type: String!,
+  $position: Int,
+  $photo_height: Int,
+  $photo_width: Int
+) {
+  record: model_create(model: {
+    model_schema_name: "listing_photo"
+    user_id: $user_id
+    properties: [
+      { name: "host_id" value: $host_id }
+      { name: "photo" value: $direct_url }
+      { name: "photo_type" value: $photo_type }
+      { name: "object_uuid" value: $object_uuid }
+      { name: "position" value_int: $position }
+      { name: "photo_width" value_int: $photo_width }
+      { name: "photo_height" value_int: $photo_height }
+      { name: "origin_url" value: $origin_url }
+    ]
+  }) {
+    id
+    photo_type: property(name: "photo_type")
+    photo_width: property_int(name: "photo_width")
+    photo_height: property_int(name: "photo_height")
+    photo: property_upload(name: "photo") { file_name url versions }
+  }
+}

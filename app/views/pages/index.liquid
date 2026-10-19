@@ -1,0 +1,162 @@
+---
+metadata:
+  title: Find a space to rent near you
+  description: Find and rent desks, meeting rooms, and office space near you. Search workspaces by city, or list your own space and reach people looking for one.
+  full_bleed: true
+---
+{%- liquid
+  assign is_anon = false
+  if context.current_user == blank
+    assign is_anon = true
+  endif
+-%}
+
+<link rel="preload" as="image" type="image/avif" media="(min-width: 861px)" href="{{ 'images/hero-map.avif' | asset_url }}" fetchpriority="high">
+{%- if is_anon -%}
+  {%- cache 'home_main_anon_v9', expire: 300 -%}
+    {%- render 'home/main' -%}
+  {%- endcache -%}
+{%- else -%}
+  {%- render 'home/main' -%}
+{%- endif -%}
+
+{%- assign map_avif = 'images/hero-map.avif' | asset_url -%}
+{%- assign map_jpg = 'images/hero-map.jpg' | asset_url -%}
+<style>
+  /* ---- hero (map behind a plain search card) ---- */
+  .home-hero { background-color: var(--surface-2); background-image: linear-gradient(rgba(20,22,26,.20), rgba(20,22,26,.30)), url("{{ map_jpg }}"); background-image: linear-gradient(rgba(20,22,26,.20), rgba(20,22,26,.30)), image-set(url("{{ map_avif }}") type("image/avif"), url("{{ map_jpg }}") type("image/jpeg")); background-size: cover; background-position: center; }
+  .home-hero__wrap { max-width: var(--container); margin: 0 auto; padding: clamp(2.75rem, 7vw, 6rem) var(--gutter); display: flex; justify-content: center; }
+  .hero-card { width: 100%; max-width: 660px; background: #fff; border-radius: 0 0 40px 0; box-shadow: var(--shadow-2); padding: clamp(1.75rem, 3.5vw, 3rem); text-align: center; }
+  .hero-card__title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.85rem, 3.6vw, 2.6rem); line-height: 1.05; letter-spacing: -.02em; color: var(--ink); margin: 0 0 1.4rem; }
+
+  .hsearch { max-width: 100%; margin: 0 auto; }
+  .hsearch__row { position: relative; display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 0 999px 999px 0; background: #fff; }
+  .hsearch__row:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+  .hsearch__icon { flex: none; display: flex; align-items: center; padding-left: 1.05rem; color: var(--muted); }
+  .hsearch__icon svg { width: 18px; height: 18px; }
+  .hsearch__input { flex: 1 1 auto; min-width: 0; border: 0; background: transparent; padding: .95rem .75rem; margin: 0; font: inherit; font-size: var(--fs-md); color: var(--ink); }
+  .hsearch__input:focus { outline: none; }
+  .hsearch__input::placeholder { color: var(--muted); }
+  .hsearch__divider { flex: none; width: 1px; align-self: stretch; margin: .55rem 0; background: var(--line); }
+  .hsearch__locate { flex: none; display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0 1rem; font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--accent-ink); cursor: pointer; white-space: nowrap; transition: color .12s ease; }
+  .hsearch__locate:hover { color: var(--accent-hover); }
+  .hsearch__locate svg { width: 16px; height: 16px; }
+  .hsearch__locate[disabled] { opacity: .6; cursor: default; }
+  .hsearch__btn { flex: none; align-self: stretch; display: inline-flex; align-items: center; border: 0; background: var(--charcoal); color: #fff; font: inherit; font-size: var(--fs-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 0 1.6rem; cursor: pointer; border-radius: 0 999px 999px 0; transition: background .12s ease; }
+  .hsearch__btn:hover { background: var(--charcoal-2); }
+
+  .place-search { position: relative; }
+  .place-search .addr-list {
+    position: absolute; z-index: 60; top: calc(100% + 4px); left: 0; right: 0;
+    margin: 0; padding: .25rem; list-style: none;
+    background: #fff; border: 1px solid var(--line); border-radius: 9px; box-shadow: var(--shadow-2);
+    max-height: 17rem; overflow-y: auto; text-align: left;
+  }
+  .place-search .addr-list[hidden] { display: none; }
+  .addr-list__item { padding: .5rem .6rem; cursor: pointer; color: var(--ink); }
+  .addr-list__item[aria-selected="true"], .addr-list__item:hover { background: var(--surface-2); }
+  .addr-list__item--weak { opacity: .55; }
+  .addr-list__line1 { display: block; font-weight: 600; font-size: var(--fs-sm); }
+  .addr-list__line2 { display: block; font-size: var(--fs-xs); color: var(--muted); margin-top: .1rem; }
+  .addr-list__empty { padding: .6rem; font-size: var(--fs-sm); color: var(--muted); }
+
+  /* ---- featured workspaces (map behind) ---- */
+  .home-featured { background-color: var(--surface-2); background-image: linear-gradient(rgba(246,247,248,.72), rgba(246,247,248,.72)), url("{{ map_jpg }}"); background-image: linear-gradient(rgba(246,247,248,.72), rgba(246,247,248,.72)), image-set(url("{{ map_avif }}") type("image/avif"), url("{{ map_jpg }}") type("image/jpeg")); background-size: cover; background-position: center; border-top: 1px solid var(--line); }
+  .home-featured__wrap { max-width: var(--container); margin: 0 auto; padding: clamp(2.5rem, 5vw, 4rem) var(--gutter); }
+  .home-featured__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-xl); letter-spacing: -.015em; color: var(--ink); margin: 0 0 1.5rem; }
+  .home-featured__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+
+  /* ---- guest / host value bands ---- */
+  .home-band .container { padding-block: clamp(2.75rem, 5.5vw, 4.25rem); }
+  .home-band__eyebrow { text-align: center; text-transform: uppercase; letter-spacing: .15em; font-size: var(--fs-xs); font-weight: 700; font-family: var(--font-display); margin: 0 0 .8rem; }
+  .home-band__title { text-align: center; font-family: var(--font-display); font-weight: 800; font-size: var(--fs-xl); line-height: 1.08; letter-spacing: -.015em; margin: 0 auto; max-width: 20ch; }
+  .home-band__sub { text-align: center; max-width: 54ch; margin: 1rem auto 0; font-size: var(--fs-md); line-height: 1.6; }
+  .home-band__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2.4rem; }
+  .bcard { padding: 2.15rem 1.65rem; text-align: center; }
+  .bcard__icon { display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.05rem; }
+  .bcard__icon svg { width: 44px; height: 44px; }
+  .bcard__title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); letter-spacing: -.005em; margin: 0 0 .55rem; }
+  .bcard__text { font-size: var(--fs-sm); line-height: 1.55; margin: 0; }
+  .home-band__cta { text-align: center; margin-top: 2.4rem; }
+
+  .home-band--guest { background: var(--charcoal); }
+  .home-band--guest .home-band__eyebrow { color: #d9adad; }
+  .home-band--guest .home-band__title { color: #fff; }
+  .home-band--guest .home-band__sub { color: #b7bdc5; }
+  .home-band--guest .bcard { background: #262a2f; border: 1px solid rgba(255,255,255,.09); }
+  .home-band--guest .bcard__icon { color: #d9adad; }
+  .home-band--guest .bcard__title { color: #fff; }
+  .home-band--guest .bcard__text { color: #a9afb7; }
+  .home-band--guest .btn { background: #fff; color: var(--charcoal); border-color: #fff; }
+  .home-band--guest .btn:hover { background: #ececec; color: var(--charcoal); }
+
+  .home-band--host { background: #f6ece8; border-top: 1px solid #ecdcd5; border-bottom: 1px solid #ecdcd5; }
+  .home-band--host .home-band__eyebrow { color: var(--accent); }
+  .home-band--host .home-band__title { color: var(--ink); }
+  .home-band--host .home-band__sub { color: var(--muted); }
+  .home-band--host .bcard { background: #fff; border: 1px solid rgba(20,22,26,.06); box-shadow: var(--shadow-1); }
+  .home-band--host .bcard__icon { color: var(--ink); }
+  .home-band--host .bcard__title { color: var(--ink); }
+  .home-band--host .bcard__text { color: var(--muted); }
+
+  .btn--pill { border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; font-size: var(--fs-xs); font-weight: 700; padding: .85rem 2.1rem; }
+
+  /* ---- how it works ---- */
+  .home-steps { margin-top: 3.5rem; margin-bottom: 3.5rem; scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .home-steps > h2 { margin-bottom: .25rem; }
+  .home-steps__lead { margin: 0 0 2rem; }
+  .home-track + .home-track { margin-top: 2.75rem; padding-top: 2.5rem; border-top: 1px solid var(--line); }
+  .home-track__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .home-track__title { margin: 0; font-size: var(--fs-lg); }
+  .home-track__link { background: none; border: 0; padding: 0; margin: 0; font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--accent-ink); cursor: pointer; white-space: nowrap; }
+  .home-track__link:hover { text-decoration: underline; }
+  .home-steps__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .home-step { border-top: 2px solid var(--accent); padding-top: 1rem; }
+  .home-step__num { display: block; font-family: var(--font-display); font-size: var(--fs-md); font-weight: 800; line-height: 1; color: var(--accent-ink); }
+  .home-step h4 { margin: .4rem 0 .4rem; font-size: var(--fs-md); }
+  .home-step p { margin: 0; font-size: var(--fs-sm); }
+  .home-track--host .home-step { border-top-color: var(--charcoal); }
+  .home-track--host .home-step__num { color: var(--charcoal); }
+
+  @media (max-width: 900px) { .home-featured__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 860px) {
+    .home-hero, .home-featured { background-image: none; }
+  }
+  @media (max-width: 720px) {
+    .home-band__grid, .home-steps__grid { grid-template-columns: 1fr; gap: 1.25rem; }
+  }
+  @media (max-width: 560px) {
+    .home-featured__grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .hsearch__locate-txt { display: none; }
+    .hsearch__locate { padding: 0 .7rem; }
+    .hsearch__btn { padding: 0 1.1rem; }
+    .hero-card { border-radius: 0 0 26px 0; }
+  }
+</style>
+
+<script src="{{ 'scripts/place-search.js' | asset_url }}" defer></script>
+<script src="{{ 'scripts/favorites.js' | asset_url }}" defer></script>
+<script>
+  (function () {
+    var btn = document.querySelector('[data-geo-locate]');
+    if (!btn) return;
+    var txt = btn.querySelector('.hsearch__locate-txt') || btn;
+    btn.addEventListener('click', function () {
+      var form = btn.closest('form');
+      if (!navigator.geolocation) { form.submit(); return; }
+      btn.disabled = true; txt.textContent = 'Locating…';
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        document.getElementById('geo-lat').value = pos.coords.latitude;
+        document.getElementById('geo-lng').value = pos.coords.longitude;
+        document.getElementById('near').value = '';
+        form.submit();
+      }, function () {
+        btn.disabled = false; txt.textContent = 'Use my location';
+        alert('Could not get your location — try typing a city instead.');
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,38 @@
+query admin_listings_search($q: String = "", $per_page: Int = 25, $page: Int = 1) {
+  records(
+    per_page: $per_page
+    page: $page
+    sort: [{ created_at: { order: DESC } }]
+    filter: { table: { value: "listing" }, properties: [{ name: "search_text", contains: $q }] }
+  ) {
+    total_entries
+    current_page
+    total_pages
+    has_next_page
+    has_previous_page
+    results {
+      id
+      uuid: property(name: "uuid")
+      title: property(name: "title")
+      listing_type: property(name: "listing_type")
+      city: property(name: "city")
+      status: property(name: "status")
+      host_name: property(name: "host_name")
+      featured: property(name: "featured")
+      featured_at: property(name: "featured_at")
+      hero: property(name: "hero")
+      covers: related_records(
+        table: "listing_photo"
+        join_on_property: "uuid"
+        foreign_property: "object_uuid"
+        sort: [
+          { properties: { name: "position", order: ASC } }
+          { created_at: { order: ASC } }
+        ]
+        filter: { properties: { name: "photo_type", value: "listing" } }
+      ) {
+        photo: property_upload(name: "photo") { url versions }
+      }
+    }
+  }
+}

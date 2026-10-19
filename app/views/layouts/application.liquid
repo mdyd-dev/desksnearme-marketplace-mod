@@ -1,0 +1,262 @@
+{%- liquid
+  assign current_role = ''
+  assign initials = ''
+  assign avatar_url = ''
+  assign unread_count = 0
+  if context.current_user
+    graphql cu = 'profiles/get_by_user', user_id: context.current_user.id
+    assign current_role = cu.records.results.first.role
+    assign fi = context.current_user.first_name | default: '' | slice: 0, 1 | upcase
+    assign li = context.current_user.last_name | default: '' | slice: 0, 1 | upcase
+    assign initials = fi | append: li
+    if initials == blank
+      assign initials = context.current_user.email | slice: 0, 1 | upcase
+    endif
+    assign fn = context.current_user.first_name | default: '' | strip
+    assign ln = context.current_user.last_name | default: '' | strip
+    assign display_name = fn
+    if ln != blank
+      assign display_name = fn | append: ' ' | append: ln | strip
+    endif
+    if display_name == blank
+      assign display_name = 'Account'
+    endif
+    graphql uc = 'messages/unread_count', user_id: context.current_user.id
+    assign unread_count = uc.records.total_entries | default: 0
+    graphql hp = 'photos/search', object_uuid: context.current_user.id, photo_type: 'profile', limit: 1
+    assign avatar_url = hp.photos.results.first.photo.versions.sm | default: ''
+  endif
+
+  assign seo = context.exports.seo
+  assign page_title = seo.title | default: context.page.metadata.title | default: 'Find a space'
+  assign page_desc = seo.description | default: context.page.metadata.description | default: 'Find and rent desks, meeting rooms, and office space near you on Desks Near Me.'
+  assign page_canonical = seo.canonical
+  assign full_bleed = context.page.metadata.full_bleed
+
+  assign asset_parts = 'styles/app.css' | asset_url | split: '/'
+  assign asset_origin = asset_parts[0] | append: '//' | append: asset_parts[2]
+  assign font_url = 'fonts/inter-latin.woff2' | asset_url | split: '?' | first
+  assign font_url_display = 'fonts/archivo-latin.woff2' | asset_url | split: '?' | first
+-%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} | Desks Near Me</title>
+  <meta name="description" content="{{ page_desc }}">
+  {%- if page_canonical != blank -%}<link rel="canonical" href="{{ page_canonical }}">{%- endif -%}
+  <link rel="preconnect" href="{{ asset_origin }}">
+  <link rel="preconnect" href="{{ asset_origin }}" crossorigin>
+  <link rel="preload" href="{{ font_url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ font_url_display }}" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" type="image/svg+xml" href="{{ 'images/logo-short-f.svg' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'styles/app.css' | asset_url }}">
+  <style>
+    .nav-messages__count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 16px; padding: 0 4px; margin-left: .4rem;
+      border-radius: 999px; background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700; line-height: 1; vertical-align: middle;
+    }
+    .user-menu__count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px; margin-left: .4rem;
+      border-radius: 999px; background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 700; line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" data-nav-open="false" data-role="{% if context.current_user %}{{ current_role | default: 'guest' }}{% else %}out{% endif %}">
+    <div class="container">
+      <a class="brand" href="/" aria-label="Desks Near Me — home">
+        <img class="brand__logo" src="{{ 'images/logo-long.svg' | asset_url }}" alt="" width="195" height="30">
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Toggle menu" data-nav-toggle>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+
+      <div class="nav-auth">
+        {%- if context.current_user -%}
+          {%- if current_role == 'host' -%}
+            <a class="nav-link" href="/account/listings">List your desk</a>
+          {%- endif -%}
+          <a class="nav-link nav-messages" href="/messages">Messages{% if unread_count > 0 %}<span class="nav-messages__count" aria-label="{{ unread_count }} unread">{% if unread_count > 9 %}9+{% else %}{{ unread_count }}{% endif %}</span>{% endif %}</a>
+          <div class="user-menu" data-open="false">
+            <button class="user-menu__trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Account menu" data-user-menu-toggle>
+              <span class="user-menu__avatar">{% if avatar_url != blank %}<img src="{{ avatar_url }}" alt="" width="32" height="32">{% else %}{{ initials }}{% endif %}</span>
+              <span class="user-menu__name">{{ display_name }}</span>
+              <svg class="user-menu__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="user-menu__panel" role="menu">
+              <a class="user-menu__item user-menu__item--m" href="/messages" role="menuitem">Messages{% if unread_count > 0 %}<span class="user-menu__count">{{ unread_count }}</span>{% endif %}</a>
+              <a class="user-menu__item" href="/account" role="menuitem">Account</a>
+              {%- if current_role == 'host' -%}
+                <a class="user-menu__item" href="/account/listings" role="menuitem">My listings</a>
+              {%- endif -%}
+              {%- if current_role == 'guest' or current_role == 'host' -%}
+                <a class="user-menu__item" href="/account/favorites" role="menuitem">Saved spaces</a>
+              {%- endif -%}
+              {%- if current_role == 'admin' -%}
+                <a class="user-menu__item" href="/admin" role="menuitem">Admin</a>
+              {%- endif -%}
+              <div class="user-menu__sep"></div>
+              <a class="user-menu__item" href="/logout" role="menuitem">Log out</a>
+            </div>
+          </div>
+        {%- else -%}
+          <button class="nav-link" type="button" data-open-modal="signup">List your desk</button>
+          <button class="nav-link" type="button" data-open-modal="signup">Sign up</button>
+          <button class="btn btn--primary nav-login" type="button" data-open-modal="login">Log in</button>
+        {%- endif -%}
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page{% if full_bleed %} page--full{% endif %}">
+    {%- if full_bleed -%}
+      {%- if context.flash.alert or context.flash.notice -%}
+        <div class="container">
+          {%- if context.flash.alert -%}<div class="flash flash--alert">{{ context.flash.alert }}</div>{%- endif -%}
+          {%- if context.flash.notice -%}<div class="flash flash--notice">{{ context.flash.notice }}</div>{%- endif -%}
+        </div>
+      {%- endif -%}
+      {{ content_for_layout }}
+    {%- else -%}
+      <div class="container">
+        {%- if context.flash.alert -%}<div class="flash flash--alert">{{ context.flash.alert }}</div>{%- endif -%}
+        {%- if context.flash.notice -%}<div class="flash flash--notice">{{ context.flash.notice }}</div>{%- endif -%}
+        {{ content_for_layout }}
+      </div>
+    {%- endif -%}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="brand" href="/" aria-label="Desks Near Me — home">
+            <img class="brand__logo" src="{{ 'images/logo-long.svg' | asset_url }}" alt="" width="195" height="30">
+          </a>
+          <p class="footer-tagline">Rent desks, meeting rooms, and offices near you — by the hour, day, week, or month.</p>
+        </div>
+        <nav class="footer-cols" aria-label="Footer">
+          <div class="footer-col">
+            <h3>Guests</h3>
+            <a href="/listings">Browse spaces</a>
+            <a href="/support">Guest Support</a>
+          </div>
+          <div class="footer-col">
+            <h3>Hosts</h3>
+            <a href="/account/listings">List your space</a>
+            <a href="/support">Host Support</a>
+          </div>
+          <div class="footer-col">
+            <h3>DesksNearMe</h3>
+            <a href="/about">About</a>
+            <a href="/faq">FAQ</a>
+            <a href="/terms">Terms of use</a>
+            <a href="/privacy">Privacy</a>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© {{ 'now' | date: '%Y' }} Desks Near Me. All rights reserved.</div>
+        <p class="footer-note">Made for flexible work.</p>
+      </div>
+    </div>
+  </footer>
+
+  {%- unless context.current_user -%}
+    {% include 'modals/sign_up' %}
+    {% include 'modals/log_in' %}
+  {%- endunless -%}
+
+  <script>
+    (function () {
+      var header = document.querySelector('.site-header');
+      var toggle = document.querySelector('[data-nav-toggle]');
+      if (toggle) toggle.addEventListener('click', function () {
+        header.dataset.navOpen = header.dataset.navOpen === 'true' ? 'false' : 'true';
+      });
+      function setModal(name, open) {
+        var m = document.getElementById('modal-' + name);
+        if (m) m.dataset.open = open ? 'true' : 'false';
+      }
+      document.querySelectorAll('[data-open-modal]').forEach(function (b) {
+        b.addEventListener('click', function () { setModal(b.getAttribute('data-open-modal'), true); });
+      });
+      document.querySelectorAll('.modal').forEach(function (m) {
+        m.addEventListener('click', function (e) {
+          if (e.target.matches('[data-close-modal], .modal__backdrop')) m.dataset.open = 'false';
+        });
+      });
+      document.querySelectorAll('[data-toggle-password]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var input = document.getElementById(b.getAttribute('data-toggle-password'));
+          if (!input) return;
+          var show = input.type === 'password';
+          input.type = show ? 'text' : 'password';
+          b.setAttribute('aria-pressed', show ? 'true' : 'false');
+          b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+          var eye = b.querySelector('.ico-eye');
+          var off = b.querySelector('.ico-eye-off');
+          if (eye && off) {
+            if (show) { eye.setAttribute('hidden', ''); off.removeAttribute('hidden'); }
+            else { eye.removeAttribute('hidden'); off.setAttribute('hidden', ''); }
+          }
+        });
+      });
+      var userMenu = document.querySelector('.user-menu');
+      var umToggle = document.querySelector('[data-user-menu-toggle]');
+      function closeUserMenu() {
+        if (!userMenu) return;
+        userMenu.dataset.open = 'false';
+        if (umToggle) umToggle.setAttribute('aria-expanded', 'false');
+      }
+      if (umToggle && userMenu) {
+        umToggle.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var open = userMenu.dataset.open === 'true';
+          userMenu.dataset.open = open ? 'false' : 'true';
+          umToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+        });
+        document.addEventListener('click', function (e) {
+          if (userMenu.dataset.open === 'true' && !userMenu.contains(e.target)) closeUserMenu();
+        });
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal').forEach(function (m) { m.dataset.open = 'false'; });
+          closeUserMenu();
+        }
+      });
+    })();
+
+    (function () {
+      // strip one-shot status params so refreshing doesn't re-show the flash
+      try {
+        var u = new URL(window.location.href);
+        var junk = ['done', 'saved', 'resent', 'restored', 'archived_one', 'new'];
+        var changed = false;
+        junk.forEach(function (k) { if (u.searchParams.has(k)) { u.searchParams.delete(k); changed = true; } });
+        if (changed) window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+      } catch (e) {}
+      // let people dismiss any flash message
+      document.querySelectorAll('.flash').forEach(function (f) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'flash__close';
+        b.setAttribute('aria-label', 'Dismiss');
+        b.innerHTML = '&times;';
+        b.addEventListener('click', function () { f.remove(); });
+        f.appendChild(b);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+mutation send_support_contact($data: HashObject!) {
+  email_send(template: { name: "support_contact" }, data: $data) {
+    is_scheduled_to_send
+    errors { message }
+  }
+}

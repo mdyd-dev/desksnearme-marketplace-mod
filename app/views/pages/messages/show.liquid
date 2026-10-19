@@ -1,0 +1,264 @@
+---
+slug: messages/:id
+metadata:
+  title: Conversation
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign cid = context.params.id
+  assign uid = context.current_user.id
+
+  graphql cg = 'conversations/get', id: cid
+  assign convo = cg.records.results.first
+
+  assign is_member = false
+  assign other_name = ''
+  assign other_id = ''
+  assign i_archived = false
+  if convo
+    if convo.guest_id == uid
+      assign is_member = true
+      assign other_name = convo.host_name | default: 'Host'
+      assign other_id = convo.host_id
+      if convo.guest_archived_at != blank
+        assign i_archived = true
+      endif
+    elsif convo.host_id == uid
+      assign is_member = true
+      assign other_name = convo.guest_name | default: 'Guest'
+      assign other_id = convo.guest_id
+      if convo.host_archived_at != blank
+        assign i_archived = true
+      endif
+    endif
+  endif
+-%}
+
+{% if is_member == false %}
+  <div class="listings-empty">
+    <h1>Conversation not found</h1>
+    <p class="muted">This conversation doesn’t exist or isn’t yours. <a href="/messages">Back to messages</a>.</p>
+  </div>
+{% else %}
+  {%- liquid
+    graphql un = 'messages/unread_in_conversation', user_id: uid, conversation_id: cid
+    for u in un.records.results
+      graphql mr = 'messages/mark_read', id: u.id
+    endfor
+
+    graphql ms = 'messages/get_for_conversation', conversation_id: cid
+    assign messages = ms.records.results
+
+    graphql opp = 'photos/search', object_uuid: other_id, photo_type: 'profile', limit: 1
+    assign other_avatar = opp.photos.results.first.photo.versions.sm | default: ''
+
+    assign listing_live = false
+    assign listing_title_now = convo.listing_title
+    if convo.listing_id != blank
+      graphql lg = 'listings/get', id: convo.listing_id
+      assign lst = lg.records.results.first
+      if lst
+        assign listing_live = true
+        assign listing_title_now = lst.title | default: convo.listing_title
+      endif
+    endif
+
+    assign is_support = false
+    if convo.type == 'support'
+      assign is_support = true
+    endif
+  -%}
+  {%- capture listing_url %}{% render 'listings/url', id: convo.listing_id, title: listing_title_now %}{% endcapture -%}
+
+  <div class="thread">
+    <header class="thread__head">
+      <a class="thread__back" href="/messages" aria-label="All messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+
+      <a class="thread__avatar" href="/users/{{ other_id }}" aria-label="View {{ other_name }}’s profile">
+        {% include 'hosts/avatar', name: other_name, size: 'md', image_url: other_avatar %}
+      </a>
+
+      <div class="thread__who">
+        <strong>{{ other_name }}</strong>
+        {%- if is_support -%}
+          <span class="thread__listing">Support conversation</span>
+        {%- elsif listing_live -%}
+          <a class="thread__listing" href="{{ listing_url }}">{{ listing_title_now | default: 'View the space' }}</a>
+        {%- else -%}
+          <span class="thread__listing thread__listing--gone">{{ convo.listing_title | default: 'A space' }} · no longer listed</span>
+        {%- endif -%}
+      </div>
+
+      <details class="thread__menu" data-thread-menu>
+        <summary aria-label="Conversation options">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+        </summary>
+        <div class="thread__menu-panel">
+          <form action="/messages/{{ cid }}/archive" method="post">
+            <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+            <input type="hidden" name="on" value="{% if i_archived %}false{% else %}true{% endif %}">
+            <button type="submit">{% if i_archived %}Move back to inbox{% else %}Archive conversation{% endif %}</button>
+          </form>
+          {%- unless is_support -%}<button type="button" data-open-report>Report a problem</button>{%- endunless -%}
+        </div>
+      </details>
+    </header>
+
+    {%- if context.params.reported -%}
+      <div class="flash flash--notice">Thanks — our support team has been notified and will look into it.</div>
+    {%- endif -%}
+
+    {%- if i_archived -%}
+      <div class="flash flash--notice">This conversation is archived. It’ll return to your inbox if a new message arrives.</div>
+    {%- endif -%}
+
+    <ol class="thread__list" id="thread-list">
+      {%- if messages == blank -%}
+        <li class="thread__empty muted">No messages yet — say hello and ask whatever you need to know.</li>
+      {%- else -%}
+        {%- assign last_day = '' -%}
+        {%- for m in messages -%}
+          {%- assign day = m.created_at | date: '%Y-%m-%d' -%}
+          {%- if day != last_day -%}
+            <li class="thread__daysep"><span>{{ m.created_at | date: '%B %-d, %Y' }}</span></li>
+            {%- assign last_day = day -%}
+          {%- endif -%}
+
+          {%- assign mine = false -%}
+          {%- if m.sender_id == uid -%}{%- assign mine = true -%}{%- endif -%}
+
+          {%- assign nxt = messages[forloop.index] -%}
+          {%- assign run_end = true -%}
+          {%- if nxt -%}
+            {%- assign nxt_day = nxt.created_at | date: '%Y-%m-%d' -%}
+            {%- if nxt.sender_id == m.sender_id and nxt_day == day -%}
+              {%- assign run_end = false -%}
+            {%- endif -%}
+          {%- endif -%}
+
+          <li class="bubble-row{% if mine %} bubble-row--mine{% endif %}{% if run_end %} bubble-row--last{% endif %}">
+            <div class="bubble">{{ m.body }}</div>
+            {%- if run_end -%}
+              <span class="bubble__time">{{ m.created_at | date: '%-l:%M %p' }}{% unless mine %} · {{ m.sender_name }}{% endunless %}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ol>
+
+    <form class="thread__compose" action="/messages/{{ cid }}/reply" method="post">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      <label class="sr-only" for="msg-body">Your message</label>
+      <textarea id="msg-body" name="body" rows="2" placeholder="Write a message…" required></textarea>
+      <button class="btn btn--primary" type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="modal" id="modal-report" data-open="false">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="report-title">
+      <h2 id="report-title">Report a problem</h2>
+      <p class="muted">Tell us what's wrong and our support team will review this conversation. Nothing is deleted — the thread stays intact.</p>
+      <form action="/messages/{{ cid }}/report" method="post">
+        <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+        <div class="field">
+          <label for="report-reason">What's the problem?</label>
+          <textarea class="textarea" id="report-reason" name="reason" rows="4" required placeholder="Describe what happened…"></textarea>
+        </div>
+        <div class="modal__actions">
+          <button class="btn btn--primary" type="submit">Send report</button>
+          <button class="btn btn--ghost" type="button" data-close-modal>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endif %}
+
+<style>
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  .thread { max-width: 720px; }
+
+  .thread__head {
+    position: sticky; top: var(--header-h); z-index: 20;
+    display: flex; align-items: center; gap: .75rem;
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: .7rem 0; margin-bottom: 1.25rem;
+  }
+  .thread__back { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: var(--muted); margin-left: -.35rem; }
+  .thread__back:hover { background: var(--surface-2); color: var(--ink); }
+  .thread__back svg { width: 19px; height: 19px; }
+
+  .thread__avatar { flex: none; display: block; }
+  .thread__avatar .avatar { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, var(--charcoal), var(--charcoal-2)); color: #fff; font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); }
+  .thread__avatar img.avatar { object-fit: cover; }
+
+  .thread__who { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+  .thread__who strong { font-size: var(--fs-md); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thread__listing { font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thread__listing--gone { color: var(--muted); font-style: italic; }
+
+  .thread__menu { margin-left: auto; flex: none; position: relative; }
+  .thread__menu > summary { list-style: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+  .thread__menu > summary::-webkit-details-marker { display: none; }
+  .thread__menu > summary:hover { background: var(--surface-2); color: var(--ink); }
+  .thread__menu > summary svg { width: 18px; height: 18px; }
+  .thread__menu-panel { position: absolute; right: 0; top: calc(100% + .3rem); min-width: 200px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm); box-shadow: var(--shadow-2); padding: .3rem; z-index: 40; }
+  .thread__menu-panel button { display: block; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: var(--fs-sm); color: var(--ink); padding: .5rem .6rem; border-radius: calc(var(--r-sm) - 2px); cursor: pointer; }
+  .thread__menu-panel button:hover { background: var(--surface-2); }
+  .thread__menu-panel form { margin: 0; }
+
+  .thread__list { list-style: none; margin: 0 0 1.25rem; padding: 0; display: flex; flex-direction: column; gap: .18rem; }
+  .thread__empty { text-align: center; padding: 2rem 1rem; border: 1px dashed var(--line); border-radius: var(--r); font-size: var(--fs-sm); }
+
+  .thread__daysep { text-align: center; margin: 1rem 0 .5rem; }
+  .thread__daysep span { font-size: var(--fs-xs); color: var(--muted); background: var(--surface-2); border-radius: var(--r-pill); padding: .2rem .7rem; }
+
+  .bubble-row { display: flex; flex-direction: column; align-items: flex-start; max-width: 78%; }
+  .bubble-row--mine { align-self: flex-end; align-items: flex-end; }
+  .bubble-row--last { margin-bottom: .5rem; }
+
+  .bubble { background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: .55rem .85rem; font-size: var(--fs-sm); color: var(--ink); white-space: pre-line; overflow-wrap: break-word; word-break: break-word; }
+  .bubble-row--mine .bubble { background: var(--charcoal); border-color: var(--charcoal); color: #fff; border-radius: 16px 16px 5px 16px; }
+  .bubble-row:not(.bubble-row--last) .bubble { border-bottom-left-radius: 16px; }
+  .bubble-row--mine:not(.bubble-row--last) .bubble { border-bottom-right-radius: 16px; border-bottom-left-radius: 16px; }
+  .bubble__time { font-size: 11px; color: var(--muted); margin-top: .22rem; padding: 0 .25rem; }
+
+  .thread__compose { display: flex; align-items: flex-end; gap: .6rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+  .thread__compose textarea { flex: 1; border: 1.5px solid var(--line); border-radius: var(--r-sm); padding: .6rem .8rem; font: inherit; font-size: var(--fs-sm); resize: vertical; min-height: 2.6rem; }
+  .thread__compose textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .thread__compose .btn { flex: none; }
+
+  .modal__actions { display: flex; gap: .6rem; margin-top: 1rem; }
+
+  @media (max-width: 560px) {
+    .bubble-row { max-width: 88%; }
+    .thread__thumb { width: 40px; height: 40px; }
+  }
+</style>
+
+<script>
+  (function () {
+    var list = document.getElementById('thread-list');
+    if (list) window.scrollTo(0, document.body.scrollHeight);
+    var ta = document.getElementById('msg-body');
+    if (ta) ta.focus();
+
+    var menu = document.querySelector('[data-thread-menu]');
+    if (menu) {
+      document.addEventListener('click', function (e) {
+        if (menu.open && !menu.contains(e.target)) menu.open = false;
+      });
+    }
+    var openReport = document.querySelector('[data-open-report]');
+    var reportModal = document.getElementById('modal-report');
+    if (openReport && reportModal) {
+      openReport.addEventListener('click', function () {
+        if (menu) menu.open = false;
+        reportModal.dataset.open = 'true';
+      });
+    }
+  })();
+</script>

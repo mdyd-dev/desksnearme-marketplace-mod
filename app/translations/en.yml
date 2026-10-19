@@ -1,0 +1,8 @@
+en:
+  greeting: Hello world
+  time:
+    formats:
+      year: "%Y"
+      short: "%b %d, %Y"
+      long: "%B %d, %Y at %H:%M"
+      iso: "%Y-%m-%dT%H:%M:%S"

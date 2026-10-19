@@ -1,0 +1,8 @@
+mutation profile_set_confirmation($id: ID!, $confirmation_token: String!, $confirmation_sent_at: String!) {
+  record_update(id: $id, record: {
+    properties: [
+      { name: "confirmation_token", value: $confirmation_token }
+      { name: "confirmation_sent_at", value: $confirmation_sent_at }
+    ]
+  }) { id }
+}

@@ -1,0 +1,181 @@
+<div class="modal" id="modal-signup" data-open="{% if context.params.signup_error %}true{% else %}false{% endif %}" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+  <div class="modal__backdrop" data-close-modal></div>
+  <div class="modal__panel">
+    <button class="modal__close" type="button" data-close-modal aria-label="Close">&times;</button>
+    <h2 class="modal__title" id="signup-title">Create your account</h2>
+
+    {% if context.params.signup_error == 'exists' %}
+      <div class="flash flash--alert">
+        An account with that email already exists.
+        <a href="#" data-close-modal data-open-modal="login">Log in instead</a>.
+      </div>
+    {% elsif context.params.signup_error == 'captcha' %}
+      <div class="flash flash--alert">We couldn't verify that you're human. Please try again.</div>
+    {% elsif context.params.signup_error == 'email' %}
+      <div class="flash flash--alert">Please use a work or personal email address — temporary inbox services aren't accepted.</div>
+    {% elsif context.params.signup_error %}
+      <div class="flash flash--alert">Couldn't create your account — check your details and try again.</div>
+    {% endif %}
+
+    <form action="/user/create" method="post" class="stack" id="signup-form">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      <input type="hidden" name="ts" value="{{ 'now' | date: '%s' }}">
+
+      <div class="su-hp" aria-hidden="true">
+        <label for="su-website">Website</label>
+        <input id="su-website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <fieldset class="role-choice">
+        <legend>I want to…</legend>
+        <div class="role-grid">
+          <label class="role-opt">
+            <input type="radio" name="role" value="guest" checked>
+            <span class="role-opt__check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.4 2.4 4.6-5.2"/></svg></span>
+            <span class="role-opt__title">Find a space</span>
+            <span class="role-opt__desc">Search &amp; rent desks and rooms</span>
+          </label>
+          <label class="role-opt">
+            <input type="radio" name="role" value="host">
+            <span class="role-opt__check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.4 2.4 4.6-5.2"/></svg></span>
+            <span class="role-opt__title">List a space</span>
+            <span class="role-opt__desc">Rent out my desks and rooms</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="su-names">
+        <div class="field">
+          <label for="su-first">First name</label>
+          <input class="input" id="su-first" type="text" name="first_name" autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label for="su-last">Last name</label>
+          <input class="input" id="su-last" type="text" name="last_name" autocomplete="family-name">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="su-email">Email</label>
+        <input class="input" id="su-email" type="email" name="email" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="su-password">Password</label>
+        <div class="input-reveal">
+          <input class="input" id="su-password" type="password" name="password" required autocomplete="new-password" minlength="8">
+          <button class="input-reveal__btn" type="button" data-toggle-password="su-password" aria-label="Show password" aria-pressed="false">
+            <svg class="ico-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="ico-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.9 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-3.22 3.88M6.1 6.1A17.3 17.3 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 3.9-.82"/></svg>
+          </button>
+        </div>
+        <p class="field__hint">At least 8 characters</p>
+      </div>
+
+      <div class="field-check">
+        <input type="checkbox" id="su-terms-agree" name="terms_accepted" value="1" required
+               aria-label="I agree to the Terms of Service and Privacy Policy">
+        <span class="field-check__text">
+          <label for="su-terms-agree">I agree to the</label>
+          <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> and
+          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.
+        </span>
+      </div>
+      <div id="signup-recaptcha" data-sitekey="{{ context.constants.recaptcha_site_key }}"></div>
+      <p class="su-captcha-msg flash flash--alert" id="signup-captcha-required" hidden>
+        Please complete the “I’m not a robot” check.
+      </p>
+      <p class="su-captcha-msg flash flash--alert" id="signup-captcha-error" hidden>
+        Couldn't load the human check. Disable any ad blocker for this page and reload, or
+        <a href="/support">contact us</a>.
+      </p>
+
+      <button class="btn btn--primary btn--block" type="submit" id="signup-submit">Create account</button>
+      <p class="text-center muted" style="font-size:var(--fs-sm);margin:.25rem 0 0;">
+        Already have an account?
+        <a href="#" data-close-modal data-open-modal="login">Log in</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<style>
+  .role-choice { border: 0; padding: 0; margin: 0; }
+  .role-choice legend { font-size: var(--fs-sm); font-weight: 600; margin-bottom: .4rem; padding: 0; }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .role-opt { position: relative; display: block; border: 1.5px solid var(--line); border-radius: var(--r-sm); padding: .7rem 1.9rem .7rem .7rem; cursor: pointer; }
+  .role-opt input { position: absolute; opacity: 0; inset: 0; }
+  .role-opt__title { display: block; font-weight: 600; font-size: var(--fs-sm); }
+  .role-opt__desc { display: block; font-size: var(--fs-xs); color: var(--muted); margin-top: .15rem; }
+  .role-opt__check { position: absolute; top: .55rem; right: .55rem; color: var(--accent); opacity: 0; transition: opacity .12s ease; }
+  .role-opt__check svg { display: block; width: 18px; height: 18px; }
+  .role-opt:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, #fff); }
+  .role-opt:has(input:checked) .role-opt__check { opacity: 1; }
+  .role-opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .field-check { display: flex; align-items: flex-start; gap: .55rem; margin: 0 0 .2rem; }
+  .field-check input[type="checkbox"] { flex: none; width: 16px; height: 16px; margin: .1rem 0 0; accent-color: var(--accent); cursor: pointer; }
+  .field-check__text { font-size: var(--fs-xs); color: var(--muted); line-height: 1.5; }
+  .field-check__text label { display: inline; font-weight: 400; font-size: inherit; margin: 0; cursor: pointer; }
+  .su-names { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .su-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .su-captcha-msg { margin: 0; }
+  #signup-recaptcha:empty { display: none; }
+  /* the checkbox widget is a fixed 304px — scale it down rather than overflow a narrow modal */
+  @media (max-width: 400px) {
+    #signup-recaptcha { transform: scale(.85); transform-origin: 0 0; height: 66px; }
+  }
+  @media (max-width: 380px) { .su-names { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  (function () {
+    var form = document.getElementById('signup-form');
+    var box = document.getElementById('signup-recaptcha');
+    var modal = document.getElementById('modal-signup');
+    var errorEl = document.getElementById('signup-captcha-error');
+    var requiredEl = document.getElementById('signup-captcha-required');
+    if (!form || !box) return;
+
+    var widgetId = null;
+    var loading = false;
+    var ready = false;
+
+    // Google calls this once api.js has parsed.
+    window.dnmSignupCaptchaReady = function () {
+      if (ready) return;
+      widgetId = grecaptcha.render(box, {
+        sitekey: box.getAttribute('data-sitekey'),
+        callback: function () { if (requiredEl) requiredEl.hidden = true; }
+      });
+      ready = true;
+    };
+
+    // Loaded lazily so the script never costs anything on a normal page view.
+    function load() {
+      if (loading) return;
+      loading = true;
+      var el = document.createElement('script');
+      el.src = 'https://www.google.com/recaptcha/api.js?onload=dnmSignupCaptchaReady&render=explicit';
+      el.async = true;
+      el.defer = true;
+      el.onerror = function () {
+        loading = false;
+        if (errorEl) errorEl.hidden = false;
+      };
+      document.head.appendChild(el);
+    }
+
+    document.querySelectorAll('[data-open-modal="signup"]').forEach(function (b) {
+      b.addEventListener('click', load, { once: true });
+    });
+    form.addEventListener('focusin', load, { once: true });
+    if (modal && modal.dataset.open === 'true') load();
+
+    // Catch an unticked box here rather than on a pointless round trip.
+    form.addEventListener('submit', function (e) {
+      if (ready && grecaptcha.getResponse(widgetId)) return;
+      e.preventDefault();
+      if (requiredEl) requiredEl.hidden = false;
+      load();
+    });
+  })();
+</script>

@@ -1,0 +1,15 @@
+query geo_cache_get($key: String!) {
+  records(
+    per_page: 1
+    filter: {
+      table: { value: "geo_cache" }
+      properties: [{ name: "query_key", value: $key }]
+    }
+  ) {
+    results {
+      id
+      payload: property(name: "payload")
+      created_at
+    }
+  }
+}

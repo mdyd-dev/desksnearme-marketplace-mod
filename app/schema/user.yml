@@ -1,0 +1,9 @@
+properties:
+- name: role                  # guest | host | admin — set to guest/host at signup; admin set in the back end
+  type: string
+- name: phone
+  type: string
+- name: bio
+  type: text
+- name: company_name
+  type: string

@@ -1,0 +1,41 @@
+---
+method: post
+---
+{%- liquid
+  assign token = context.params.token | strip
+  assign password = context.params.password
+  assign confirmation = context.params.password_confirmation
+
+  assign valid = false
+  if token != blank
+    graphql lookup = 'profiles/get_by_reset_token', token: token
+    assign prof = lookup.records.results.first
+    if prof and prof.reset_sent_at != blank
+      assign now_epoch = 'now' | date: '%s' | plus: 0
+      assign sent_epoch = prof.reset_sent_at | plus: 0
+      assign age = now_epoch | minus: sent_epoch
+      if age <= 3600
+        assign valid = true
+      endif
+    endif
+  endif
+-%}
+{%- if valid == false -%}
+  {%- liquid redirect_to '/forgot-password' -%}
+{%- elsif password == blank or password.size < 8 -%}
+  {%- liquid
+    assign url = '/reset-password?error=short&token=' | append: token
+    redirect_to url
+  -%}
+{%- elsif password != confirmation -%}
+  {%- liquid
+    assign url = '/reset-password?error=mismatch&token=' | append: token
+    redirect_to url
+  -%}
+{%- else -%}
+  {%- liquid
+    graphql up = 'users/update_password', id: prof.user_id, password: password
+    graphql cr = 'profiles/clear_reset', id: prof.id
+    redirect_to '/?password_reset=1'
+  -%}
+{%- endif -%}

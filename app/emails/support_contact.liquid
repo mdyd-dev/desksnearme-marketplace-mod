@@ -1,0 +1,16 @@
+---
+to: 'support@desksnear.me'
+reply_to: '{{ form.email }}'
+from: 'no-reply@desksnear.me'
+subject: 'Contact form: {{ form.subject }}'
+layout: mailer
+delay: 0
+enabled: true
+trigger_condition: true
+---
+<h2>New contact form submission</h2>
+<p><strong>Name:</strong> {{ form.name }}</p>
+<p><strong>Email:</strong> {{ form.email }}</p>
+<p><strong>Subject:</strong> {{ form.subject }}</p>
+<p><strong>Message:</strong></p>
+<p>{{ form.message | newline_to_br }}</p>

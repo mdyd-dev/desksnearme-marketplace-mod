@@ -1,0 +1,29 @@
+---
+method: post
+authorization_policies: [require_admin]
+---
+{%- liquid
+  assign user_id = context.params.user_id
+  assign role = context.params.role
+  unless role == 'guest' or role == 'host' or role == 'admin'
+    assign role = 'guest'
+  endunless
+
+  graphql g = 'profiles/get_by_user', user_id: user_id
+  assign profile = g.records.results.first
+  if profile
+    graphql r = 'profiles/update_role', id: profile.id, role: role
+  else
+    graphql r = 'profiles/create', user_id: user_id, role: role
+  endif
+
+  assign back_page = context.params.page | default: 1
+  assign back_q = context.params.q | strip
+  assign dest = '/admin/users?page=' | append: back_page
+  unless back_q == blank
+    assign back_q_enc = back_q | url_encode
+    assign dest = dest | append: '&q=' | append: back_q_enc
+  endunless
+  assign dest = dest | append: '&updated=1'
+  redirect_to dest
+-%}

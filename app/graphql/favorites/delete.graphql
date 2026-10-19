@@ -1,0 +1,3 @@
+mutation favorite_delete($id: ID!) {
+  record_delete(table: "favorite", id: $id) { id }
+}

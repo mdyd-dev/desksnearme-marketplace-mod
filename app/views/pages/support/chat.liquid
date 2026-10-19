@@ -1,0 +1,38 @@
+---
+slug: support/chat
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign support_email = 'support@desksnear.me'
+  assign guest_id = context.current_user.id
+  assign my_email = context.current_user.email | downcase
+
+  # the support account itself has no one to open a support chat with
+  if my_email == support_email
+    redirect_to '/messages'
+    break
+  endif
+
+  graphql su = 'users/find_by_email', email: support_email
+  assign support_id = su.users.results.first.id
+  if support_id == blank
+    redirect_to '/support?chat_unavailable=1'
+    break
+  endif
+
+  # one ongoing support thread per user — reuse it if it exists
+  graphql existing = 'conversations/find_support', guest_id: guest_id
+  assign convo = existing.records.results.first
+  if convo
+    assign convo_url = '/messages/' | append: convo.id
+    redirect_to convo_url
+    break
+  endif
+
+  assign guest_name = context.current_user.name | default: context.current_user.first_name | default: 'Guest'
+  assign now = 'now' | date: '%s'
+  graphql c = 'conversations/create', guest_id: guest_id, host_id: support_id, listing_id: '', listing_title: 'Support request', host_name: 'Support', guest_name: guest_name, last_message_at: now, type: 'support'
+  assign new_url = '/messages/' | append: c.record_create.id
+  redirect_to new_url
+-%}

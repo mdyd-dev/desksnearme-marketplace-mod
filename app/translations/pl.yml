@@ -1,0 +1,8 @@
+pl:
+  greeting: Dzien dobry świecie
+  time:
+    formats:
+      year: "%Y"
+      short: "%d %b %Y"
+      long: "%d %B %Y, %H:%M"
+      iso: "%Y-%m-%dT%H:%M:%S"

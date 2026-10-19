@@ -1,0 +1,48 @@
+---
+slug: messages/:id/archive
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign cid = context.params.id
+  assign uid = context.current_user.id
+  assign turn_on = context.params.on
+
+  graphql cg = 'conversations/get', id: cid
+  assign convo = cg.records.results.first
+
+  assign my_side = ''
+  if convo
+    if convo.guest_id == uid
+      assign my_side = 'guest'
+    elsif convo.host_id == uid
+      assign my_side = 'host'
+    endif
+  endif
+
+  if my_side == blank
+    redirect_to '/messages'
+    break
+  endif
+
+  assign stamp = ''
+  if turn_on == 'true'
+    assign stamp = 'now' | date: '%s'
+  endif
+
+  assign h_arch = convo.host_archived_at
+  assign g_arch = convo.guest_archived_at
+  if my_side == 'host'
+    assign h_arch = stamp
+  else
+    assign g_arch = stamp
+  endif
+
+  graphql a = 'conversations/archive', id: cid, host_archived_at: h_arch, guest_archived_at: g_arch
+
+  if turn_on == 'true'
+    redirect_to '/messages?archived_one=1'
+  else
+    redirect_to '/messages?restored=1'
+  endif
+-%}

@@ -1,0 +1,30 @@
+---
+metadata:
+  title: Check your email
+---
+<div class="authpage">
+  <div class="authbox">
+    <div class="authbox__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z"/><path d="M3 6.5l9 6 9-6"/></svg>
+    </div>
+
+    <h1>Check your email</h1>
+    <p class="authbox__lead">We've sent a confirmation link to your inbox. Open it to activate your account, then log in.</p>
+
+    {%- if context.params.resent -%}
+      <div class="flash flash--notice">If that address has a pending account, we've sent another link.</div>
+    {%- endif -%}
+
+    <hr class="authbox__sep">
+
+    <p class="authbox__foot">Didn't get it? Check your spam folder, or request a new link.</p>
+    <form action="/confirmation/resend" method="post" class="authbox__resend">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      <div class="field">
+        <label for="re-email">Email</label>
+        <input class="input" id="re-email" type="email" name="email" required autocomplete="email">
+      </div>
+      <button class="btn btn--ghost btn--block" type="submit">Resend confirmation</button>
+    </form>
+  </div>
+</div>

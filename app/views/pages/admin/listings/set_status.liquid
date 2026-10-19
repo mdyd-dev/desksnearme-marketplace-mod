@@ -1,0 +1,12 @@
+---
+method: post
+authorization_policies: [require_admin]
+---
+{%- liquid
+  assign status = context.params.status
+  unless status == 'published' or status == 'unpublished' or status == 'draft'
+    assign status = 'draft'
+  endunless
+  graphql r = 'listings/set_status', id: context.params.id, status: status
+  redirect_to '/admin/listings?done=1'
+-%}

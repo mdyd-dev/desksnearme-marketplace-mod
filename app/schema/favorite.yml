@@ -1,0 +1,6 @@
+name: favorite
+properties:
+- name: user_id
+  type: string
+- name: listing_id
+  type: string

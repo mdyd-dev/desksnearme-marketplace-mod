@@ -1,0 +1,20 @@
+query messages_last_for_conversations($conversation_ids: [String!]) {
+  records(
+    per_page: 500
+    sort: [{ created_at: { order: DESC } }]
+    filter: {
+      table: { value: "message" }
+      properties: [{ name: "conversation_id", value_in: $conversation_ids }]
+    }
+  ) {
+    results {
+      id
+      conversation_id: property(name: "conversation_id")
+      sender_id: property(name: "sender_id")
+      recipient_id: property(name: "recipient_id")
+      body: property(name: "body")
+      read: property_boolean(name: "read")
+      created_at
+    }
+  }
+}

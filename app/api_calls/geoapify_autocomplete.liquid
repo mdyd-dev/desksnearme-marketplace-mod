@@ -1,0 +1,6 @@
+---
+to: 'https://api.geoapify.com/v1/geocode/autocomplete?text={{ data.text | url_encode }}&limit=6&lang={{ data.lang | url_encode }}&format=json&apiKey={{ data.api_key | url_encode }}'
+format: http
+request_type: GET
+request_headers: '{ "Accept": "application/json" }'
+---

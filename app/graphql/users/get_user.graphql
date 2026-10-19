@@ -1,0 +1,13 @@
+query user_get($id: ID!) {
+  user(id: $id) {
+    id
+    email
+    name
+    first_name
+    last_name
+    role: property(name: "role")
+    phone: property(name: "phone")
+    bio: property(name: "bio")
+    company_name: property(name: "company_name")
+  }
+}

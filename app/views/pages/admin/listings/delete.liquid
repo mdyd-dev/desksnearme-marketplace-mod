@@ -1,0 +1,19 @@
+---
+method: post
+authorization_policies: [require_admin]
+---
+{%- liquid
+  assign id = context.params.id
+  graphql g = 'listings/get', id: id
+  assign listing = g.records.results.first
+
+  if listing and listing.uuid != blank
+    graphql gp = 'photos/search', object_uuid: listing.uuid, photo_type: 'listing'
+    for p in gp.photos.results
+      graphql dp = 'photos/delete', id: p.id
+    endfor
+  endif
+
+  graphql r = 'listings/delete', id: id
+  redirect_to '/admin/listings?done=1'
+-%}

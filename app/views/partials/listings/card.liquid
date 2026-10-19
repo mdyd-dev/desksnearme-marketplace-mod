@@ -1,0 +1,104 @@
+{%- liquid
+  assign cover = listing.covers.first
+  assign idx = index | default: 99
+
+  assign img_m = cover.photo.versions.m | default: cover.photo.url | replace: ' ', '%20' | replace: ',', '%2C'
+  assign img_avif = cover.photo.versions.m_avif | replace: ' ', '%20' | replace: ',', '%2C'
+
+  assign is_general = false
+  if listing.location_precision == 'general'
+    assign is_general = true
+  endif
+
+  assign card_lat = listing.latitude
+  assign card_lng = listing.longitude
+  if is_general
+    assign card_lat = listing.latitude | round: 2
+    assign card_lng = listing.longitude | round: 2
+  endif
+
+  assign loc = listing.city
+  if listing.state != blank and listing.city != blank
+    assign loc = listing.city | append: ', ' | append: listing.state
+  endif
+  if loc == blank and is_general == false
+    assign loc = listing.address
+  endif
+  if loc == blank
+    assign loc = 'Location on request'
+  endif
+
+  assign p_amount = ''
+  assign p_unit = ''
+  if listing.price_hour
+    assign p_amount = listing.price_hour
+    assign p_unit = 'hour'
+  elsif listing.price_day
+    assign p_amount = listing.price_day
+    assign p_unit = 'day'
+  elsif listing.price_week
+    assign p_amount = listing.price_week
+    assign p_unit = 'week'
+  elsif listing.price_month
+    assign p_amount = listing.price_month
+    assign p_unit = 'month'
+  endif
+
+  assign show_am = false
+  if want_am_str != blank and listing.amenities != blank
+    assign show_am = true
+    capture c_am_raw
+      render 'listings/amenities_json'
+    endcapture
+    assign c_groups = c_am_raw | parse_json
+    assign has_am = listing.amenities | join: '|'
+  endif
+-%}
+<div class="listing-card-wrap">
+  <a class="listing-card" href="{% render 'listings/url', id: listing.id, title: listing.title %}"
+     {% if listing.latitude != blank and listing.longitude != blank %}data-lat="{{ card_lat }}" data-lng="{{ card_lng }}"{% endif %}>
+    <div class="listing-card__media">
+      <span class="listing-card__badge">{{ listing.listing_type }}</span>
+      {%- if cover.photo -%}
+        <picture>
+          {%- if img_avif != blank -%}
+            <source type="image/avif" srcset="{{ img_avif }}">
+          {%- endif -%}
+          <img class="listing-card__img" src="{{ img_m }}" alt="{{ listing.title }}"
+               width="400" height="300"
+               {% if idx <= 3 %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+               decoding="async">
+        </picture>
+      {%- else -%}
+        <span class="img-ph img-ph--fill" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4.5" width="18" height="15" rx="1.5"/>
+            <circle cx="8" cy="10" r="1.6"/>
+            <path d="M21 15.5l-4.6-4.6L7 20.5"/>
+          </svg>
+        </span>
+      {%- endif -%}
+    </div>
+    <div class="listing-card__body">
+      <h3 class="listing-card__title">{{ listing.title }}</h3>
+      <p class="listing-card__loc">{{ loc }} <span class="listing-card__dist" data-distance></span></p>
+      {%- if show_am -%}
+        <p class="listing-card__am">
+          {%- for g in c_groups -%}{%- for a in g.items -%}
+            {%- if want_am_str contains a.slug and has_am contains a.slug -%}
+              <span>{{ a.label }}</span>
+            {%- endif -%}
+          {%- endfor -%}{%- endfor -%}
+        </p>
+      {%- endif -%}
+      <p class="listing-card__price">
+        {%- if p_unit != blank -%}
+          ${{ p_amount | advanced_format: '%.2f' }} <span>/ {{ p_unit }}</span>
+        {%- else -%}
+          Price on request
+        {%- endif -%}
+      </p>
+    </div>
+  </a>
+  {% render 'listings/favorite_button', listing_id: listing.id, variant: 'card' %}
+</div>

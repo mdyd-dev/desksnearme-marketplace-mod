@@ -1,0 +1,10 @@
+<button class="fav-btn{% if variant == 'inline' %} fav-btn--inline{% endif %}" type="button"
+        data-fav="{{ listing_id }}"
+        data-csrf="{{ context.authenticity_token }}"
+        {% unless context.current_user %}data-fav-anon="1"{% endunless %}
+        aria-pressed="false"
+        aria-label="Save this space">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 20.4s-7.3-4.6-9.4-9A5.1 5.1 0 0 1 12 6.2a5.1 5.1 0 0 1 9.4 5.2c-2.1 4.4-9.4 9-9.4 9z"/>
+  </svg>
+</button>

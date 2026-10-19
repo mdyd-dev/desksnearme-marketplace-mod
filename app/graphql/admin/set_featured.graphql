@@ -1,0 +1,13 @@
+mutation admin_set_featured($id: ID!, $featured: String!, $featured_at: String) {
+  record_update(
+    id: $id
+    record: {
+      properties: [
+        { name: "featured", value: $featured }
+        { name: "featured_at", value: $featured_at }
+      ]
+    }
+  ) {
+    id
+  }
+}

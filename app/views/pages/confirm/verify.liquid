@@ -1,0 +1,49 @@
+---
+method: post
+---
+{%- liquid
+  assign token = context.params.token | strip
+  assign back_url = '/confirm?token=' | append: token
+-%}
+{%- if token == blank -%}
+  {%- liquid redirect_to '/?confirm_error=1' -%}
+{%- else -%}
+  {%- parse_json rc_data -%}
+  { "secret": {{ context.constants.recaptcha_secret_key | json }}, "token": {{ context.params['g-recaptcha-response'] | json }} }
+  {%- endparse_json -%}
+  {%- liquid
+    graphql rc = 'api_calls/recaptcha_verify', data: rc_data
+    assign rc_body = rc.api_call_send.response.body | parse_json
+  -%}
+  {%- if rc_body.success != true -%}
+    {%- liquid
+      assign retry_url = back_url | append: '&error=captcha'
+      redirect_to retry_url
+    -%}
+  {%- else -%}
+    {%- liquid
+      graphql lookup = 'profiles/get_by_token', token: token
+      assign prof = lookup.records.results.first
+      assign ok = false
+      if prof
+        if prof.confirmed_at != blank
+          assign ok = true
+        else
+          assign now_epoch = 'now' | date: '%s' | plus: 0
+          assign sent_epoch = prof.confirmation_sent_at | plus: 0
+          assign age = now_epoch | minus: sent_epoch
+          if age <= 86400
+            assign stamp = 'now' | date: '%Y-%m-%dT%H:%M:%SZ'
+            graphql c = 'profiles/confirm', id: prof.id, confirmed_at: stamp
+            assign ok = true
+          endif
+        endif
+      endif
+      if ok
+        redirect_to '/?confirmed=1'
+      else
+        redirect_to '/?confirm_error=1'
+      endif
+    -%}
+  {%- endif -%}
+{%- endif -%}

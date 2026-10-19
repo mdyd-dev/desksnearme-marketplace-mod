@@ -1,0 +1,30 @@
+---
+method: post
+authorization_policies: [require_host]
+---
+{%- liquid
+  assign new_uuid = '' | uuid
+
+  graphql hp = 'profiles/get_by_user', user_id: context.current_user.id
+  assign company = hp.records.results.first.company_name | default: ''
+  assign fn = context.current_user.first_name | default: ''
+  assign ln = context.current_user.last_name | default: ''
+  assign full_name = fn | append: ' ' | append: ln | strip
+  assign host_name = company
+  if host_name == blank
+    assign host_name = full_name
+  endif
+  if host_name == blank
+    assign host_name = context.current_user.email
+  endif
+
+  graphql r = 'listings/create_draft', uuid: new_uuid, host_id: context.current_user.id, host_name: host_name, status: 'draft'
+  assign new_id = r.record_create.id
+
+  if new_id
+    assign edit_url = '/account/listings/' | append: new_id | append: '/edit?new=1'
+    redirect_to edit_url
+  else
+    redirect_to '/account/listings?error=create'
+  endif
+-%}

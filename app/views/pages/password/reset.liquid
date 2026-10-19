@@ -1,0 +1,40 @@
+---
+method: post
+---
+{%- liquid
+  assign base_url = 'https://desksnear.me'
+  assign email = context.params.email | strip | downcase
+-%}
+{%- if email contains '@' -%}
+  {%- liquid
+    graphql u = 'users/find_by_email', email: email
+    assign user = u.users.results.first
+  -%}
+  {%- if user -%}
+    {%- liquid
+      graphql p = 'profiles/get_by_user', user_id: user.id
+      assign prof = p.records.results.first
+    -%}
+    {%- if prof and prof.confirmed_at != blank -%}
+      {%- liquid
+        assign now_epoch = 'now' | date: '%s' | plus: 0
+        assign last_epoch = prof.reset_sent_at | plus: 0
+        assign since = now_epoch | minus: last_epoch
+      -%}
+      {%- if since >= 60 -%}
+        {%- liquid
+          graphql tok = 'users/get_temporary_token', email: email
+          assign token = tok.users.results.first.temporary_token
+          assign sent_at = 'now' | date: '%s'
+          graphql sr = 'profiles/set_reset', id: prof.id, reset_token: token, reset_sent_at: sent_at
+          assign reset_url = base_url | append: '/reset-password?token=' | append: token
+        -%}
+        {%- parse_json data -%}
+        { "email": {{ email | json }}, "first_name": "", "reset_url": {{ reset_url | json }} }
+        {%- endparse_json -%}
+        {%- liquid graphql send = 'emails/send_password_reset', data: data -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+{%- liquid redirect_to '/forgot-password?sent=1' -%}

@@ -1,0 +1,24 @@
+{%- liquid
+  capture amenities_raw
+    render 'listings/amenities_json'
+  endcapture
+  assign amenity_groups = amenities_raw | parse_json
+  assign selected = current | default: ''
+-%}
+<div class="amenity-groups">
+  {%- for g in amenity_groups -%}
+    <fieldset class="amenity-group">
+      <legend>{{ g.group }}</legend>
+      <div class="amenity-group__grid">
+        {%- for a in g.items -%}
+          {%- assign is_on = false -%}
+          {%- if selected contains a.slug -%}{%- assign is_on = true -%}{%- endif -%}
+          <label class="amenity-check">
+            <input type="checkbox" name="amenities[]" value="{{ a.slug }}"{% if is_on %} checked{% endif %}>
+            <span>{{ a.label }}</span>
+          </label>
+        {%- endfor -%}
+      </div>
+    </fieldset>
+  {%- endfor -%}
+</div>

@@ -1,0 +1,19 @@
+query conversation_get($id: ID!) {
+  records(per_page: 1, filter: { id: { value: $id }, table: { value: "conversation" } }) {
+    results {
+      id
+      type: property(name: "type")
+      listing_id: property(name: "listing_id")
+      listing_title: property(name: "listing_title")
+      host_id: property(name: "host_id")
+      host_name: property(name: "host_name")
+      guest_id: property(name: "guest_id")
+      guest_name: property(name: "guest_name")
+      last_message_at: property(name: "last_message_at")
+      host_notified_at: property(name: "host_notified_at")
+      guest_notified_at: property(name: "guest_notified_at")
+      host_archived_at: property(name: "host_archived_at")
+      guest_archived_at: property(name: "guest_archived_at")
+    }
+  }
+}

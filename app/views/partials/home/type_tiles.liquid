@@ -1,0 +1,67 @@
+{%- liquid
+  assign tile_types = 'Desk,Meeting Room,Office Space' | split: ','
+  assign tile_labels = 'Desks,Meeting rooms,Offices' | split: ','
+  assign tile_blurbs = 'A single seat in a shared space,Book a room by the hour,A whole space for your team' | split: ','
+  assign tile_files = 'hero-desk,hero-meeting,hero-office' | split: ','
+-%}
+<ul class="type-tiles">
+  {%- for t in tile_types -%}
+    {%- liquid
+      assign idx = forloop.index0
+      graphql ht = 'listings/hero_by_type', listing_type: t
+      assign pick = nil
+      for cand in ht.records.results
+        if cand.covers.first.photo != blank
+          assign pick = cand
+          break
+        endif
+      endfor
+
+      assign img = ''
+      assign img_avif = ''
+      if pick
+        assign img = pick.covers.first.photo.versions.m | default: pick.covers.first.photo.url
+        assign img_avif = pick.covers.first.photo.versions.m_avif
+      else
+        assign fallback_path = 'images/' | append: tile_files[idx] | append: '.jpg'
+        assign img = fallback_path | asset_url
+      endif
+
+      assign tile_href = '/listings?type=' | append: t | url_encode
+      assign eager = false
+      if idx == 0
+        assign eager = true
+      endif
+    -%}
+    <li class="type-tile">
+      <a href="{{ tile_href }}">
+        <span class="type-tile__media">
+          <span class="type-tile__glyph" aria-hidden="true">
+            {%- case t -%}
+              {%- when 'Desk' -%}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 10h18"/><path d="M5 10V7h6v3"/><path d="M4 10v8"/><path d="M20 10v8"/><path d="M14 13h6"/></svg>
+              {%- when 'Meeting Room' -%}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="12" cy="12" rx="8" ry="4.5"/><circle cx="12" cy="5.5" r="1.6"/><circle cx="12" cy="18.5" r="1.6"/><circle cx="4" cy="12" r="1.6"/><circle cx="20" cy="12" r="1.6"/></svg>
+              {%- else -%}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M8 8h3v3H8zM13 8h3v3h-3zM8 13h3v3H8zM13 13h3v3h-3z"/></svg>
+            {%- endcase -%}
+          </span>
+          {%- if img_avif != blank -%}
+            <picture>
+              <source type="image/avif" srcset="{{ img_avif }}">
+              <img src="{{ img }}" alt="" width="560" height="420"
+                   {% if eager %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                   decoding="async" onerror="this.remove()">
+            </picture>
+          {%- else -%}
+            <img src="{{ img }}" alt="" width="560" height="420"
+                 {% if eager %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                 decoding="async" onerror="this.remove()">
+          {%- endif -%}
+        </span>
+        <span class="type-tile__label">{{ tile_labels[idx] }}</span>
+        <span class="type-tile__blurb">{{ tile_blurbs[idx] }}</span>
+      </a>
+    </li>
+  {%- endfor -%}
+</ul>

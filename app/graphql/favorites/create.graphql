@@ -1,0 +1,9 @@
+mutation favorite_create($user_id: String!, $listing_id: String!) {
+  record_create(record: {
+    table: "favorite"
+    properties: [
+      { name: "user_id", value: $user_id }
+      { name: "listing_id", value: $listing_id }
+    ]
+  }) { id }
+}

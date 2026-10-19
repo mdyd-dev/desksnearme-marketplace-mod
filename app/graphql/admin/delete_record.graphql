@@ -1,0 +1,3 @@
+mutation admin_delete_record($table: String!, $id: ID!) {
+  record_delete(table: $table, id: $id) { id }
+}

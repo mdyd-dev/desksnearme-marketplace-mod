@@ -1,0 +1,8 @@
+mutation profile_clear_reset($id: ID!) {
+  record_update(id: $id, record: {
+    properties: [
+      { name: "reset_token", value: "" }
+      { name: "reset_sent_at", value: "" }
+    ]
+  }) { id }
+}

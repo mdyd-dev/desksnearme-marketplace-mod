@@ -1,0 +1,25 @@
+{% comment %}
+  params: presigned_url (photos/presign result), object_uuid, photo_type,
+          max_number_of_files, existing_photos (array), editor_enabled, note, target
+{% endcomment %}
+<link href="https://releases.transloadit.com/uppy/v3.6.0/uppy.min.css" rel="stylesheet">
+
+<form action="{{ presigned_url.upload_url }}"
+  data-s3-uppy-photo="form"
+  data-s3-uppy-object-uuid="{{ object_uuid }}"
+  data-s3-uppy-photo-type="{{ photo_type | default: 'listing' }}"
+  data-s3-uppy-max-number-of-files="{{ max_number_of_files | default: 10 }}"
+  data-s3-uppy-target="{{ target | default: '#drag-drop-area' }}"
+  data-s3-uppy-editor-enabled="{{ editor_enabled | default: false }}"
+  data-s3-uppy-note="{{ note }}"
+  data-s3-uppy-photos='{{ existing_photos | json }}'
+  data-csrf="{{ context.authenticity_token }}"
+  hidden>
+  {% for field in presigned_url.upload_url_payload %}
+    <input type="hidden" name="{{ field[0] }}" value='{{ field[1] }}'>
+  {% endfor %}
+</form>
+
+<div id="drag-drop-area" class="listing-uppy"></div>
+
+<script type="module" src="{{ 'scripts/listing-photos.js' | asset_url }}"></script>

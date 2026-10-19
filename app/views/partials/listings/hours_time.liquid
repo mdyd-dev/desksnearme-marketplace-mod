@@ -1,0 +1,16 @@
+{%- liquid
+  assign parts = t | split: ':'
+  assign hh = parts[0] | plus: 0
+  assign mm = parts[1] | default: '00'
+  assign ampm = 'AM'
+  if hh >= 12
+    assign ampm = 'PM'
+  endif
+  assign h12 = hh
+  if hh == 0
+    assign h12 = 12
+  elsif hh > 12
+    assign h12 = hh | minus: 12
+  endif
+-%}
+{{- h12 }}:{{ mm }} {{ ampm -}}

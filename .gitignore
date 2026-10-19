@@ -1,0 +1,11 @@
+# platformOS environment config: holds the staging deploy token
+.pos
+
+# Scratch and build output
+tmp/
+
+# Machine-local Claude Code settings (permissions allowlist)
+.claude/settings.local.json
+
+# macOS
+.DS_Store

@@ -1,0 +1,20 @@
+---
+to: '{{ data.to_email }}'
+from: 'Desks Near Me <no-reply@desksnear.me>'
+reply_to: 'support@desksnear.me'
+subject: '{{ data.sender_name }} sent you a message about {{ data.listing_title }}'
+layout: mailer
+delay: 0
+enabled: true
+trigger_condition: true
+---
+<h2>New message from {{ data.sender_name }}</h2>
+<p style="color:#555;">About <strong>{{ data.listing_title }}</strong></p>
+<blockquote style="margin:1.25em 0;padding:.75em 1em;border-left:3px solid #E08A2E;background:#faf8f5;">
+  {{ data.body | newline_to_br }}
+</blockquote>
+<p><a href="{{ data.thread_url }}" style="display:inline-block;background:#E08A2E;color:#1f2124;font-weight:600;padding:.6em 1.2em;border-radius:999px;text-decoration:none;">Reply to {{ data.sender_name }}</a></p>
+<p style="color:#777;font-size:13px;margin-top:2em;">
+  You're receiving this because someone messaged you on Desks Near Me. We only email you when a conversation needs your attention — not for every message.
+</p>
+<p style="color:#999;font-size:12px;">Desks Near Me · <a href="https://desksnear.me/support" style="color:#999;">Support</a></p>

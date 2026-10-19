@@ -1,0 +1,6 @@
+mutation send_new_message($data: HashObject!) {
+  email_send(template: { name: "new_message" }, data: $data) {
+    is_scheduled_to_send
+    errors { message }
+  }
+}

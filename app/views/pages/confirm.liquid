@@ -1,0 +1,97 @@
+---
+method: get
+metadata:
+  title: Confirm your email
+  description: Confirm your Desks Near Me account.
+---
+{%- liquid
+  assign token = context.params.token | strip
+  assign state = 'invalid'
+  assign email = ''
+
+  if token != blank
+    graphql lookup = 'profiles/get_by_token', token: token
+    assign prof = lookup.records.results.first
+    if prof
+      if prof.confirmed_at != blank
+        assign state = 'already'
+      else
+        assign now_epoch = 'now' | date: '%s' | plus: 0
+        assign sent_epoch = prof.confirmation_sent_at | plus: 0
+        assign age = now_epoch | minus: sent_epoch
+        if age <= 86400
+          assign state = 'pending'
+          graphql u = 'users/get_user', id: prof.user_id
+          assign email = u.user.email
+        else
+          assign state = 'expired'
+        endif
+      endif
+    endif
+  endif
+-%}
+<div class="authpage">
+  <div class="authbox">
+    {%- if state == 'pending' -%}
+      <div class="authbox__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6v9H3z"/><path d="M3 10l9 6 9-6"/></svg>
+      </div>
+
+      <h1>Confirm your email</h1>
+      <p class="authbox__lead">
+        One last step to activate your account
+        {%- if email != blank %} for <strong>{{ email }}</strong>{% endif -%}.
+      </p>
+
+      {%- if context.params.error == 'captcha' -%}
+        <div class="flash flash--alert">We couldn't verify that you're human. Please complete the check below and try again.</div>
+      {%- elsif context.params.error -%}
+        <div class="flash flash--alert">Something went wrong. Please try again.</div>
+      {%- endif -%}
+
+      <form action="/confirm/verify" method="post" id="confirm-form">
+        <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+        <input type="hidden" name="token" value="{{ token }}">
+        <div class="g-recaptcha authbox__captcha" data-sitekey="{{ context.constants.recaptcha_site_key }}"></div>
+        <button class="btn btn--primary btn--block" type="submit">Yes, activate my account</button>
+      </form>
+
+      <noscript>
+        <p class="flash flash--alert authbox__resend">JavaScript is required to confirm your account. Please enable it and reload this page.</p>
+      </noscript>
+
+      <hr class="authbox__sep">
+      <p class="authbox__foot">Didn't sign up for Desks Near Me? Just close this page — without this step the account stays inactive and can't be logged into.</p>
+
+    {%- elsif state == 'already' -%}
+      <div class="authbox__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.4 2.4 4.6-5.2"/></svg>
+      </div>
+      <h1>Already confirmed</h1>
+      <p class="authbox__lead">This account is active and ready to use.</p>
+      <a class="btn btn--primary btn--block" href="/?login=1">Log in</a>
+
+    {%- elsif state == 'expired' -%}
+      <div class="authbox__icon authbox__icon--quiet" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>
+      </div>
+      <h1>That link has expired</h1>
+      <p class="authbox__lead">Confirmation links are good for 24 hours. Request a new one and we'll email it straight over.</p>
+      <a class="btn btn--primary btn--block" href="/check-email">Request a new link</a>
+
+    {%- else -%}
+      <div class="authbox__icon authbox__icon--quiet" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.4v.01"/></svg>
+      </div>
+      <h1>We couldn't use that link</h1>
+      <p class="authbox__lead">It may have already been used, or it was copied incompletely.</p>
+      <a class="btn btn--primary btn--block" href="/check-email">Request a new link</a>
+      <hr class="authbox__sep">
+      <p class="authbox__foot">If your account is already active, <a href="/?login=1">log in</a> instead.</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if state == 'pending' -%}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{%- endif -%}

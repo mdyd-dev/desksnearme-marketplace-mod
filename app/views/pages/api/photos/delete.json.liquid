@@ -1,0 +1,24 @@
+---
+slug: api/photos
+method: delete
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign pid = context.params.photo.id
+  assign me = context.current_user.id | append: ''
+
+  if pid == blank
+    echo '{"error":"missing_id"}'
+  else
+    graphql g = 'photos/get', id: pid
+    assign row = g.photo.results.first
+    if row == blank
+      echo '{"error":"not_found"}'
+    elsif row.host_id != me
+      echo '{"error":"forbidden"}'
+    else
+      graphql d = 'photos/delete', id: pid
+      echo d.record | json
+    endif
+  endif
+-%}

@@ -1,0 +1,35 @@
+---
+slug: api/photos
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  assign photo = context.params.photo
+  assign direct_url = photo.direct_url
+  assign object_uuid = photo.object_uuid
+  assign photo_type = photo.photo_type | default: 'listing'
+  assign host_id = context.current_user.id | append: ''
+
+  # profile photos are single-per-user: force ownership to the current user
+  if photo_type == 'profile'
+    assign object_uuid = host_id
+  endif
+
+  if direct_url == blank or object_uuid == blank
+    echo '{"error":"missing_fields"}'
+  else
+    graphql ex = 'photos/search', object_uuid: object_uuid, photo_type: photo_type
+    assign next_pos = ex.photos.results.size
+
+    # profile photos replace any existing picture
+    if photo_type == 'profile'
+      for old in ex.photos.results
+        graphql d = 'photos/delete', id: old.id
+      endfor
+      assign next_pos = 0
+    endif
+
+    graphql r = 'photos/create', user_id: context.current_user.id, host_id: host_id, direct_url: direct_url, origin_url: direct_url, object_uuid: object_uuid, photo_type: photo_type, position: next_pos, photo_width: photo.photo_width, photo_height: photo.photo_height
+    echo r.record | json
+  endif
+-%}

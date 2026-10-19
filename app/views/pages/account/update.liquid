@@ -1,0 +1,36 @@
+---
+method: post
+authorization_policies: [require_login]
+---
+{%- liquid
+  graphql un = 'users/update_profile', id: context.current_user.id, first_name: context.params.first_name, last_name: context.params.last_name
+  graphql p = 'profiles/get_by_user', user_id: context.current_user.id
+  assign profile = p.records.results.first
+  if profile
+    graphql r = 'profiles/update', id: profile.id, phone: context.params.phone, bio: context.params.bio, company_name: context.params.company_name
+  else
+    graphql pc = 'profiles/create', user_id: context.current_user.id, role: 'guest'
+  endif
+
+  assign new_company = context.params.company_name | strip
+  assign new_first = context.params.first_name | strip
+  assign new_last = context.params.last_name | strip
+  assign new_full = new_first | append: ' ' | append: new_last | strip
+  assign my_email = context.current_user.email | default: ''
+
+  assign new_host_name = new_company
+  if new_host_name == blank
+    assign new_host_name = new_full
+  endif
+  if new_host_name == blank
+    assign new_host_name = my_email
+  endif
+
+  graphql ml = 'listings/get_for_reindex', host_id: context.current_user.id
+  for lst in ml.records.results
+    assign st = lst.title | append: ' ' | append: new_company | append: ' ' | append: new_full | append: ' ' | append: my_email | append: ' ' | append: lst.city | append: ' ' | append: lst.state | append: ' ' | append: lst.postcode | downcase
+    graphql rl = 'listings/set_host_fields', id: lst.id, host_name: new_host_name, search_text: st
+  endfor
+
+  redirect_to '/account?saved=1'
+-%}
