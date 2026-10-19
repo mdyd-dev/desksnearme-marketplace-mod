@@ -44,16 +44,46 @@ method: post
     all land on valid: false. That is the right default, but it does mean an
     unset CAPTCHA_DEFAULT_SECRET blocks every signup rather than quietly
     letting them through, which is why the constants go in before this deploys.
-
-    result.errors arrives already translated, so it goes straight to the form.
   endcomment
   function captcha = 'modules/captchas/commands/captcha/verify', provider: null, secret: null, token: null, response_field_name: null, remote_ip: null, expected_sitekey: null, expected_hostname: null, min_score: null, expected_action: null
 
   unless captcha.valid
+    comment
+      The module spreads its errors across several fields: an unsolved
+      challenge lands on 'token', a domain mismatch on 'captcha', and
+      configuration failures on 'secret' or 'provider'. Rendering only one of
+      those fields means the form can come back with no message at all, which
+      is what a visitor who simply forgot the checkbox would have seen.
+
+      So: collapse everything the visitor can act on into one 'captcha' field,
+      and never show the configuration failures. "Captcha is not configured
+      correctly (missing secret key)" tells an attacker the gate is open and
+      tells an honest visitor nothing useful. Log those instead, loudly, and
+      show the same generic message.
+    endcomment
+    assign shown = []
+    for captcha_error in captcha.errors
+      assign error_field = captcha_error[0]
+      if error_field == 'secret' or error_field == 'provider'
+        log captcha.errors, type: 'ERROR: captcha misconfigured, signup is rejecting everyone'
+      else
+        for message in captcha_error[1]
+          assign shown << message
+        endfor
+      endif
+    endfor
+
+    if shown.size == 0
+      assign generic = 'Captcha verification is unavailable right now. Please try again shortly.'
+      assign shown << generic
+    endif
+
+    assign captcha_errors = null | hash_merge: captcha: shown
+
     assign values = context.params
     assign values.password = ''
     assign values.role = role
-    render 'signup/form', values: values, errors: captcha.errors
+    render 'signup/form', values: values, errors: captcha_errors
     break
   endunless
 
