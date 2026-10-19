@@ -1,11 +1,12 @@
-# Bug report: password length error states the typed length, not the minimum
+# pos-module-core: password length error states the typed length, not the minimum
 
-**Module:** `pos-module-core`
-**Version seen:** 2.1.11 (installed via `pos-cli modules install`, current at 2026-10-19)
-**Where to file:** GitHub issue on <https://github.com/Platform-OS/pos-modules> (Issues are enabled)
-**Severity:** low impact, high visibility. Nothing breaks, but the message a visitor
-sees when their password is too short is always wrong, and it is wrong in a way that
-looks like the application is misconfigured.
+> Issue title to use:
+> `pos-module-core: password length error states the typed length, not the minimum`
+>
+> File at <https://github.com/Platform-OS/pos-modules/issues>. Everything below the
+> line is the issue body.
+
+---
 
 ## Summary
 
@@ -101,6 +102,14 @@ Worth noting for the maintainers, since it is not obvious from the docs: this wo
 a partial override. Deploying a file containing only that one key upserted 1 translation
 and skipped 19, and the other keys from the upstream file still resolve. Translation
 overrides are per key, not whole file.
+
+## Environment
+
+- `core` 2.1.11
+- `user` 5.3.2 (the path a visitor actually hits this through)
+- `pos-cli` 6.5.1
+
+Happy to open a PR for the one-line change if that is easier than queueing it.
 
 ## Secondary observation, probably a separate issue
 
