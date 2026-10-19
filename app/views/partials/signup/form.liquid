@@ -76,10 +76,18 @@ metadata:
       </div>
 
       {%- comment -%}
-        The captcha widget and the honeypot plus fill timer belong here, once
-        captchas is configured and near_me_antispam exists. .authbox__captcha
-        is already sized for the reCAPTCHA v2 checkbox.
+        Provider, site key and secret all come from CAPTCHA_DEFAULT_* constants,
+        so there is no key at this call site and swapping provider later is a
+        constant change rather than a template change. .authbox__captcha is
+        already sized for the v2 checkbox, including the two narrow breakpoints.
+
+        The honeypot and fill timer still belong here, once near_me_antispam
+        exists. A captcha alone is not the whole anti-spam story.
       {%- endcomment -%}
+      <div class="authbox__captcha">
+        {% render 'modules/captchas/widget' %}
+      </div>
+      {% render 'modules/common-styling/forms/error_list', name: 'captcha', errors: errors.captcha %}
 
       <button class="btn btn--primary btn--block" type="submit">Create account</button>
     </form>

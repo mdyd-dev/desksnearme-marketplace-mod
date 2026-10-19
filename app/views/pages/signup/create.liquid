@@ -35,6 +35,28 @@ method: post
 
   assign email = context.params.email | strip | downcase
 
+  comment
+    Verify before creating anything, and before the DB work. The command reads
+    the token from context.params itself and resolves provider and secret from
+    the CAPTCHA_DEFAULT_* constants, so no key appears here.
+
+    It fails closed: a missing secret, an unknown provider or a transport error
+    all land on valid: false. That is the right default, but it does mean an
+    unset CAPTCHA_DEFAULT_SECRET blocks every signup rather than quietly
+    letting them through, which is why the constants go in before this deploys.
+
+    result.errors arrives already translated, so it goes straight to the form.
+  endcomment
+  function captcha = 'modules/captchas/commands/captcha/verify', provider: null, secret: null, token: null, response_field_name: null, remote_ip: null, expected_sitekey: null, expected_hostname: null, min_score: null, expected_action: null
+
+  unless captcha.valid
+    assign values = context.params
+    assign values.password = ''
+    assign values.role = role
+    render 'signup/form', values: values, errors: captcha.errors
+    break
+  endunless
+
   function object = 'modules/user/commands/user/create', email: email, password: context.params.password, first_name: context.params.first_name, last_name: context.params.last_name, roles: roles, hook_params: context.params
 
   if object.valid
