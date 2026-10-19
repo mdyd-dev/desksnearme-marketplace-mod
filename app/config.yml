@@ -1,0 +1,16 @@
+---
+# common-styling requires escaped output rather than sanitized output.
+# Set before the first page is written so all markup is authored against it.
+escape_output_instead_of_sanitize: true
+
+# Modules whose removed files should actually be deleted on deploy. Without
+# this, a file dropped from a module upgrade lingers on the instance and can
+# shadow its replacement.
+modules_that_allow_delete_on_deploy:
+  - core
+  - common-styling
+  - user
+  - captchas
+  - captchas_recaptcha
+  - tests
+---

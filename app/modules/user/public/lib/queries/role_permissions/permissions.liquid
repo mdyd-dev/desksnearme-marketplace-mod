@@ -1,0 +1,35 @@
+{% comment %}
+  RBAC for Desks Near Me. Override of
+  modules/user/public/lib/queries/role_permissions/permissions.liquid, which the
+  user module's own setup instructions require every application to provide.
+
+  Three product roles. A visitor picks guest or host at signup; admin is
+  assigned separately.
+
+  Note on `users.register`: granting it to `anonymous` is what makes the
+  module's own /users/new and POST /users pages reachable. Our signup runs
+  through an app-owned endpoint that applies the honeypot, fill timer and
+  disposable-domain checks, so if we ever want the module's bare registration
+  form closed off, removing this one permission does it without an override.
+
+  `admin` is given explicit permissions rather than being aliased to
+  `superadmin`, because superadmin short-circuits every can_do check. Keep one
+  real superadmin account as break-glass instead.
+{% endcomment %}
+{% liquid
+  assign data = {
+    "anonymous": ["sessions.create", "users.register"],
+    "authenticated": ["sessions.destroy", "profile.manage"],
+    "guest": ["listings.view", "favorites.manage", "messages.manage.own"],
+    "host": ["listings.view", "favorites.manage", "messages.manage.own", "listings.manage.own", "photos.manage.own"],
+    "admin": ["admin_pages.view", "admin.users.manage", "listings.manage.all", "messages.manage.all"],
+    "superadmin": ["users.impersonate_superadmin"]
+  }
+
+  assign default_role = context.constants.USER_DEFAULT_ROLE
+  if default_role != blank and data[default_role] == null
+    assign data[default_role] = []
+  endif
+
+  return data
+%}

@@ -1,11 +1,27 @@
 {%- liquid
-  assign current_role = ''
-  assign initials = ''
-  assign avatar_url = ''
-  assign unread_count = 0
+  # Current profile comes from the user module. The helper exports itself, so a
+  # page that already called it does not pay for a second lookup.
   if context.current_user
-    graphql cu = 'profiles/get_by_user', user_id: context.current_user.id
-    assign current_role = cu.records.results.first.role
+    assign current_profile = context.exports.current_profile
+    unless current_profile
+      function current_profile = 'modules/user/helpers/current_profile'
+    endunless
+  endif
+
+  assign roles = current_profile.roles | default: ''
+  assign is_host = false
+  if roles contains 'host'
+    assign is_host = true
+  endif
+
+  assign can_view_admin = false
+  if current_profile
+    function can_view_admin = 'modules/user/helpers/can_do', requester: current_profile, do: 'admin_pages.view', entity: null, access_callback: null
+  endif
+
+  assign initials = ''
+  assign display_name = 'Account'
+  if context.current_user
     assign fi = context.current_user.first_name | default: '' | slice: 0, 1 | upcase
     assign li = context.current_user.last_name | default: '' | slice: 0, 1 | upcase
     assign initials = fi | append: li
@@ -21,11 +37,12 @@
     if display_name == blank
       assign display_name = 'Account'
     endif
-    graphql uc = 'messages/unread_count', user_id: context.current_user.id
-    assign unread_count = uc.records.total_entries | default: 0
-    graphql hp = 'photos/search', object_uuid: context.current_user.id, photo_type: 'profile', limit: 1
-    assign avatar_url = hp.photos.results.first.photo.versions.sm | default: ''
   endif
+
+  # Restored when near_me_messaging lands: queries/messages/unread_count.
+  assign unread_count = 0
+  # Restored when near_me_photos lands: profile photo by object_uuid + photo_type.
+  assign avatar_url = ''
 
   assign seo = context.exports.seo
   assign page_title = seo.title | default: context.page.metadata.title | default: 'Find a space'
@@ -39,7 +56,7 @@
   assign font_url_display = 'fonts/archivo-latin.woff2' | asset_url | split: '?' | first
 -%}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="pos-app">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -51,7 +68,19 @@
   <link rel="preload" href="{{ font_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{{ font_url_display }}" as="font" type="font/woff2" crossorigin>
   <link rel="icon" type="image/svg+xml" href="{{ 'images/logo-short-f.svg' | asset_url }}">
+
+  {%- comment -%}
+    common-styling first, our stylesheet after, so our tokens and components win.
+    No reset: true. The module README warns against the reset in an existing app,
+    and app.css is already a complete design system.
+
+    PERF: init pulls in 17 stylesheets plus easyMDE, highlight.js and uppy on
+    every page. Measure and consider loading it only on pages with module UI
+    once the port is done.
+  {%- endcomment -%}
+  {% render 'modules/common-styling/init' %}
   <link rel="stylesheet" href="{{ 'styles/app.css' | asset_url }}">
+
   <style>
     .nav-messages__count {
       display: inline-flex; align-items: center; justify-content: center;
@@ -65,14 +94,16 @@
       border-radius: 999px; background: var(--accent); color: #fff;
       font-size: 10px; font-weight: 700; line-height: 1;
     }
+    .logout-form { display: contents; }
+    .logout-form button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header" data-nav-open="false" data-role="{% if context.current_user %}{{ current_role | default: 'guest' }}{% else %}out{% endif %}">
+  <header class="site-header" data-nav-open="false" data-role="{% if context.current_user %}{% if can_view_admin %}admin{% elsif is_host %}host{% else %}guest{% endif %}{% else %}out{% endif %}">
     <div class="container">
-      <a class="brand" href="/" aria-label="Desks Near Me — home">
+      <a class="brand" href="/" aria-label="Desks Near Me home">
         <img class="brand__logo" src="{{ 'images/logo-long.svg' | asset_url }}" alt="" width="195" height="30">
       </a>
 
@@ -82,7 +113,7 @@
 
       <div class="nav-auth">
         {%- if context.current_user -%}
-          {%- if current_role == 'host' -%}
+          {%- if is_host -%}
             <a class="nav-link" href="/account/listings">List your desk</a>
           {%- endif -%}
           <a class="nav-link nav-messages" href="/messages">Messages{% if unread_count > 0 %}<span class="nav-messages__count" aria-label="{{ unread_count }} unread">{% if unread_count > 9 %}9+{% else %}{{ unread_count }}{% endif %}</span>{% endif %}</a>
@@ -95,23 +126,33 @@
             <div class="user-menu__panel" role="menu">
               <a class="user-menu__item user-menu__item--m" href="/messages" role="menuitem">Messages{% if unread_count > 0 %}<span class="user-menu__count">{{ unread_count }}</span>{% endif %}</a>
               <a class="user-menu__item" href="/account" role="menuitem">Account</a>
-              {%- if current_role == 'host' -%}
+              {%- if is_host -%}
                 <a class="user-menu__item" href="/account/listings" role="menuitem">My listings</a>
               {%- endif -%}
-              {%- if current_role == 'guest' or current_role == 'host' -%}
-                <a class="user-menu__item" href="/account/favorites" role="menuitem">Saved spaces</a>
-              {%- endif -%}
-              {%- if current_role == 'admin' -%}
+              <a class="user-menu__item" href="/account/favorites" role="menuitem">Saved spaces</a>
+              {%- if can_view_admin -%}
                 <a class="user-menu__item" href="/admin" role="menuitem">Admin</a>
               {%- endif -%}
               <div class="user-menu__sep"></div>
-              <a class="user-menu__item" href="/logout" role="menuitem">Log out</a>
+              {%- comment -%}
+                The user module logs out via DELETE /sessions. A GET logout link
+                would be CSRF-able, so this is a form, not an anchor.
+              {%- endcomment -%}
+              <form class="logout-form" method="post" action="/sessions">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="_method" value="delete">
+                <button class="user-menu__item" type="submit" role="menuitem">Log out</button>
+              </form>
             </div>
           </div>
         {%- else -%}
-          <button class="nav-link" type="button" data-open-modal="signup">List your desk</button>
-          <button class="nav-link" type="button" data-open-modal="signup">Sign up</button>
-          <button class="btn btn--primary nav-login" type="button" data-open-modal="login">Log in</button>
+          {%- comment -%}
+            Plain links to the module's own forms for now. The signup and login
+            modals come back with the role-aware signup endpoint.
+          {%- endcomment -%}
+          <a class="nav-link" href="/users/new">List your desk</a>
+          <a class="nav-link" href="/users/new">Sign up</a>
+          <a class="btn btn--primary nav-login" href="/sessions/new">Log in</a>
         {%- endif -%}
       </div>
     </div>
@@ -139,10 +180,10 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <a class="brand" href="/" aria-label="Desks Near Me — home">
+          <a class="brand" href="/" aria-label="Desks Near Me home">
             <img class="brand__logo" src="{{ 'images/logo-long.svg' | asset_url }}" alt="" width="195" height="30">
           </a>
-          <p class="footer-tagline">Rent desks, meeting rooms, and offices near you — by the hour, day, week, or month.</p>
+          <p class="footer-tagline">Rent desks, meeting rooms, and offices near you, by the hour, day, week, or month.</p>
         </div>
         <nav class="footer-cols" aria-label="Footer">
           <div class="footer-col">
@@ -165,16 +206,23 @@
         </nav>
       </div>
       <div class="footer-bottom">
-        <div class="footer-copy">© {{ 'now' | date: '%Y' }} Desks Near Me. All rights reserved.</div>
+        <div class="footer-copy">&copy; {{ 'now' | date: '%Y' }} Desks Near Me. All rights reserved.</div>
         <p class="footer-note">Made for flexible work.</p>
       </div>
     </div>
   </footer>
 
-  {%- unless context.current_user -%}
-    {% include 'modals/sign_up' %}
-    {% include 'modals/log_in' %}
-  {%- endunless -%}
+  {%- comment -%}
+    Module flash. The user module writes messages here via
+    modules/user/helpers/flash, so module pages need this to say anything.
+  {%- endcomment -%}
+  {%- liquid
+    function mflash = 'modules/core/commands/session/get', key: 'sflash', clear: null
+    if context.location.pathname != mflash.from or mflash.force_clear
+      function _ = 'modules/core/commands/session/clear', key: 'sflash'
+    endif
+    render 'modules/common-styling/toasts', autohide: null, delay: null, message: mflash.message, severity: mflash.severity
+  -%}
 
   <script>
     (function () {
@@ -182,34 +230,6 @@
       var toggle = document.querySelector('[data-nav-toggle]');
       if (toggle) toggle.addEventListener('click', function () {
         header.dataset.navOpen = header.dataset.navOpen === 'true' ? 'false' : 'true';
-      });
-      function setModal(name, open) {
-        var m = document.getElementById('modal-' + name);
-        if (m) m.dataset.open = open ? 'true' : 'false';
-      }
-      document.querySelectorAll('[data-open-modal]').forEach(function (b) {
-        b.addEventListener('click', function () { setModal(b.getAttribute('data-open-modal'), true); });
-      });
-      document.querySelectorAll('.modal').forEach(function (m) {
-        m.addEventListener('click', function (e) {
-          if (e.target.matches('[data-close-modal], .modal__backdrop')) m.dataset.open = 'false';
-        });
-      });
-      document.querySelectorAll('[data-toggle-password]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var input = document.getElementById(b.getAttribute('data-toggle-password'));
-          if (!input) return;
-          var show = input.type === 'password';
-          input.type = show ? 'text' : 'password';
-          b.setAttribute('aria-pressed', show ? 'true' : 'false');
-          b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-          var eye = b.querySelector('.ico-eye');
-          var off = b.querySelector('.ico-eye-off');
-          if (eye && off) {
-            if (show) { eye.setAttribute('hidden', ''); off.removeAttribute('hidden'); }
-            else { eye.removeAttribute('hidden'); off.setAttribute('hidden', ''); }
-          }
-        });
       });
       var userMenu = document.querySelector('.user-menu');
       var umToggle = document.querySelector('[data-user-menu-toggle]');
@@ -230,22 +250,11 @@
         });
       }
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          document.querySelectorAll('.modal').forEach(function (m) { m.dataset.open = 'false'; });
-          closeUserMenu();
-        }
+        if (e.key === 'Escape') closeUserMenu();
       });
     })();
 
     (function () {
-      // strip one-shot status params so refreshing doesn't re-show the flash
-      try {
-        var u = new URL(window.location.href);
-        var junk = ['done', 'saved', 'resent', 'restored', 'archived_one', 'new'];
-        var changed = false;
-        junk.forEach(function (k) { if (u.searchParams.has(k)) { u.searchParams.delete(k); changed = true; } });
-        if (changed) window.history.replaceState({}, '', u.pathname + u.search + u.hash);
-      } catch (e) {}
       // let people dismiss any flash message
       document.querySelectorAll('.flash').forEach(function (f) {
         var b = document.createElement('button');

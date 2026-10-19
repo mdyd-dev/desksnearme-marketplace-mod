@@ -1,5 +1,0 @@
-query find_by_email($email: String!) {
-  users(filter: { email: { value: $email } }, per_page: 1) {
-    results { id }
-  }
-}

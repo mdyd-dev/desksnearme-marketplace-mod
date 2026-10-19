@@ -1,3 +1,0 @@
-mutation admin_delete_user($id: ID!) {
-  user_delete(id: $id) { id }
-}

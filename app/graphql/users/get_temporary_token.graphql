@@ -1,8 +1,0 @@
-query get_temporary_token($email: String!) {
-  users(filter: { email: { value: $email } }, per_page: 1) {
-    results {
-      id
-      temporary_token
-    }
-  }
-}

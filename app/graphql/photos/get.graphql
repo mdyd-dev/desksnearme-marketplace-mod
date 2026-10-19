@@ -1,8 +1,0 @@
-query photo_get($id: ID!) {
-  photo: records(per_page: 1, filter: { table: { value: "listing_photo" }, id: { value: $id } }) {
-    results {
-      id
-      host_id: property(name: "host_id")
-    }
-  }
-}

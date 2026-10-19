@@ -1,6 +1,0 @@
-name: geo_cache
-properties:
-- name: query_key
-  type: string
-- name: payload
-  type: text

@@ -1,9 +1,0 @@
-mutation profile_update($id: ID!, $phone: String, $bio: String, $company_name: String) {
-  record_update(id: $id, record: {
-    properties: [
-      { name: "phone", value: $phone }
-      { name: "bio", value: $bio }
-      { name: "company_name", value: $company_name }
-    ]
-  }) { id }
-}

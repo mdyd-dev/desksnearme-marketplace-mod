@@ -1,3 +1,0 @@
-mutation conversation_touch($id: ID!, $last_message_at: String!) {
-  record_update(id: $id, record: { properties: [{ name: "last_message_at", value: $last_message_at }] }) { id }
-}

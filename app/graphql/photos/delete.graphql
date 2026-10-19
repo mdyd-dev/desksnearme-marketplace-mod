@@ -1,3 +1,0 @@
-mutation photo_delete($id: ID!) {
-  record: record_delete(table: "listing_photo", id: $id) { id }
-}

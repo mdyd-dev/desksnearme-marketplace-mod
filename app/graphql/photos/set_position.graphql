@@ -1,8 +1,0 @@
-mutation photo_set_position($id: ID!, $position: Int!) {
-  record: record_update(
-    id: $id
-    record: { properties: [{ name: "position", value_int: $position }] }
-  ) {
-    id
-  }
-}

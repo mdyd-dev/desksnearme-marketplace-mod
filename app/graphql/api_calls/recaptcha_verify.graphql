@@ -1,6 +1,0 @@
-mutation recaptcha_verify($data: HashObject) {
-  api_call_send(template: { name: "recaptcha_verify" }, data: $data) {
-    response { status body }
-    errors { message }
-  }
-}

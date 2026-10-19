@@ -1,8 +1,0 @@
-mutation profile_set_reset($id: ID!, $reset_token: String!, $reset_sent_at: String!) {
-  record_update(id: $id, record: {
-    properties: [
-      { name: "reset_token", value: $reset_token }
-      { name: "reset_sent_at", value: $reset_sent_at }
-    ]
-  }) { id }
-}

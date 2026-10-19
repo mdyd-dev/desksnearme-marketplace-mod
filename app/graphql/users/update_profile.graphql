@@ -1,3 +1,0 @@
-mutation update_user_names($id: ID!, $first_name: String, $last_name: String) {
-  user_update(id: $id, user: { first_name: $first_name, last_name: $last_name }) { id }
-}

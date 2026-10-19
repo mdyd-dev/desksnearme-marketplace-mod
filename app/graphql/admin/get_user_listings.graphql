@@ -1,8 +1,0 @@
-query admin_get_user_listings($host_id: String!) {
-  records(per_page: 200, filter: { table: { value: "listing" }, properties: [{ name: "host_id", value: $host_id }] }) {
-    results {
-      id
-      uuid: property(name: "uuid")
-    }
-  }
-}

@@ -1,6 +1,0 @@
-mutation send_message_report($data: HashObject!) {
-  email_send(template: { name: "message_report" }, data: $data) {
-    is_scheduled_to_send
-    errors { message }
-  }
-}

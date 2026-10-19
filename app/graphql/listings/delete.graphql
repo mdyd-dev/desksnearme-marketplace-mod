@@ -1,5 +1,0 @@
-mutation listing_delete($id: ID!) {
-  record_delete(table: "listing", id: $id) {
-    id
-  }
-}

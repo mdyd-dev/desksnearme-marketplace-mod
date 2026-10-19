@@ -1,7 +1,0 @@
----
-slug: hosts/:id
----
-{%- liquid
-  assign dest = '/users/' | append: context.params.id
-  redirect_to dest
--%}

@@ -1,6 +1,0 @@
-mutation geoapify_autocomplete($data: HashObject) {
-  api_call_send(template: { name: "geoapify_autocomplete" }, data: $data) {
-    response { status body }
-    errors { message }
-  }
-}

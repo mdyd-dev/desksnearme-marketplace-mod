@@ -1,3 +1,0 @@
-mutation message_mark_read($id: ID!) {
-  record_update(id: $id, record: { properties: [{ name: "read", value_boolean: true }] }) { id }
-}

@@ -1,6 +1,0 @@
-mutation send_confirmation($data: HashObject!) {
-  email_send(template: { name: "confirm_email" }, data: $data) {
-    is_scheduled_to_send
-    errors { message }
-  }
-}

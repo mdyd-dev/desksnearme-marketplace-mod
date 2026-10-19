@@ -1,8 +1,0 @@
-query conversation_find_support($guest_id: String!) {
-  records(per_page: 1, filter: { table: { value: "conversation" }, properties: [
-    { name: "guest_id", value: $guest_id },
-    { name: "type", value: "support" }
-  ] }) {
-    results { id }
-  }
-}
