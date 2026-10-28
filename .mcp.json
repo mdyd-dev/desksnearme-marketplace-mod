@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "platformos-cli": {
+      "command": "pos-cli-mcp",
+      "args": [
+        "--profile",
+        "dev",
+        "--no-http"
+      ]
+    },
+    "platformos-supervisor": {
+      "command": "pos-cli-supervisor"
+    },
+    "platformos-liquid": {
+      "type": "http",
+      "url": "https://pos-mcp-tools.ps-01-platformos.com/liquid-mcp"
+    },
+    "platformos-graphql": {
+      "type": "http",
+      "url": "https://pos-mcp-tools.ps-01-platformos.com/graphql-mcp"
+    }
+  }
+}

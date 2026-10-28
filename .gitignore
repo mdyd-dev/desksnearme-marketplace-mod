@@ -12,3 +12,4 @@ tmp/
 
 # Local dev/test account credentials for the staging instance
 .dev-test-accounts.txt
+.claude/
